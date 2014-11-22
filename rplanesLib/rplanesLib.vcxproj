@@ -1,0 +1,154 @@
+﻿<?xml version="1.0" encoding="utf-8"?>
+<Project DefaultTargets="Build" ToolsVersion="12.0" xmlns="http://schemas.microsoft.com/developer/msbuild/2003">
+  <ItemGroup Label="ProjectConfigurations">
+    <ProjectConfiguration Include="Debug|x64">
+      <Configuration>Debug</Configuration>
+      <Platform>x64</Platform>
+    </ProjectConfiguration>
+    <ProjectConfiguration Include="Release|x64">
+      <Configuration>Release</Configuration>
+      <Platform>x64</Platform>
+    </ProjectConfiguration>
+  </ItemGroup>
+  <PropertyGroup Label="Globals">
+    <ProjectGuid>{84B23086-8CB8-4D42-89AA-AED7077C5791}</ProjectGuid>
+    <RootNamespace>rplanesLib</RootNamespace>
+    <ProjectName>rplanesLib</ProjectName>
+  </PropertyGroup>
+  <Import Project="$(VCTargetsPath)\Microsoft.Cpp.Default.props" />
+  <Import Project="c:\projects\planes\common.props" />
+  <PropertyGroup Label="Configuration" Condition="'$(Configuration)|$(Platform)'=='Debug|x64'">
+    <PlatformToolset>v120</PlatformToolset>
+    <ConfigurationType>StaticLibrary</ConfigurationType>
+  </PropertyGroup>
+  <PropertyGroup Label="Configuration" Condition="'$(Configuration)|$(Platform)'=='Release|x64'">
+    <ConfigurationType>StaticLibrary</ConfigurationType>
+    <PlatformToolset>v120</PlatformToolset>
+  </PropertyGroup>
+  <Import Project="$(VCTargetsPath)\Microsoft.Cpp.props" />
+  <ImportGroup Label="ExtensionSettings">
+  </ImportGroup>
+  <PropertyGroup Label="UserMacros" />
+  <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Debug|x64'">
+    <OutDir>$(rplanesLibDir)</OutDir>
+  </PropertyGroup>
+  <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Release|x64'">
+    <OutDir>$(rplanesLibDir)</OutDir>
+  </PropertyGroup>
+  <ItemDefinitionGroup Condition="'$(Configuration)|$(Platform)'=='Debug|x64'">
+    <ClCompile>
+      <DisableSpecificWarnings>4068;4244</DisableSpecificWarnings>
+      <RuntimeLibrary>MultiThreadedDebugDLL</RuntimeLibrary>
+      <ForcedIncludeFiles>"stdafx.h";%(ForcedIncludeFiles)</ForcedIncludeFiles>
+      <AdditionalIncludeDirectories>$(vendersInclude);$(projectDir);%(AdditionalIncludeDirectories)</AdditionalIncludeDirectories>
+      <PreprocessorDefinitions>_WIN32_WINNT=0x0501;</PreprocessorDefinitions>
+    </ClCompile>
+    <PostBuildEvent>
+      <Command>copy $(projectDir)*.h $(rplanesLibDir)
+xcopy /I /Y /s $(projectDir)odb\*.hxx $(rplanesLibDir)odb
+xcopy /I /Y /s $(projectDir)odb\*.ixx $(rplanesLibDir)odb</Command>
+    </PostBuildEvent>
+  </ItemDefinitionGroup>
+  <ItemDefinitionGroup Condition="'$(Configuration)|$(Platform)'=='Release|x64'">
+    <ClCompile>
+      <DisableSpecificWarnings>4068;4244</DisableSpecificWarnings>
+      <ForcedIncludeFiles>"stdafx.h";%(ForcedIncludeFiles)</ForcedIncludeFiles>
+      <PrecompiledHeader>Use</PrecompiledHeader>
+      <AdditionalIncludeDirectories>$(vendersInclude);$(projectDir);%(AdditionalIncludeDirectories)</AdditionalIncludeDirectories>
+      <PreprocessorDefinitions>_WIN32_WINNT=0x0501;</PreprocessorDefinitions>
+    </ClCompile>
+    <PostBuildEvent>
+      <Command>copy $(projectDir)*.h $(rplanesLibDir)
+xcopy /I /Y /s $(projectDir)odb\*.hxx $(rplanesLibDir)odb
+xcopy /I /Y /s $(projectDir)odb\*.ixx $(rplanesLibDir)odb</Command>
+    </PostBuildEvent>
+  </ItemDefinitionGroup>
+  <ItemGroup>
+    <ClCompile Include="odb\configuration-odb.cxx" />
+    <ClCompile Include="odb\model-odb.cxx" />
+    <ClCompile Include="odb\modules-odb.cxx" />
+    <ClCompile Include="odb\pilot-odb.cxx" />
+    <ClCompile Include="odb\profile-odb.cxx" />
+    <ClCompile Include="configuration.cpp" />
+    <ClCompile Include="hitzone.cpp" />
+    <ClCompile Include="messages.cpp" />
+    <ClCompile Include="model.cpp" />
+    <ClCompile Include="modules.cpp" />
+    <ClCompile Include="network.cpp" />
+    <ClCompile Include="pilot.cpp" />
+    <ClCompile Include="plane.cpp" />
+    <ClCompile Include="profile.cpp" />
+    <ClCompile Include="projectile.cpp" />
+    <ClCompile Include="stdafx.cpp">
+      <PrecompiledHeader Condition="'$(Configuration)|$(Platform)'=='Release|x64'">Create</PrecompiledHeader>
+    </ClCompile>
+  </ItemGroup>
+  <ItemGroup>
+    <ClInclude Include="helpers.h" />
+    <ClInclude Include="parallel.h" />
+    <ClInclude Include="odb\configuration-odb.hxx" />
+    <ClInclude Include="odb\model-odb.hxx" />
+    <ClInclude Include="odb\modules-odb.hxx" />
+    <ClInclude Include="odb\pilot-odb.hxx" />
+    <ClInclude Include="odb\profile-odb.hxx" />
+    <CustomBuild Include="configuration.h">
+      <Command Condition="'$(Configuration)|$(Platform)'=='Debug|x64'">odb.exe --std c++11 --database sqlite --generate-query --generate-schema --schema-name configuration --default-pointer std::shared_ptr --output-dir odb configuration.h</Command>
+      <Message Condition="'$(Configuration)|$(Platform)'=='Debug|x64'">Generating odb files for configuration.h</Message>
+      <Outputs Condition="'$(Configuration)|$(Platform)'=='Debug|x64'">odb/configuration-odb.cxx;odb/configuration-odb.hxx;odb/configuration-odb.ixx;(%Outputs)</Outputs>
+      <Command Condition="'$(Configuration)|$(Platform)'=='Release|x64'">odb.exe --std c++11 --database sqlite --generate-query --generate-schema --schema-name configuration --default-pointer std::shared_ptr --output-dir odb configuration.h</Command>
+      <Message Condition="'$(Configuration)|$(Platform)'=='Release|x64'">Generating odb files for configuration.h</Message>
+      <Outputs Condition="'$(Configuration)|$(Platform)'=='Release|x64'">odb/configuration-odb.cxx;odb/configuration-odb.hxx;odb/configuration-odb.ixx;(%Outputs)</Outputs>
+    </CustomBuild>
+    <ClInclude Include="database.h" />
+    <ClInclude Include="exceptions.h" />
+    <ClInclude Include="geometry.h" />
+    <ClInclude Include="hitzone.h" />
+    <CustomBuild Include="model.h">
+      <Command Condition="'$(Configuration)|$(Platform)'=='Debug|x64'">odb.exe --std c++11 --database sqlite --generate-query --generate-schema --schema-name planesDB --default-pointer std::shared_ptr --output-dir odb model.h</Command>
+      <Message Condition="'$(Configuration)|$(Platform)'=='Debug|x64'">Generating odb files for model.h</Message>
+      <Outputs Condition="'$(Configuration)|$(Platform)'=='Debug|x64'">odb/model-odb.cxx;odb/model-odb.hxx;odb/model-odb.ixx;(%Outputs)</Outputs>
+      <Command Condition="'$(Configuration)|$(Platform)'=='Release|x64'">odb.exe --std c++11 --database sqlite --generate-query --generate-schema --schema-name planesDB --default-pointer std::shared_ptr --output-dir odb model.h</Command>
+      <Message Condition="'$(Configuration)|$(Platform)'=='Release|x64'">Generating odb files for model.h</Message>
+      <Outputs Condition="'$(Configuration)|$(Platform)'=='Release|x64'">odb/model-odb.cxx;odb/model-odb.hxx;odb/model-odb.ixx;(%Outputs)</Outputs>
+    </CustomBuild>
+    <CustomBuild Include="modules.h">
+      <Command Condition="'$(Configuration)|$(Platform)'=='Debug|x64'">odb.exe --std c++11 --database sqlite --generate-query --generate-schema --schema-name planesDB --default-pointer std::shared_ptr --output-dir odb modules.h</Command>
+      <Message Condition="'$(Configuration)|$(Platform)'=='Debug|x64'">Generating odb files for modules.h</Message>
+      <Outputs Condition="'$(Configuration)|$(Platform)'=='Debug|x64'">odb/modules-odb.cxx;odb/modules-odb.hxx;odb/modules-odb.ixx;(%Outputs)</Outputs>
+      <Command Condition="'$(Configuration)|$(Platform)'=='Release|x64'">odb.exe --std c++11 --database sqlite --generate-query --generate-schema --schema-name planesDB --default-pointer std::shared_ptr --output-dir odb modules.h</Command>
+      <Message Condition="'$(Configuration)|$(Platform)'=='Release|x64'">Generating odb files for modules.h</Message>
+      <Outputs Condition="'$(Configuration)|$(Platform)'=='Release|x64'">odb/modules-odb.cxx;odb/modules-odb.hxx;odb/modules-odb.ixx;(%Outputs)</Outputs>
+    </CustomBuild>
+    <CustomBuild Include="pilot.h">
+      <Command Condition="'$(Configuration)|$(Platform)'=='Debug|x64'">odb.exe --std c++11 --database sqlite --generate-query --generate-schema --schema-name profilesDB --default-pointer std::shared_ptr --output-dir odb pilot.h</Command>
+      <Message Condition="'$(Configuration)|$(Platform)'=='Debug|x64'">Generating odb files for pilot.h</Message>
+      <Outputs Condition="'$(Configuration)|$(Platform)'=='Debug|x64'">odb/pilot-odb.cxx;odb/pilot-odb.hxx;odb/pilot-odb.ixx;(%Outputs)</Outputs>
+      <Command Condition="'$(Configuration)|$(Platform)'=='Release|x64'">odb.exe --std c++11 --database sqlite --generate-query --generate-schema --schema-name profilesDB --default-pointer std::shared_ptr --output-dir odb pilot.h</Command>
+      <Message Condition="'$(Configuration)|$(Platform)'=='Release|x64'">Generating odb files for pilot.h</Message>
+      <Outputs Condition="'$(Configuration)|$(Platform)'=='Release|x64'">odb/pilot-odb.cxx;odb/pilot-odb.hxx;odb/pilot-odb.ixx;(%Outputs)</Outputs>
+    </CustomBuild>
+    <ClInclude Include="messages.h" />
+    <ClInclude Include="network.h" />
+    <ClInclude Include="plane.h" />
+    <CustomBuild Include="profile.h">
+      <Command Condition="'$(Configuration)|$(Platform)'=='Debug|x64'">odb.exe --std c++11 --database sqlite --generate-query --generate-schema --schema-name profilesDB --default-pointer std::shared_ptr --output-dir odb profile.h</Command>
+      <Message Condition="'$(Configuration)|$(Platform)'=='Debug|x64'">Generating odb files for profile.h</Message>
+      <Outputs Condition="'$(Configuration)|$(Platform)'=='Debug|x64'">odb/profile-odb.cxx;odb/profile-odb.hxx;odb/profile-odb.ixx;(%Outputs)</Outputs>
+      <Command Condition="'$(Configuration)|$(Platform)'=='Release|x64'">odb.exe --std c++11 --database sqlite --generate-query --generate-schema --schema-name profilesDB --default-pointer std::shared_ptr --output-dir odb profile.h</Command>
+      <Message Condition="'$(Configuration)|$(Platform)'=='Release|x64'">Generating odb files for profile.h</Message>
+      <Outputs Condition="'$(Configuration)|$(Platform)'=='Release|x64'">odb/profile-odb.cxx;odb/profile-odb.hxx;odb/profile-odb.ixx;(%Outputs)</Outputs>
+    </CustomBuild>
+    <ClInclude Include="projectile.h" />
+    <ClInclude Include="stdafx.h" />
+  </ItemGroup>
+  <ItemGroup>
+    <None Include="odb\configuration-odb.ixx" />
+    <None Include="odb\model-odb.ixx" />
+    <None Include="odb\modules-odb.ixx" />
+    <None Include="odb\pilot-odb.ixx" />
+    <None Include="odb\profile-odb.ixx" />
+  </ItemGroup>
+  <Import Project="$(VCTargetsPath)\Microsoft.Cpp.targets" />
+  <ImportGroup Label="ExtensionTargets">
+  </ImportGroup>
+</Project>

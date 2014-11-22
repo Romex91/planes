@@ -1,0 +1,34 @@
+<Project ToolsVersion="4.0" xmlns="http://schemas.microsoft.com/developer/msbuild/2003">
+  <PropertyGroup Condition="'$(Configuration)'=='Debug'">
+    <dSuffix>-d</dSuffix>
+    <dSuffixBoost>-gd</dSuffixBoost>
+  </PropertyGroup>
+  <PropertyGroup>
+    <baseDir>C:\projects\</baseDir>
+    <vendersInclude>
+      C:\projects\boost_1_57_0\;
+      C:\projects\odb\;
+      C:\projects\SFML-2.1\include\;
+    </vendersInclude>
+    <vendersLibDir>
+      C:\projects\SFML-2.1\lib\;
+      C:\projects\boost_1_57_0\stage\lib\;
+      C:\projects\odb\lib64\;
+    </vendersLibDir>
+    <vendersLib>
+      odb$(dSuffix).lib;
+      odb-sqlite$(dSuffix).lib;
+      sfml-system$(dSuffix).lib;
+      sfml-main$(dSuffix).lib;
+      sfml-window$(dSuffix).lib;
+      sfml-graphics$(dSuffix).lib;
+      libboost_serialization-vc120-mt$(dSuffixBoost)-1_57.lib;
+      libboost_system-vc120-mt$(dSuffixBoost)-1_57.lib;
+      libboost_random-vc120-mt$(dSuffixBoost)-1_57.lib;
+    </vendersLib>
+    <planesOutDir>$(SolutionDir)out\</planesOutDir>
+    <rplanesLibDir>$(planesOutDir)rplanesLib\</rplanesLibDir>
+    <rplanesLib>rplanesLib$(dSuffix).lib</rplanesLib>
+    <planesBin>$(planesOutDir)$(configuration)\</planesBin>
+  </PropertyGroup>
+</Project>

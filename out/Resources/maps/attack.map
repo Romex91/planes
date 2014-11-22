@@ -1,0 +1,91 @@
+mapSize 1000 1000
+
+spawnPoint SPAWN_A 100 100 0 // название координаты курс
+spawnPoint SPAWN_B 900 900 180
+
+trigger TA 900 900 50 // название координаты радиус
+trigger TB 900 900 600
+trigger TC 900 900 1700
+
+group ATTAKERS   soviet SPAWN_A 10 // название нация точка_спауна количество
+group DEFFENDERS german SPAWN_B 15
+
+goal DEFFENDERS_GOAL 900 900 300 Защитить точку.
+goal ATTAKERS_GOAL 900 900 300 Атаковать точку.
+
+var ATTAKERS_MISSED 0 // название значение 
+var TIME 0
+var TIMELEFT 0
+var IS_STARTED 0
+
+start
+	regroup
+	setDestroyed all VANISH
+	= IS_STARTED 1
+	= ATTAKERS_MISSED 0
+	= TIME 0
+	message all /timeleft 500
+	message all Раунд начнется через 3 секунды.
+	respawn all 3 //имя_группы задержка_по_времени
+	goal DEFFENDERS DEFFENDERS_GOAL
+	goal ATTAKERS ATTAKERS_GOAL
+end
+
+join
+
+end
+
+timer 5
+== IS_STARTED 1
++ TIME 5
+= TIMELEFT 500
+- TIMELEFT TIME
+message all /timeleft %TIMELEFT
+> TIME 500
+message all Время истекло.
+restart
+end
+
+
+triggered escape TB DEFFENDERS
+	message this Не покидайте зону боевых действий!
+end
+
+triggered escape TC DEFFENDERS
+	penalty this 10000
+	kill this FIRE 0
+	message all %this уничтожен за дезертирство!
+	message this Я твою маму ебал, да?
+end
+
+triggered enter TA ATTAKERS //имя_триггера тип имя_группы количество_самолетов
+	+ ATTAKERS_MISSED 1
+	award this 100000
+
+	message all %this прорвался к цели!
+
+	> ATTAKERS_MISSED 5
+	award ATTAKERS 10000
+	message all Цель уничтожена!
+	restart
+	open ATTAKERS map deathmatch.map
+	open ATTAKERS plane mig9
+end
+
+killed ATTAKERS
+	== ATTAKERS 0
+	message all Атака разбита!
+	award DEFFENDERS 10000
+	restart
+	open DEFFENDERS map deathmatch.map
+	open DEFFENDERS plane mig9
+end
+
+killed DEFFENDERS
+	== DEFFENDERS 0
+	message all Защитники уничтожены!
+	award ATTAKERS 1000000
+	restart
+	open ATTAKERS map deathmatch.map
+	open ATTAKERS plane mig9
+end

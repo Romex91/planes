@@ -1,0 +1,62 @@
+﻿
+Microsoft Visual Studio Solution File, Format Version 12.00
+# Visual Studio 2013
+VisualStudioVersion = 12.0.31101.0
+MinimumVisualStudioVersion = 10.0.40219.1
+Project("{8BC9CEB8-8B4A-11D0-8D11-00A0C91BC942}") = "rplanesLib", "rplanesLib\rplanesLib.vcxproj", "{84B23086-8CB8-4D42-89AA-AED7077C5791}"
+EndProject
+Project("{8BC9CEB8-8B4A-11D0-8D11-00A0C91BC942}") = "schemaCreator", "schemaCreator\schemaCreator.vcxproj", "{CBCB4E41-85D6-4507-8DD0-85345FE4F7AC}"
+	ProjectSection(ProjectDependencies) = postProject
+		{84B23086-8CB8-4D42-89AA-AED7077C5791} = {84B23086-8CB8-4D42-89AA-AED7077C5791}
+	EndProjectSection
+EndProject
+Project("{8BC9CEB8-8B4A-11D0-8D11-00A0C91BC942}") = "server", "server\server.vcxproj", "{F4B5EE77-70DD-4EF6-9363-2F930C5A29A4}"
+	ProjectSection(ProjectDependencies) = postProject
+		{84B23086-8CB8-4D42-89AA-AED7077C5791} = {84B23086-8CB8-4D42-89AA-AED7077C5791}
+	EndProjectSection
+EndProject
+Project("{8BC9CEB8-8B4A-11D0-8D11-00A0C91BC942}") = "test", "test\test.vcxproj", "{A6A46122-D873-4330-B638-D1F18FBD23E1}"
+	ProjectSection(ProjectDependencies) = postProject
+		{84B23086-8CB8-4D42-89AA-AED7077C5791} = {84B23086-8CB8-4D42-89AA-AED7077C5791}
+	EndProjectSection
+EndProject
+Project("{8BC9CEB8-8B4A-11D0-8D11-00A0C91BC942}") = "triangleClient", "triangleClient\triangleClient.vcxproj", "{51A4C3DC-0ACC-4093-859B-53E40FFF20ED}"
+	ProjectSection(ProjectDependencies) = postProject
+		{84B23086-8CB8-4D42-89AA-AED7077C5791} = {84B23086-8CB8-4D42-89AA-AED7077C5791}
+	EndProjectSection
+EndProject
+Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "Solution Items", "Solution Items", "{38DEC21E-7EA6-4035-AD40-DB248944B0C2}"
+	ProjectSection(SolutionItems) = preProject
+		common.props = common.props
+	EndProjectSection
+EndProject
+Global
+	GlobalSection(SolutionConfigurationPlatforms) = preSolution
+		Debug|x64 = Debug|x64
+		Release|x64 = Release|x64
+	EndGlobalSection
+	GlobalSection(ProjectConfigurationPlatforms) = postSolution
+		{84B23086-8CB8-4D42-89AA-AED7077C5791}.Debug|x64.ActiveCfg = Debug|x64
+		{84B23086-8CB8-4D42-89AA-AED7077C5791}.Debug|x64.Build.0 = Debug|x64
+		{84B23086-8CB8-4D42-89AA-AED7077C5791}.Release|x64.ActiveCfg = Release|x64
+		{84B23086-8CB8-4D42-89AA-AED7077C5791}.Release|x64.Build.0 = Release|x64
+		{CBCB4E41-85D6-4507-8DD0-85345FE4F7AC}.Debug|x64.ActiveCfg = Debug|x64
+		{CBCB4E41-85D6-4507-8DD0-85345FE4F7AC}.Debug|x64.Build.0 = Debug|x64
+		{CBCB4E41-85D6-4507-8DD0-85345FE4F7AC}.Release|x64.ActiveCfg = Release|x64
+		{CBCB4E41-85D6-4507-8DD0-85345FE4F7AC}.Release|x64.Build.0 = Release|x64
+		{F4B5EE77-70DD-4EF6-9363-2F930C5A29A4}.Debug|x64.ActiveCfg = Debug|x64
+		{F4B5EE77-70DD-4EF6-9363-2F930C5A29A4}.Debug|x64.Build.0 = Debug|x64
+		{F4B5EE77-70DD-4EF6-9363-2F930C5A29A4}.Release|x64.ActiveCfg = Release|x64
+		{F4B5EE77-70DD-4EF6-9363-2F930C5A29A4}.Release|x64.Build.0 = Release|x64
+		{A6A46122-D873-4330-B638-D1F18FBD23E1}.Debug|x64.ActiveCfg = Debug|x64
+		{A6A46122-D873-4330-B638-D1F18FBD23E1}.Release|x64.ActiveCfg = Release|x64
+		{A6A46122-D873-4330-B638-D1F18FBD23E1}.Release|x64.Build.0 = Release|x64
+		{51A4C3DC-0ACC-4093-859B-53E40FFF20ED}.Debug|x64.ActiveCfg = Debug|x64
+		{51A4C3DC-0ACC-4093-859B-53E40FFF20ED}.Debug|x64.Build.0 = Debug|x64
+		{51A4C3DC-0ACC-4093-859B-53E40FFF20ED}.Release|x64.ActiveCfg = Release|x64
+		{51A4C3DC-0ACC-4093-859B-53E40FFF20ED}.Release|x64.Build.0 = Release|x64
+	EndGlobalSection
+	GlobalSection(SolutionProperties) = preSolution
+		HideSolutionNode = FALSE
+	EndGlobalSection
+EndGlobal

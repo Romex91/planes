@@ -1,0 +1,57 @@
+mapSize 1000 1000
+
+spawnPoint SPAWN_A 100 100 0 // название координаты курс
+spawnPoint SPAWN_B 900 900 180
+
+trigger TA 800 800 50 // название координаты радиус
+trigger TB 800 800 400
+trigger TC 800 800 600
+
+group ATTAKERS   soviet SPAWN_A 10 // название нация точка_спауна количество
+group DEFFENDERS german SPAWN_B 30
+
+var ATTAKERS_MISSED 0 // название значение 
+
+
+start
+	= ATTAKERS_MISSED 0
+	spawn ATTAKERS 0 //имя_группы задержка_по_времени
+	spawn DEFFENDERS 0
+end
+
+join
+
+end
+
+
+triggered enter TA ATTAKERS //имя_триггера тип имя_группы количество_самолетов
+	+ ATTAKERS_MISSED 1
+	award this 100000
+	//если число пропущенных <= 5 останавливаем обработку
+	> ATTAKERS_MISSED 5
+	award ATTAKERS 10000
+	restart
+end
+
+triggered escape TB DEFFENDERS
+	message this Не покидайте зону боевых действий!
+end
+
+triggered escape TС DEFFENDERS
+	penalty this 10000
+	kill this
+	message this Вы уничтожены за дезертирство!
+	message this Пидор!
+end
+
+killed ATTAKERS
+	== ATTAKERS 0
+	award DEFFENDERS 10000
+	restart
+end
+
+killed DEFENDERS
+	== DEFFENDERS 0
+	award ATTAKERS 1000000
+	restart
+end

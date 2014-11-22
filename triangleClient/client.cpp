@@ -1,0 +1,904 @@
+#define PLANES_CLIENT //должно стоять до messages.h
+#include "stdafx.h"
+using boost::asio::ip::tcp;
+
+std::string server_ip = "127.0.0.1";
+
+float scale = 2.f; //увеличивает серверные данные при отрисовке
+
+boost::asio::io_service io_service;
+
+//особенности общения с сервером
+//если в процессе общения с клиентом что-то идет не так, сервер обрывает соединение без передачи дополнительной информации
+//соединение может быть оборвано:
+
+//1)Если клиент находится в ангаре и отправил больше чем configuration().server.hangarMessagesPerFrame сообщений за configuration().server.hangarFrameTime
+//2)Если клиент находится в комнате, и  отправляет больше чем configuration().server.roomMessagesPerFrame сообщений за configuration().server.roomFrameTime;
+//3)Если клиент отправил сообщение, имея несоответствующий статус
+//4)В случае возникновения любой ошибки у сервера, клиент удаляется
+
+
+class Client
+{
+public:
+
+	//сообщение, передаваемое серверу каждый серверный кадр
+	rplanes::network::clientmessages::room::SendControllable controllable;
+
+	rplanes::network::Connection connection;
+	Client() : connection(io_service)
+	{}
+
+	void connect()
+	{
+		tcp::resolver resolver(io_service);
+		tcp::resolver::query query(server_ip, "40000");
+		tcp::resolver::iterator endpoint_iterator = resolver.resolve(query);
+		connection.connect(endpoint_iterator);
+	}
+
+	//все следующие штуки мы получаем от сервера
+
+	class plane : public sf::Drawable, public rplanes::network::servermessages::room::Plane
+	{
+	public:
+		plane() :
+			rplanes::network::servermessages::room::Plane()
+		{}
+		plane(const rplanes::network::servermessages::room::Plane  & Plane) :
+			rplanes::network::servermessages::room::Plane(Plane)
+		{}
+		void draw(sf::RenderTarget & target, sf::RenderStates states) const
+		{
+			sf::ConvexShape shape;
+			for (auto & module : modules)
+			{
+				shape.setPointCount(static_cast<unsigned int>(module.hitZone.shape.points.size()));
+				unsigned int i = 0;
+				for (auto & Point : module.hitZone.shape.points)
+				{
+					shape.setPoint(i, sf::Vector2f(Point.x *scale, Point.y * scale));
+					i++;
+				}
+				shape.setOutlineThickness(1);
+				//if (module.defected)
+				//{
+				//	shape.setOutlineColor(sf::Color::Red);
+				//}
+				//else
+				//{
+				//	shape.setOutlineColor(sf::Color::Green);
+				//}
+				
+				switch ( rplanes::network::servermessages::room::Plane::nation)
+				{
+				case rplanes::ALLIES:
+					shape.setOutlineColor(sf::Color::Green);
+					break;
+				case rplanes::AXIS:
+					shape.setOutlineColor(sf::Color::Red);
+					break;
+				default:
+					break;
+				}
+				shape.setFillColor(sf::Color(255 * (1 - module.hp / module.hpMax), 255 * module.hp / module.hpMax, 0, 50));
+				shape.setPosition(pos.x * scale, pos.y * scale);
+				target.draw(shape);
+			}
+		}
+	};
+	class bullet : public sf::Drawable, public rplanes::serverdata::Bullet
+	{
+	public:
+		bullet() :
+			rplanes::serverdata::Bullet()
+		{
+
+			}
+		bullet(const rplanes::serverdata::Bullet & bullet) :
+			rplanes::serverdata::Bullet(bullet)
+		{}
+		void draw(sf::RenderTarget & target, sf::RenderStates states) const
+		{
+			sf::CircleShape circle;
+
+
+			float size = 2.f;
+
+			circle.setRadius(size);
+			if (z > 0)
+			{
+				circle.setFillColor(sf::Color::Red);
+			}
+			else
+			{
+				circle.setFillColor(sf::Color::Yellow);
+			}
+			circle.setPosition(x * scale - size, y * scale - size);
+			target.draw(circle);
+		}
+	};
+	//в данном клиенте ракеты игнорируются.
+
+
+	//список видимых самолетов. изменяется сообщениями createPlanes destroyPlanes
+	std::map<size_t, plane> planes;
+	//список пуль. Новые пули создаются в сообщении createBullets, при попаданиях пули удаляются сообщением destroyBullets, иначе в главной петле при излете
+	std::map<size_t, bullet> bullets;
+	//статус клиента
+	//	UNLOGINED - не прошел авторизацию, если в течении 1 секунды не придет легальное сообщение login, соединение будет оборвано
+	//	HANGAR - клиент находится в ангаре. Может покупать самолеты и прочее, управлять комнатами и т.п.
+	//находясь в ангаре клиент может отправлять запросы покупок и т.п. Чтобы увидеть результат этих действий, необходимо запросить профиль у сервера
+	//	ROOM - клиент находится в комнате может отправлять данные управления, сообщение выхода из комнаты
+	//Если клиент находясь, например, в ангаре попробует отправить данные управления, и в подобных случаях, соединение будет удалено без предупреждения
+	//Изменять статус можно сообщениями login, joinRoom, exitRoom, logout
+	//После того как было отправлено одно из этих сообщений, необходимо запросить статус у сервера
+	rplanes::network::ClientStatus status;
+	//показания приборов, уровень перегрузки и прочее
+	rplanes::network::servermessages::room::InterfaceData interfaceData;
+	//профиль игрока. Содержит список самолетов в ангаре, игровую статисктику и проч.
+	rplanes::playerdata::Profile profile;
+
+	//информация о комнатах
+	typedef rplanes::network::servermessages::hangar::RoomList::RoomInfo RoomInfo;
+	std::vector<RoomInfo> rooms;
+
+	//время используется для синхронизации при получении некоторых сообщений
+	//время, переданное сервером
+	float serverTime;
+	//время, используемое клиентом. Плавно корректироется c serverTime
+	float clientTime;
+}client;
+
+//messages handlers
+namespace rplanes
+{
+	namespace network
+	{
+		namespace servermessages
+		{
+			//приходит после отправки запроса статуса
+			void StatusMessage::handle()
+			{
+				client.status = status;
+
+			}
+
+			//сообщения отправляемые клиенту, находящимуся в ангаре
+			namespace hangar
+			{
+				//после успешной авторизации сервер отсылает конфигурацию, необходимую для корректной работы interpolate и т.п.
+				void ServerConfiguration::handle()
+				{
+					std::cout << "Получена конфигурация сервера " << std::endl;
+					rplanes::configuration() = conf;
+				}
+				void SendProfile::handle()
+				{
+					client.profile = profile;
+				}
+				void RoomList::handle()
+				{
+					client.rooms = rooms;
+				}
+
+			}
+
+			//сообщения отправляемые клиенту, находящимуся в комнате
+			namespace room
+			{
+
+				void ChangeMap::handle()
+				{
+					std::cout << "Карта сменена на " << mapName << std::endl;
+				}
+
+				//сообщение приходит после запроса серверного времени
+				void ServerTime::handle()
+				{
+					client.serverTime = time;
+
+					//запрашиваем серверное время
+					client.connection.sendMessage(clientmessages::room::ServerTimeRequest());
+
+					//клиент должен отсылать управление как можно чаще, но при этом не привышать квоту
+					//поэтому отправляем данные управления вместе с запросом времени
+					client.connection.sendMessage(client.controllable);
+				}
+
+				void CreateBullets::handle()
+				{
+					for (auto & bullet : bullets)
+					{
+						//сдвигаем пулю на актуальную на данный момент позицию
+						if (client.clientTime > time)
+							bullet.move(client.clientTime - time);
+						client.bullets[bullet.ID] = bullet;
+					}
+				}
+
+				//данный клиент игнорирует ракеты
+				void СreateMissiles::handle()
+				{
+				}
+
+				void CreatePlanes::handle()
+				{
+					for (auto & plane : Planes)
+					{
+
+						if (client.planes.count(plane.id) != 0)
+						{
+							std::cout << "повторное создание самолета" << std::endl;
+						}
+						std::cout << " Появился новый самолет " << " "
+							<< plane.planeName << " "
+							<< plane.playerName << " "
+							<< plane.id << std::endl;
+						client.planes[plane.id] = plane;
+					}
+
+				}
+
+				//логически идентична createBullets
+				//можно использовать другие графические эффекты, и т.п.
+				void СreateRicochetes::handle()
+				{
+					for (auto & bullet : bullets)
+					{
+						if (client.clientTime > time)
+							bullet.move(client.clientTime - time);
+						client.bullets[bullet.ID] = bullet;
+					}
+				}
+
+				//приходит только при попаданиях. Остальные пули удаляются в главной петле
+				void DestroyBullets::handle()
+				{
+					//пуля уничтожена во время коллизий
+					for (auto & bullet : bullets)
+					{
+						client.bullets.erase(bullet.bulletID);
+					}
+				}
+
+				void DestroyMissiles::handle()
+				{
+				}
+
+				//может означать не только уничтожение, но и вылет за границы видимости
+				void DestroyPlanes::handle()
+				{
+					for (auto & destroyedPlane : planes)
+					{
+						switch (destroyedPlane.reason)
+						{
+						case rplanes::network::servermessages::room::DestroyPlanes::MODULE_DESTROYED:
+							std::cout << "Самолет" << destroyedPlane.planeID << " уничтожен по милости модуля " << destroyedPlane.moduleNo 
+								<< " " << rplanes::moduleTypesNames[ client.planes[destroyedPlane.planeID].modules[destroyedPlane.moduleNo].type ] << std::endl;
+							break;
+						case rplanes::network::servermessages::room::DestroyPlanes::FUEL:
+							std::cout << "Самолет" << destroyedPlane.planeID << " уничтожен, закончилось топливо " << std::endl;
+							break;
+						case rplanes::network::servermessages::room::DestroyPlanes::VANISH:
+							std::cout << "Самолет " << destroyedPlane.planeID << " исчез!" << std::endl;
+							break;
+						case  rplanes::network::servermessages::room::DestroyPlanes::RAMMED:
+							std::cout << "Самолет уничтожен тараном " << destroyedPlane.planeID << std::endl;
+							break;
+						case rplanes::network::servermessages::room::DestroyPlanes::FIRE:
+							std::cout << "Самолет уничтожен пожаром " << destroyedPlane.planeID << std::endl;
+							break;
+						}
+						client.planes.erase(destroyedPlane.planeID);
+					}
+				}
+
+				//приходит каждый серверный кадр
+				void InterfaceData::handle()
+				{
+					client.interfaceData = *this;
+				}
+
+				//приходит каждый серверный кадр
+				void SetPlanesPositions::handle()
+				{
+					for (auto & position : positions)
+					{
+						auto & plane = client.planes[position.planeID];
+						plane.extrapolationData = position.extrapolationData;
+						plane.pos = position.pos;
+						//сдвигаем самолет на актуальную позицию
+						plane.extrapolate(client.clientTime - time);
+					}
+				}
+
+				//приходит только при изменении параметров модулей
+				void UpdateModules::handle()
+				{
+					for (auto & module : modules)
+					{
+						if (client.planes.count(module.planeID) == 0)
+						{
+							continue;
+						}
+						auto & plane = client.planes[module.planeID];
+						plane.modules[module.moduleNo].defected = module.defect;
+						plane.modules[module.moduleNo].hp = module.hp;
+						//switch (module.reason)
+						//{
+						//case rplanes::planedata::ModuleHP::FIRE:
+						//	std::cout << " Модуль поврежден пожаром. ";
+						//	break;
+						//case rplanes::planedata::ModuleHP::HIT:
+						//	std::cout << " Модуль поврежден пулей. ";
+						//	break;
+						//case rplanes::planedata::ModuleHP::REPAIR:
+						//	std::cout << " Модуль восстановлен. ";
+						//	break;
+						//}
+
+						//std::cout << "Номер модуля " << module.moduleNo << ". ";
+						//auto moduleType = plane.modules[module.moduleNo].type;
+						//std::cout << "Тип модуля " << moduleTypesNames[moduleType] << "." << std::endl;
+					}
+				}
+
+
+				void RoomInfo::handle()
+				{
+					/*for (auto & player : newPlayers)
+					{
+						std::cout << player.name + " присоединился на самолете " + player.planeName + "." << std::endl;
+					}
+					for (auto & player : disconnectedPlayers)
+					{
+						std::cout << player + " покинул комнату." << std::endl;
+					}
+					std::cout << "Ваша текущая цель - " + goal.description + "." << std::endl;
+					for (auto & stat : updatedStatistics)
+					{
+						std::cout
+							<< "Статистика игрока "
+							<< stat.first
+							<< " обновлена. Убито : "
+							<< stat.second.destroyed
+							<< " умер : "
+							<< stat.second.crashes
+							<< " союзников уничтожено : "
+							<< stat.second.friendsDestroyed
+							<< std::endl;
+					}*/
+				}
+			}
+		}
+
+		namespace bidirectionalmessages
+		{
+			void TextMessage::handle()
+			{
+				std::cout << "Сервер  пишет " << text << std::endl;
+			}
+			void ExitRoom::handle()
+			{
+				std::cout << " клиент выброшен из комнаты " << std::endl;
+			}
+		}
+	}
+}
+
+std::string password = "qwerty";
+
+
+void loginAndJoinRoom(std::string profileName, size_t planeNo, bool bot = false)
+{
+	std::chrono::milliseconds hangarFrameTime(static_cast<long long> (rplanes::configuration().server.hangarFrameTime * 1000));
+
+	//заранее создаем сообщение авторизации
+	rplanes::network::clientmessages::unlogined::Login loginMessage;
+	loginMessage.name = profileName;
+	loginMessage.encryptedPassword = password;
+
+	//подключаемся к серверу
+	client.connect();
+	client.connection.non_blocking(true);
+
+	//отправляем сообщение авторизации
+	client.connection.sendMessage(loginMessage);
+	std::cout << "Отправлен запрос авторизации" << std::endl;
+
+	//ждем, чтобы не привысить квоту
+	std::this_thread::sleep_for(hangarFrameTime);
+
+	//если все прошло успешно, мы находимся в ангаре. Для проверки на acmd клиенте можно запросить у сервера статус.
+
+	//запрашиваем список комнат
+	client.connection.sendMessage(rplanes::network::clientmessages::hangar::RoomListRequest());
+
+	//ждем ответа
+	size_t tries = 0;
+	for (; tries < 10; tries++)
+	{
+		if (client.connection.handleInput())
+		{
+			if (rplanes::network::servermessages::hangar::RoomList().getId() == client.connection.getLastMessageId())
+			{
+				break;
+			}
+		}
+		std::this_thread::sleep_for(hangarFrameTime);
+	}
+	if (tries == 10)
+	{
+		std::cout << "хуйня хэппенд" << std::endl;
+		return;
+	}
+
+	std::this_thread::sleep_for(hangarFrameTime);
+
+	//имя игрока, к комнате которого мы присоединимся
+	std::string roomCreatorName;
+
+	//если список комнат пуст, создаем свою. Имя игрока может оставаться пустым.
+	if (client.rooms.size() == 0)
+	{
+		rplanes::network::clientmessages::hangar::CreateRoomRequest crr;
+		crr.description = "ракам не входить, маму выебу!";
+		crr.mapName = "bot.map";
+		client.connection.sendMessage(crr);
+		std::this_thread::sleep_for(hangarFrameTime);
+	}
+	//иначе запоминаем имя владельца первой комнаты
+	else
+	{
+		roomCreatorName = client.rooms.front().creatorName;
+	}
+
+	//считаем что все прошло успешно
+
+
+	//перед отправкой запроса присоединения к комнате создаем окно и прочее.
+	sf::RenderWindow window(sf::VideoMode(1366, 768), "Sudden poligons!");
+
+	window.setFramerateLimit(25);
+	std::chrono::duration<float> frameTime;
+	std::chrono::steady_clock::time_point iterationBegin;
+	sf::View camera;
+	camera.setSize(1366, 768);
+
+	std::vector<sf::RectangleShape> gridBase, grid;
+	for (int i = 0; i < 3; i++)
+	{
+		for (int j = 0; j < 3; j++)
+		{
+			gridBase.push_back(sf::RectangleShape(sf::Vector2f(1000.f, 1000.f)));
+			gridBase.back().setPosition(i * 1000.f, j * 1000.f);
+			gridBase.back().setOutlineColor(sf::Color::Green);
+			gridBase.back().setOutlineThickness(1);
+		}
+	}
+	grid = gridBase;
+
+
+	sf::CircleShape turningSlider;
+	turningSlider.setRadius(5.f);
+	turningSlider.setFillColor(sf::Color::Yellow);
+	turningSlider.setOutlineColor(sf::Color::Black);
+	turningSlider.setOutlineThickness(1);
+
+	sf::Vector2i mouseCenter(1366/2, 768/2);
+
+	sf::RectangleShape  faintRECTALgle(sf::Vector2f(5000, 5000));
+	sf::CircleShape aimCircle;
+	aimCircle.setFillColor(sf::Color(0, 0, 0, 0));
+	aimCircle.setOutlineThickness(1);
+	aimCircle.setOutlineColor(sf::Color::Red);
+
+
+	//подключаемся к первой комнате
+	rplanes::network::clientmessages::hangar::JoinRoomRequest jrr;
+	jrr.planeNo = planeNo;
+	jrr.playerName = roomCreatorName;
+
+	client.connection.sendMessage(jrr);
+
+	//запрашиваем серверное время. Последующие запросы будут отправлены из обработчика ServerTime
+	client.connection.sendMessage(rplanes::network::clientmessages::room::ServerTimeRequest());
+
+	//есть ли фокус на окне
+	bool focusPocus = true;
+
+	//graphic loop
+	while (window.isOpen())
+	{
+		iterationBegin = std::chrono::steady_clock::now();
+		//увеличиваем время
+		client.serverTime += frameTime.count();
+		client.clientTime += frameTime.count();
+
+		//плавно корректируем клиентское время
+		client.clientTime += (client.serverTime - client.clientTime) * frameTime.count();
+		if (std::abs(client.clientTime - client.serverTime) > 1.0)
+		{
+			client.clientTime = client.serverTime;
+		}
+
+		//экстраполируем
+		for (auto & plane : client.planes)
+		{
+			plane.second.extrapolate(frameTime.count());
+		}
+
+		//сдвигаем пули и удаляем пули на излете
+		std::vector<size_t> erasedBulletsKeys;
+		for (auto & bullet : client.bullets)
+		{
+			bullet.second.move(frameTime.count());
+			if (bullet.second.isSpent())
+			{
+				erasedBulletsKeys.push_back(bullet.first);
+			}
+		}
+		for (auto key : erasedBulletsKeys)
+		{
+			client.bullets.erase(key);
+		}
+
+		//считываем управление
+		sf::Event event;
+		client.controllable.params.shootingDistanceOffset = 0;
+		while (window.pollEvent(event))
+		{
+			if (event.type == sf::Event::Closed)
+				window.close();
+			if ((event.type == sf::Event::KeyPressed) && (event.key.code == sf::Keyboard::Escape))
+				window.close();
+			if ((event.type == sf::Event::KeyPressed) && (event.key.code == sf::Keyboard::R))
+			{
+				rplanes::network::clientmessages::room::AdministerRoom ar;
+				ar.operation = rplanes::network::clientmessages::room::AdministerRoom::RESTART;
+				client.connection.sendMessage(ar);
+				std::cout << " Серверу отправлена команда рестарта." << std::endl;
+			}
+			if (!bot)
+			{
+				if (event.type == sf::Event::MouseButtonPressed)
+				{
+					client.controllable.params.isShooting = true;
+				}
+				if (event.type == sf::Event::MouseButtonReleased)
+				{
+					client.controllable.params.isShooting = false;
+				}
+				if (event.type == sf::Event::GainedFocus)
+				{
+					focusPocus = true;
+				}
+				if (event.type == sf::Event::LostFocus)
+				{
+					focusPocus = false;
+				}
+
+
+				if (event.type == sf::Event::MouseWheelMoved)
+				{
+					auto factor = std::pow(1.2, event.mouseWheel.delta);
+					scale *= factor;
+					if (scale < 0.2f)
+					{
+						scale = 0.2f;
+					}
+					grid = gridBase;
+					for (auto & cell : grid)
+					{
+						cell.setScale(scale, scale);
+						auto position = cell.getPosition();
+						position *= scale;
+						cell.setPosition(position);
+					}
+
+				}
+			}
+		}
+		if (!bot && focusPocus)
+		{
+			client.controllable.params.turningVal += (sf::Mouse::getPosition(window).x - mouseCenter.x) / 5.f;
+			if (client.controllable.params.turningVal > 100)
+			{
+				client.controllable.params.turningVal = 100;
+			}
+			if (client.controllable.params.turningVal < -100)
+			{
+				client.controllable.params.turningVal = -100;
+			}
+			client.controllable.params.shootingDistanceOffset = -(sf::Mouse::getPosition(window).y - mouseCenter.y) / 2.5f;
+
+			sf::Mouse::setPosition(mouseCenter, window);
+		}
+		if (bot)
+		{
+			client.controllable.params.turningVal = 40;
+			client.controllable.params.isShooting = true;
+			client.controllable.params.shootingDistanceOffset = (0.5f - static_cast<float>(rand()) / RAND_MAX) * 10.f;
+		}
+
+		//управление мощностью двигателя
+		{
+
+			auto & controllable = client.controllable.params;
+			auto & interfaceData = client.interfaceData;
+			bool isAbleToIncreasePower = true;
+			for (auto & thermometer : interfaceData.thermometers)
+			{
+				if (thermometer.temperature > 0.8 * thermometer.criticalTemperature
+					|| thermometer.dT > 0.8 * thermometer.dTmax)
+				{
+					isAbleToIncreasePower = false;
+				}
+				//std::cout << thermometer.temperature << " "
+				//	<< thermometer.criticalTemperature << " "
+				//	<< thermometer.dT << " "
+				//	<< thermometer.dTmax << " "
+				//	<< controllable.power << std::endl;
+			}
+
+			if ( !isAbleToIncreasePower || sf::Keyboard::isKeyPressed(sf::Keyboard::S) )
+			{
+				if (controllable.power != 0)
+				{
+					controllable.power--;
+				}
+			}
+			else if (sf::Keyboard::isKeyPressed(sf::Keyboard::W))
+			{
+				controllable.power++;
+			}
+
+			if (controllable.power > 100)
+			{
+				controllable.power = 100;
+			}
+
+		}
+
+
+		//принимаем серверные сообщения. Будут созданы новые пули, самолеты, и обновлено состояние самолетов
+		while (client.connection.handleInput())
+		{
+		};
+
+		//вращаем зоны повреждения
+		for (auto & plane : client.planes)
+		{
+			for (auto & module : plane.second.modules)
+			{
+				module.hitZone.spin(plane.second.pos.angle, plane.second.pos.roll);
+			}
+		}
+
+		//рисуем сетку
+		for (auto & cell : grid)
+		{
+			window.draw(cell);
+		}
+		//рисуем самолеты
+		for (auto & plane : client.planes)
+		{
+			//центруем камеру по нашему самолету и рисуем интерфейс
+			if (plane.second.playerName == profileName)
+			{
+				camera.setCenter(plane.second.pos.x * scale, plane.second.pos.y * scale);
+				camera.setRotation(plane.second.pos.angle + 90);
+
+				//слайдер поворота
+				sf::Vector2f sliderPos;
+				sliderPos.x = plane.second.pos.x
+					+ std::cos((plane.second.pos.angle + client.controllable.params.turningVal * 0.3f) / 180.f * M_PI) * client.interfaceData.shootingDistance;
+				sliderPos.y = plane.second.pos.y
+					+ std::sin((plane.second.pos.angle + client.controllable.params.turningVal * 0.3f) / 180.f * M_PI) * client.interfaceData.shootingDistance;
+
+				turningSlider.setPosition(sliderPos.x * scale - 5,
+					sliderPos.y * scale - 5);
+
+				//затемнение экрана при перегрузках
+				faintRECTALgle.setPosition(plane.second.pos.x * scale - 400, plane.second.pos.y * scale - 300);
+
+				//прицел
+				//по хорошему прицел должен сдвигаться относительно пушек, а не центра самолета
+				//но это бы запутало и так говновый кот
+				sf::Vector2f aimPos;
+				aimPos.x = plane.second.pos.x
+					+ std::cos(plane.second.pos.angle / 180.f * M_PI) * client.interfaceData.shootingDistance;
+				aimPos.y = plane.second.pos.y
+					+ std::sin(plane.second.pos.angle / 180.f * M_PI) * client.interfaceData.shootingDistance;
+				aimCircle.setRadius(client.interfaceData.aimSize * scale);
+				aimCircle.setPosition((aimPos.x - client.interfaceData.aimSize) * scale,
+					(aimPos.y - client.interfaceData.aimSize) * scale);
+			}
+			window.draw(plane.second);
+		}
+		window.draw(turningSlider);
+		window.draw(aimCircle);
+		//рисуем пули
+		for (auto & bullet : client.bullets)
+		{
+			window.draw(bullet.second);
+		}
+		window.setView(camera);
+
+		//обморочное затемнение экрана
+		unsigned int fv = std::pow(client.interfaceData.faintVal / 100.f, 4.0) * 255;
+		if (fv > 255)
+		{
+			fv = 255;
+		}
+		faintRECTALgle.setFillColor(sf::Color(0, 0, 0, fv));
+		window.draw(faintRECTALgle);
+
+		window.display();
+		window.clear(sf::Color::White);
+		frameTime = std::chrono::duration_cast<std::chrono::duration<float>>(std::chrono::steady_clock::now() - iterationBegin);
+	}
+}
+
+void registry(std::string profileName)
+{
+	//заранее создаем сообщение регистрации
+	rplanes::network::clientmessages::unlogined::Registry registryMessage;
+	registryMessage.name = profileName;
+	registryMessage.password = password;
+
+	//подключаемся к серверу
+	client.connect();
+	//отправляем сообщение
+	client.connection.sendMessage(registryMessage);
+	//обрабатываем вывод сервера
+	while (client.connection.handleInput())
+	{
+	}
+}
+
+void loginAndBuyPlane(std::string profileName, std::string planeName)
+{
+	//заранее создаем сообщение авторизации
+	rplanes::network::clientmessages::unlogined::Login loginMessage;
+	loginMessage.name = profileName;
+	loginMessage.encryptedPassword = password;
+
+	//подключаемся к серверу
+	client.connect();
+	client.connection.non_blocking(true);
+
+
+	//отправляем сообщение авторизации
+	client.connection.sendMessage(loginMessage);
+	std::cout << "Отправлен запрос авторизации" << std::endl;
+	//ждем секунду, чтобы не привысить квоту
+	std::this_thread::sleep_for(std::chrono::seconds(1));
+
+	//похорошему нужно запросить у сервера статус клиента
+
+	//теперь мы в ангаре, купим самолет
+
+	client.connection.sendMessage(rplanes::network::clientmessages::hangar::ProfileRequest());
+	//если авторизация не прошла успешно, сервер оборвет подклбчение.
+
+	//ждем ответа сервера
+	size_t tries = 0;
+	for (; tries < 3; tries++)
+	{
+		if (client.connection.handleInput())
+		{
+			if (rplanes::network::servermessages::hangar::SendProfile().getId() == client.connection.getLastMessageId())
+			{
+				std::cout << "Авторизация прошла успешно" << std::endl;
+				break;
+			}
+		}
+		std::this_thread::sleep_for(std::chrono::seconds(1));
+	}
+	if (tries == 10)
+	{
+		std::cout << "хуйня хэппенд" << std::endl;
+		return;
+	}
+
+	std::this_thread::sleep_for(std::chrono::seconds(1));
+	rplanes::network::clientmessages::hangar::BuyPlaneRequest bpr;
+	bpr.planeName = planeName;
+	client.connection.sendMessage(bpr);
+	std::cout << "отправлен запрос покупки самолета " << std::endl;
+	//обрабатываем вывод сервера
+	while (true)
+	{
+		client.connection.handleInput();
+		std::this_thread::sleep_for(std::chrono::milliseconds(100));
+	}
+}
+
+
+int main(int argc, char* argv[])
+{
+	setlocale(LC_ALL, "rus");
+
+	if (argc < 2)
+	{
+		std::cout << "данные введены неверно " << std::endl;
+		return 0;
+	}
+
+	std::string command(argv[1]);
+
+	try
+	{
+		if (command == "bot")
+		{
+			if (argc != 4 && argc != 5)
+			{
+				std::cout << "данные введены неверно " << std::endl;
+				return 0;
+			}
+			if (argc == 5)
+			{
+				server_ip = argv[4];
+			}
+			std::stringstream ss;
+			ss << argv[3];
+			size_t planeNum;
+			ss >> planeNum;
+			loginAndJoinRoom(argv[2], planeNum, true);
+		}
+		else if (command == "join")
+		{
+			if (argc != 4 && argc != 5)
+			{
+				std::cout << "данные введены неверно " << std::endl;
+				return 0;
+			}
+			if (argc == 5)
+			{
+				server_ip = argv[4];
+			}
+			std::stringstream ss;
+			ss << argv[3];
+			size_t planeNum;
+			ss >> planeNum;
+			loginAndJoinRoom(argv[2], planeNum);
+		}
+		else if (command == "reg")
+		{
+			if (argc != 3 && argc != 4)
+			{
+				std::cout << "данные введены неверно " << std::endl;
+				return 0;
+			}
+			if (argc == 4)
+			{
+				server_ip = argv[3];
+			}
+			registry(argv[2]);
+		}
+		else if (command == "buy")
+		{
+			if (argc != 4 && argc != 5)
+			{
+				std::cout << "данные введены неверно " << std::endl;
+				return 0;
+			}
+			if (argc == 5)
+			{
+				server_ip = argv[4];
+			}
+			loginAndBuyPlane(argv[2], argv[3]);
+		}
+		else
+		{
+			std::cout << "данные введены неверно " << std::endl;
+		}
+	}
+	catch (std::exception & e)
+	{
+		std::cout << e.what() << std::endl;
+	}
+	return 0;
+}

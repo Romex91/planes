@@ -1,0 +1,71 @@
+mapSize 3000 3000
+
+spawnPoint SPAWN_A 500 500 0 // название координаты курс
+spawnPoint SPAWN_B 2500 2500 180
+
+
+group PLAYER allies SPAWN_A 1 // название нация точка_спауна количество
+botGroup MIG9 peacefull b17 SPAWN_A 10
+botGroup ME262 easy me262 SPAWN_B 10
+
+
+trigger TA 500 2500 300 // название координаты радиус
+trigger TB 2500 500 300
+
+goal GOAL_A 500 2500 200 Следовать к точке. //название координаты рекоммендуемая скорость
+goal GOAL_B 2500 500 200 Следовать к точке.
+
+var TIME 0
+var TIMELEFT 0
+var IS_STARTED 0
+
+start
+	setDestroyed all VANISH
+	regroup
+	= IS_STARTED 1
+	= TIME 0
+	message all /timeleft 500
+	message all Раунд начнется через 3 секунды.
+	respawn PLAYER 0 //имя_группы задержка_по_времени
+	respawn MIG9 1
+	respawn ME262 1
+	
+	goal ME262 GOAL_B
+	goal MIG9 GOAL_A
+	goal PLAYER GOAL_B
+end
+
+join
+
+end
+
+triggered enter TB any
+	goal this GOAL_A
+end
+
+triggered enter TA any
+	goal this GOAL_B
+end
+
+timer 5
+== IS_STARTED 1
++ TIME 5
+= TIMELEFT 500
+- TIMELEFT TIME
+message all /timeleft %TIMELEFT
+> TIME 500
+message all Время истекло.
+restart
+end
+
+killed MIG9
+	== MIG9 0
+	message all Атака разбита!
+	restart
+end
+
+killed ME262
+	== ME262 0
+	message all Защитники уничтожены!
+	restart
+end
