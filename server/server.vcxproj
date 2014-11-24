@@ -56,7 +56,7 @@
       <OpenMPSupport>true</OpenMPSupport>
       <PrecompiledHeader>NotUsing</PrecompiledHeader>
       <ForcedIncludeFiles>"stdafx.h"</ForcedIncludeFiles>
-      <AdditionalIncludeDirectories>$(rplanesLibDir);$(vendersInclude);%(AdditionalIncludeDirectories)</AdditionalIncludeDirectories>
+      <AdditionalIncludeDirectories>$(rplanesLibInclude);$(vendersInclude);%(AdditionalIncludeDirectories)</AdditionalIncludeDirectories>
       <PreprocessorDefinitions>_WIN32_WINNT=0x0501;_MBCS;%(PreprocessorDefinitions)</PreprocessorDefinitions>
       <AdditionalOptions>/Zm220 %(AdditionalOptions)</AdditionalOptions>
     </ClCompile>
@@ -77,7 +77,7 @@
       <OpenMPSupport>true</OpenMPSupport>
       <PrecompiledHeader>Use</PrecompiledHeader>
       <ForcedIncludeFiles>"stdafx.h"</ForcedIncludeFiles>
-      <AdditionalIncludeDirectories>$(rplanesLibDir);$(vendersInclude);%(AdditionalIncludeDirectories)</AdditionalIncludeDirectories>
+      <AdditionalIncludeDirectories>$(rplanesLibInclude);$(vendersInclude);%(AdditionalIncludeDirectories)</AdditionalIncludeDirectories>
       <PreprocessorDefinitions>_WIN32_WINNT=0x0501;_MBCS;%(PreprocessorDefinitions)</PreprocessorDefinitions>
       <AdditionalOptions>/Zm220 %(AdditionalOptions)</AdditionalOptions>
     </ClCompile>

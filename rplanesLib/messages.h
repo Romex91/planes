@@ -472,8 +472,8 @@ namespace rplanes
 						for(auto &serverAmmo : Plane.ammunitions )
 						{
 							Ammo ammo;
-							ammo.caliber = serverAmmo.caliber;
-							ammo.capacity = serverAmmo.capacity;
+							ammo.caliber = static_cast<unsigned short>(serverAmmo.caliber);
+							ammo.capacity = static_cast<unsigned short>(serverAmmo.capacity);
 							ammunitions.push_back(ammo);
 						}
 						thermometers.clear();

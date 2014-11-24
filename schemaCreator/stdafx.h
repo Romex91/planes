@@ -1,6 +1,5 @@
 #include <configuration.h>
 #include <database.h>
-#include <odb\configuration-odb.hxx>
 #include <modules.h>
 #include <odb\modules-odb.hxx>
 #include <model.h>

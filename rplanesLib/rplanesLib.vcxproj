@@ -44,9 +44,8 @@
       <PreprocessorDefinitions>_WIN32_WINNT=0x0501;</PreprocessorDefinitions>
     </ClCompile>
     <PostBuildEvent>
-      <Command>copy $(projectDir)*.h $(rplanesLibDir)
-xcopy /I /Y /s $(projectDir)odb\*.hxx $(rplanesLibDir)odb
-xcopy /I /Y /s $(projectDir)odb\*.ixx $(rplanesLibDir)odb</Command>
+      <Command>
+      </Command>
     </PostBuildEvent>
   </ItemDefinitionGroup>
   <ItemDefinitionGroup Condition="'$(Configuration)|$(Platform)'=='Release|x64'">
@@ -58,13 +57,11 @@ xcopy /I /Y /s $(projectDir)odb\*.ixx $(rplanesLibDir)odb</Command>
       <PreprocessorDefinitions>_WIN32_WINNT=0x0501;</PreprocessorDefinitions>
     </ClCompile>
     <PostBuildEvent>
-      <Command>copy $(projectDir)*.h $(rplanesLibDir)
-xcopy /I /Y /s $(projectDir)odb\*.hxx $(rplanesLibDir)odb
-xcopy /I /Y /s $(projectDir)odb\*.ixx $(rplanesLibDir)odb</Command>
+      <Command>
+      </Command>
     </PostBuildEvent>
   </ItemDefinitionGroup>
   <ItemGroup>
-    <ClCompile Include="odb\configuration-odb.cxx" />
     <ClCompile Include="odb\model-odb.cxx" />
     <ClCompile Include="odb\modules-odb.cxx" />
     <ClCompile Include="odb\pilot-odb.cxx" />
@@ -86,19 +83,18 @@ xcopy /I /Y /s $(projectDir)odb\*.ixx $(rplanesLibDir)odb</Command>
   <ItemGroup>
     <ClInclude Include="helpers.h" />
     <ClInclude Include="parallel.h" />
-    <ClInclude Include="odb\configuration-odb.hxx" />
     <ClInclude Include="odb\model-odb.hxx" />
     <ClInclude Include="odb\modules-odb.hxx" />
     <ClInclude Include="odb\pilot-odb.hxx" />
     <ClInclude Include="odb\profile-odb.hxx" />
-    <CustomBuild Include="configuration.h">
+    <ClInclude Include="configuration.h">
       <Command Condition="'$(Configuration)|$(Platform)'=='Debug|x64'">odb.exe --std c++11 --database sqlite --generate-query --generate-schema --schema-name configuration --default-pointer std::shared_ptr --output-dir odb configuration.h</Command>
       <Message Condition="'$(Configuration)|$(Platform)'=='Debug|x64'">Generating odb files for configuration.h</Message>
       <Outputs Condition="'$(Configuration)|$(Platform)'=='Debug|x64'">odb/configuration-odb.cxx;odb/configuration-odb.hxx;odb/configuration-odb.ixx;(%Outputs)</Outputs>
       <Command Condition="'$(Configuration)|$(Platform)'=='Release|x64'">odb.exe --std c++11 --database sqlite --generate-query --generate-schema --schema-name configuration --default-pointer std::shared_ptr --output-dir odb configuration.h</Command>
       <Message Condition="'$(Configuration)|$(Platform)'=='Release|x64'">Generating odb files for configuration.h</Message>
       <Outputs Condition="'$(Configuration)|$(Platform)'=='Release|x64'">odb/configuration-odb.cxx;odb/configuration-odb.hxx;odb/configuration-odb.ixx;(%Outputs)</Outputs>
-    </CustomBuild>
+    </ClInclude>
     <ClInclude Include="database.h" />
     <ClInclude Include="exceptions.h" />
     <ClInclude Include="geometry.h" />
@@ -142,7 +138,6 @@ xcopy /I /Y /s $(projectDir)odb\*.ixx $(rplanesLibDir)odb</Command>
     <ClInclude Include="stdafx.h" />
   </ItemGroup>
   <ItemGroup>
-    <None Include="odb\configuration-odb.ixx" />
     <None Include="odb\model-odb.ixx" />
     <None Include="odb\modules-odb.ixx" />
     <None Include="odb\pilot-odb.ixx" />

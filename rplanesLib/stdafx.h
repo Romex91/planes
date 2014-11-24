@@ -6,14 +6,19 @@
 #include <boost/serialization/map.hpp>
 #include <boost/archive/binary_oarchive.hpp>
 #include <boost/archive/binary_iarchive.hpp>
-#include <odb/core.hxx>
+#include <boost/archive/xml_iarchive.hpp>
+#include <boost/archive/xml_oarchive.hpp>
+
 #include <string>
 #include <vector>
 #include <math.h>
 #include <memory>
 #include <map>
 #include <set>
-#include<iostream>
+#include <iostream>
+#include <fstream>
+
+#include <odb/core.hxx>
 #include <odb/database.hxx>
 #include <odb/connection.hxx>
 #include <odb/transaction.hxx>

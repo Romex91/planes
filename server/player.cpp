@@ -554,7 +554,7 @@ void Player::shoot(float frameTime, float serverTime, IdGetter & idGetter)
 	{
 		Bullet.ID = idGetter.getID();
 	}
-	statistics.shots += messagesInfo_.newBullets.size();
+	statistics.shots += static_cast<int>(messagesInfo_.newBullets.size());
 	bullets_.insert(bullets_.end(), messagesInfo_.newBullets.begin(), messagesInfo_.newBullets.end());
 }
 

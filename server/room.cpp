@@ -191,11 +191,11 @@ void Room::executeScript(const std::vector<ScriptLine> & script, std::shared_ptr
 		{
 			if (group != map_.humanGroups.end())
 			{
-				retval = group->getAlivePlayerNumber();
+				retval = static_cast<int>(group->getAlivePlayerNumber());
 			}
 			else if ( botGroup!= map_.botGroups.end() )
 			{
-				retval = botGroup->getAlivePlayerNumber();
+				retval = static_cast<int>(botGroup->getAlivePlayerNumber());
 			}
 			else
 			{

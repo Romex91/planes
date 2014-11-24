@@ -102,10 +102,10 @@ int HitzonesDemonstration()
 		{
 			sf::ConvexShape sh;
 			auto & Points = (*i)->hitZone.shape.points;
-			sh.setPointCount(Points.size());
+			sh.setPointCount(static_cast<unsigned int>(Points.size()));
 			for (size_t i = 0; i < Points.size(); i++)
 			{
-				sh.setPoint(i, sf::Vector2f(Points[i].x * 10, Points[i].y * 10));
+				sh.setPoint(static_cast<unsigned int>(i), sf::Vector2f(Points[i].x * 10, Points[i].y * 10));
 			}
 			sh.setFillColor(sf::Color(255, 0, 0, 150));
 			window.draw(sh);
@@ -242,7 +242,7 @@ int main5()
 	basicLine[0].position = sf::Vector2f(150, 150);
 	basicLine[1].position = sf::Vector2f(300, 150);
 
-	for (size_t i = 0; i < 2; i++)
+	for (unsigned int i = 0; i < 2; i++)
 	{
 		basicLine[i].color = sf::Color::Red;
 	}
@@ -267,7 +267,7 @@ int main5()
 
 		mirror[0].position = sf::Vector2f(0, 150);
 
-		for (size_t i = 0; i < 2; i++)
+		for (unsigned int i = 0; i < 2; i++)
 		{
 			mirror[i].position = sf::Transform()
 				.rotate(mousePos.y, sf::Vector2f(150.f, 150.f))
@@ -330,7 +330,7 @@ int main()
 	basicLine[0].position = sf::Vector2f(150, 150);
 	basicLine[1].position = sf::Vector2f(300, 150);
 
-	for (size_t i = 0; i < 2; i++)
+	for (unsigned int i = 0; i < 2; i++)
 	{
 		basicLine[i].color = sf::Color::Red;
 	}

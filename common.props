@@ -27,6 +27,7 @@
       libboost_random-vc120-mt$(dSuffixBoost)-1_57.lib;
     </vendersLib>
     <planesOutDir>$(SolutionDir)out\</planesOutDir>
+    <rplanesLibInclude>$(solutionDir)rplanesLib\</rplanesLibInclude>
     <rplanesLibDir>$(planesOutDir)rplanesLib\</rplanesLibDir>
     <rplanesLib>rplanesLib$(dSuffix).lib</rplanesLib>
     <planesBin>$(planesOutDir)$(configuration)\</planesBin>

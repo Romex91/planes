@@ -740,6 +740,7 @@ namespace rplanes
 
 		std::vector< rplanes::serverdata::LaunchedMissile > Plane::launchMissile(size_t clientID)
 		{
+			throw std::exception("not implemented");
 			std::vector< rplanes::serverdata::LaunchedMissile > retval;
 			if (target.faintTimer > 0)
 			{

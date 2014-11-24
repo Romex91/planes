@@ -1,0 +1,129 @@
+<?xml version="1.0" encoding="UTF-8" standalone="yes" ?>
+<!DOCTYPE boost_serialization>
+<boost_serialization signature="serialization::archive" version="11">
+<configuration class_id="0" tracking_level="0" version="0">
+	<shooting class_id="1" tracking_level="0" version="0">
+		<shootRateFactor>1.000000000e+000</shootRateFactor>
+		<accuracyFactor>1.000000000e+000</accuracyFactor>
+		<damageFactor>1.000000000e+000</damageFactor>
+		<speedFactor>4.000000060e-001</speedFactor>
+		<accelerationFactor>8.000000119e-001</accelerationFactor>
+		<ttlFactor>5.000000000e-001</ttlFactor>
+		<penetFactor>1.000000000e+000</penetFactor>
+		<impactFactor>3.000000000e+002</impactFactor>
+		<impactRandomnesFactor>1.000000000e+001</impactRandomnesFactor>
+		<angleImpactFactor>3.000000000e+002</angleImpactFactor>
+		<maxDistance>5.000000000e+002</maxDistance>
+		<minDistance>1.000000000e+001</minDistance>
+		<gravity>1.000000000e+000</gravity>
+	</shooting>
+	<defect class_id="2" tracking_level="0" version="0">
+		<chanceFactor>1.000000000e+000</chanceFactor>
+		<shootRateFactor>5.000000000e-001</shootRateFactor>
+		<surfaceFactor>5.000000000e-001</surfaceFactor>
+		<mobilityFactor>5.000000000e-001</mobilityFactor>
+		<vMaxFactor>6.999999881e-001</vMaxFactor>
+		<tMaxFactor>2.000000000e+000</tMaxFactor>
+		<pilotSkillsFactor>5.000000000e-001</pilotSkillsFactor>
+	</defect>
+	<missile class_id="3" tracking_level="0" version="0">
+		<radiusFactor>0.000000000e+000</radiusFactor>
+		<speedFactor>0.000000000e+000</speedFactor>
+		<damageFactor>0.000000000e+000</damageFactor>
+		<accelerationFactor>0.000000000e+000</accelerationFactor>
+		<speedAccuracyFactor>0.000000000e+000</speedAccuracyFactor>
+		<accuracyFactor>0.000000000e+000</accuracyFactor>
+		<ttlFactor>0.000000000e+000</ttlFactor>
+		<gravity>0.000000000e+000</gravity>
+	</missile>
+	<profile class_id="4" tracking_level="0" version="0">
+		<startExp>100</startExp>
+		<startMoney>10000000</startMoney>
+		<hitExperience>1</hitExperience>
+		<damageReward>1</damageReward>
+		<damagePenalty>10</damagePenalty>
+		<maxBanlistSize>500</maxBanlistSize>
+		<startMaps class_id="5" tracking_level="0" version="0">
+			<count>2</count>
+			<item_version>0</item_version>
+			<item>attack.map</item>
+			<item>bot.map</item>
+		</startMaps>
+		<startPlanes>
+			<count>2</count>
+			<item_version>0</item_version>
+			<item>me262</item>
+			<item>mig9</item>
+		</startPlanes>
+	</profile>
+	<flight class_id="6" tracking_level="0" version="0">
+		<forceFactor>1.000000000e+000</forceFactor>
+		<speedFactor>3.000000119e-001</speedFactor>
+		<angleVelocityFactor>1.000000000e+000</angleVelocityFactor>
+		<maneuverFrictionFactor>1.000000000e+000</maneuverFrictionFactor>
+		<maxAngularVelocityFactor>1.000000000e+000</maxAngularVelocityFactor>
+		<angleAccelerationFactor>1.000000000e+000</angleAccelerationFactor>
+		<reverseAngleAccelerationFactor>1.000000000e+000</reverseAngleAccelerationFactor>
+		<turningExp>5.000000000e-001</turningExp>
+	</flight>
+	<pilot class_id="7" tracking_level="0" version="0">
+		<pilotFaintTime>1.000000000e+001</pilotFaintTime>
+		<pilotMaxG>5.000000000e+000</pilotMaxG>
+	</pilot>
+	<engine class_id="8" tracking_level="0" version="0">
+		<overheatDefectChanceFactor>1.000000000e+000</overheatDefectChanceFactor>
+		<overheatDamageFactor>2.000000000e+001</overheatDamageFactor>
+		<additionalPowerFactor>1.000000000e+000</additionalPowerFactor>
+	</engine>
+	<server class_id="9" tracking_level="0" version="0">
+		<spawnCooldownTime>1.500000000e+000</spawnCooldownTime>
+		<port>40000</port>
+		<numThreads>4</numThreads>
+		<roomMessagesPerFrame>16</roomMessagesPerFrame>
+		<roomFrameTime>2.999999933e-002</roomFrameTime>
+		<hangarMessagesPerFrame>2</hangarMessagesPerFrame>
+		<hangarFrameTime>1.000000015e-001</hangarFrameTime>
+		<unloginedDisconnectTime>2.000000000e+000</unloginedDisconnectTime>
+		<maxClientsNumber>1000</maxClientsNumber>
+	</server>
+	<collisions class_id="10" tracking_level="0" version="0">
+		<bulletDeflectionSigma>1.000000000e+001</bulletDeflectionSigma>
+		<randomRicochetChance>1.000000015e-001</randomRicochetChance>
+		<rammingDistance>5.000000000e+001</rammingDistance>
+		<visibilityDistance>2.000000000e+003</visibilityDistance>
+	</collisions>
+	<bots class_id="11" tracking_level="0" version="0">
+		<hardStartExpiriance>4000000</hardStartExpiriance>
+		<rammingWarningDistance>1.500000000e+002</rammingWarningDistance>
+		<easyFleeTimeMean>2.000000000e+000</easyFleeTimeMean>
+		<easyFleeTimeSigma>1.299999952e+000</easyFleeTimeSigma>
+		<easyPatrolScanSpeed>2.000000000e+001</easyPatrolScanSpeed>
+		<easyTargerSelectionTimeSigma>4.000000000e+000</easyTargerSelectionTimeSigma>
+		<easyTargetSelectionTimeMean>5.000000000e+000</easyTargetSelectionTimeMean>
+		<easyAttackSector>4.000000000e+000</easyAttackSector>
+		<easyShootingDistanceAgility>1.000000000e+001</easyShootingDistanceAgility>
+		<easyMaxAttakersCount>2.000000000e+000</easyMaxAttakersCount>
+		<easyPanicChance>1.000000015e-001</easyPanicChance>
+		<easyPanicTimeMean>2.000000000e+001</easyPanicTimeMean>
+		<easyPanicTimeSigma>1.500000000e+001</easyPanicTimeSigma>
+	</bots>
+	<turrets class_id="12" tracking_level="0" version="0">
+		<shootRateFactor>1.000000000e+000</shootRateFactor>
+		<accuracyFactor>1.000000000e+000</accuracyFactor>
+		<impactFactor>1.000000000e+000</impactFactor>
+		<angleImpactFactor>1.000000000e+000</angleImpactFactor>
+		<impactRandomnesFactor>1.000000000e+001</impactRandomnesFactor>
+		<gunLength>2.000000000e+000</gunLength>
+		<aimTimerMean>1.000000000e+000</aimTimerMean>
+		<aimTimerSigma>5.000000000e-001</aimTimerSigma>
+		<aimErrorSigma>5.000000000e-001</aimErrorSigma>
+		<aimIntense>5.000000000e+000</aimIntense>
+		<aimExp>3.000000119e-001</aimExp>
+		<shootTimeMean>2.500000000e+000</shootTimeMean>
+		<shootTimeSigma>2.000000000e+000</shootTimeSigma>
+		<cooldownTimeMean>4.000000000e+000</cooldownTimeMean>
+		<cooldownTimeSigma>2.000000000e+000</cooldownTimeSigma>
+	</turrets>
+</configuration>
+</boost_serialization>
+

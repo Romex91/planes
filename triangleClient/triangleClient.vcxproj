@@ -54,7 +54,7 @@
       <DisableSpecificWarnings>4068;4244</DisableSpecificWarnings>
       <ForcedIncludeFiles>"stdafx.h"</ForcedIncludeFiles>
       <PreprocessorDefinitions>_WIN32_WINNT=0x0501;_MBCS;%(PreprocessorDefinitions)</PreprocessorDefinitions>
-      <AdditionalIncludeDirectories>$(rplanesLibDir);$(vendersInclude);%(AdditionalIncludeDirectories)</AdditionalIncludeDirectories>
+      <AdditionalIncludeDirectories>$(rplanesLibInclude);$(vendersInclude);%(AdditionalIncludeDirectories)</AdditionalIncludeDirectories>
       <AdditionalOptions>/Zm220 %(AdditionalOptions)</AdditionalOptions>
     </ClCompile>
     <Link>
@@ -74,7 +74,7 @@
       <DisableSpecificWarnings>4068;4244</DisableSpecificWarnings>
       <ForcedIncludeFiles>"stdafx.h"</ForcedIncludeFiles>
       <PreprocessorDefinitions>_WIN32_WINNT=0x0501;_MBCS;%(PreprocessorDefinitions)</PreprocessorDefinitions>
-      <AdditionalIncludeDirectories>$(rplanesLibDir);$(vendersInclude);%(AdditionalIncludeDirectories)</AdditionalIncludeDirectories>
+      <AdditionalIncludeDirectories>$(rplanesLibInclude);$(vendersInclude);%(AdditionalIncludeDirectories)</AdditionalIncludeDirectories>
       <AdditionalOptions>/Zm220 %(AdditionalOptions)</AdditionalOptions>
     </ClCompile>
     <Link>

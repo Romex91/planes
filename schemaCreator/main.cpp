@@ -6,36 +6,9 @@ using namespace rplanes;
 
 int main()
 {
-	std::cout << "Select database: conf plane prof " << std::endl;
+	std::cout << "Select database: plane prof " << std::endl;
 	std::string dbName;
 	std::cin >>dbName;
-	if ( dbName == "conf" )
-	{
-		std::string yes;
-		std::cout << "Are you sure you want to recreate config.db? All data will be lost." <<std::endl << "Print \"yes\" to continue"<< std::endl;
-		std::cin >> yes;
-		if ( yes != "yes" )
-		{
-			return 0;
-		}
-		Configuration conf;
-		auto db( create_database("config.db", "configuration") );
-		transaction t(db->begin());
-
-		{
-			using namespace configurationvalues;
-			db->persist(Collisions());
-			db->persist(Defect());
-			db->persist(Engine());
-			db->persist(Flight());
-			db->persist(Missile());
-			db->persist(Pilot());
-			db->persist(Profile());
-			db->persist(Server());
-			db->persist(Shooting());
-			t.commit();
-		}
-	}
 	if ( dbName == "plane" )
 	{
 		std::string yes;

@@ -14,9 +14,6 @@
     </Filter>
   </ItemGroup>
   <ItemGroup>
-    <ClCompile Include="odb\configuration-odb.cxx">
-      <Filter>odb</Filter>
-    </ClCompile>
     <ClCompile Include="odb\model-odb.cxx">
       <Filter>odb</Filter>
     </ClCompile>
@@ -64,9 +61,6 @@
     </ClCompile>
   </ItemGroup>
   <ItemGroup>
-    <ClInclude Include="odb\configuration-odb.hxx">
-      <Filter>odb</Filter>
-    </ClInclude>
     <ClInclude Include="odb\model-odb.hxx">
       <Filter>odb</Filter>
     </ClInclude>
@@ -131,9 +125,6 @@
     </CustomBuild>
   </ItemGroup>
   <ItemGroup>
-    <None Include="odb\configuration-odb.ixx">
-      <Filter>odb</Filter>
-    </None>
     <None Include="odb\model-odb.ixx">
       <Filter>odb</Filter>
     </None>
