@@ -6,7 +6,6 @@ namespace rplanes
 
 	namespace configurationvalues
 	{
-		//используется при создании пуль(при стрельбе)  plane::shoot
 		class Shooting
 		{
 		public:
@@ -30,16 +29,16 @@ namespace rplanes
 			float shootRateFactor = 1.f,
 				accuracyFactor = 1.f,
 				damageFactor = 1.f,
-				speedFactor = 0.4f,			//используется так же в методах gun
-				accelerationFactor = 0.8f,		//используется так же в методах gun
-				ttlFactor = 0.5f,				// определяет скорость пули, при которой пуля уничтожается от [0.f, 1.f] используется в bullet::isSpent и gun::getMaxDistance
+				speedFactor = 0.4f,			
+				accelerationFactor = 0.8f,		
+				ttlFactor = 0.5f,				// this value determines a bullet destruction speed. [0.f, 1.f]. Used in bullet::isSpent; gun::getMaxDistance
 				penetFactor = 1.f,
 				impactFactor = 300.f,
 				impactRandomnesFactor = 10.f,
 				angleImpactFactor = 300.f,
-				maxDistance = 500.f,			//используется в plane::updateInterim
-				minDistance = 10.f,			//используется в plane::updateInterim и plane::shoot
-				gravity = 1.f;	// определяет ускорение свободного падения пули используется в конструкторе bullet
+				maxDistance = 500.f,			//used in plane::updateInterim
+				minDistance = 10.f,				//used in  plane::updateInterim; plane::shoot
+				gravity = 1.f;					//projectiles have a mounted trajectory. This value determines how much arched the trajectory would be.
 		};
 
 		class Turrets
@@ -80,7 +79,7 @@ namespace rplanes
 				cooldownTimeSigma = 2.0f;
 		};
 
-		//используется при создании ракет (при стрельбе) * не реализовано
+		//not implemented yet
 		class Missile
 		{
 		public:
@@ -103,7 +102,7 @@ namespace rplanes
 				speedAccuracyFactor,
 				accuracyFactor,
 				ttlFactor,
-				gravity;	// определяет ускорение свободного падения ракеты используется в конструкторе launchedMissile
+				gravity;	//projectiles have a mounted trajectory. This value determines how much arched the trajectory would be.
 		};
 		class Defect
 		{
@@ -119,17 +118,17 @@ namespace rplanes
 				ar & BOOST_SERIALIZATION_NVP(pilotSkillsFactor);
 			}
 			float
-				chanceFactor = 1.f, //используется в module::damage
+				chanceFactor = 1.f,			//used in module::damage
 				shootRateFactor = 0.5f,
 				surfaceFactor = 0.5f,
 				mobilityFactor = 0.5f,
 				vMaxFactor = 0.7f,
 				tMaxFactor = 2.f,
-				pilotSkillsFactor = 0.5f; //используется в геттерах пилота
+				pilotSkillsFactor = 0.5f;
 		};
 
 
-		//используется при создании нового профиля
+		//used creating new profiles
 		class Profile
 		{
 		public:
@@ -147,18 +146,17 @@ namespace rplanes
 			int
 				startExp = 100,
 				startMoney = 10000000,
-				//опыт получаемый за попадание по противнику. Умножается на калибр орудия в квадрате
+				//Experience per hit. Multiplying by a square caliber of a projectile.
 				hitExperience = 1,
-				//награда за нанесение урона противнику
+				//Credits per HP
 				damageReward = 1,
-				//штраф за повреждение союзника
+				//Credits per friend HP
 				damagePenalty = 10,
 				maxBanlistSize = 500;
 			std::vector<std::string> startMaps;
 			std::vector<std::string> startPlanes;
 			Profile();
 		};
-		//импользуется в функциях класса plane
 
 		class Flight
 		{
@@ -176,15 +174,15 @@ namespace rplanes
 			}
 
 			float
-				forceFactor = 1.f,					//степень разгона/торможения
-				speedFactor = 0.3f,					//коэффициент поступательной скорости
-				angleVelocityFactor = 1.f,			//коэффициент вращательной скорости
-				maneuverFrictionFactor = 1.f,			//коэффициент трения при повороте
+				forceFactor = 1.f,					//determines how fast planes accelerate and slow down
+				speedFactor = 0.3f,					//forward speed factor
+				angleVelocityFactor = 1.f,			//Increases overall maneuverability
+				maneuverFrictionFactor = 1.f,		
 
-				maxAngularVelocityFactor = 1.f,		//коэффициент маневренности самолетов. Увеличивает маневренность самолетов на низких скоростях, где не учитываются перегрузки
-				angleAccelerationFactor = 1.f,		//коэффициент управляемости
-				reverseAngleAccelerationFactor = 1.f, //коэффициент скорости возврата в прямой полет
-				turningExp = 0.5f;						//точность следования угловой скорости при мягком повороте
+				maxAngularVelocityFactor = 1.f,			//Increases low speed maneuverability, high speed limitation is a g-force
+				angleAccelerationFactor = 1.f,			//determine how fast planes give a lurch
+				reverseAngleAccelerationFactor = 1.f,	//determine how fast planes return to a horizontal position 
+				turningExp = 0.5f;						//lurch accuracy
 		};
 
 
@@ -199,11 +197,11 @@ namespace rplanes
 			}
 
 			float
-				//коэффициент вероятности выхода из строя за 1 секунду при резком наборе температуры.
+				
 				overheatDefectChanceFactor = 1.f,
-				//количество процентов прочности, снимаемое в секунду при перегреве
+				//HP percentage losing per second when overheat 
 				overheatDamageFactor = 20.f,
-				//определяет степень влияния навыков пилота на разгон/торможение
+				//benefit of a pilot engine skill
 				additionalPowerFactor = 1.f;
 		};
 
@@ -217,8 +215,8 @@ namespace rplanes
 			}
 
 			float
-				pilotFaintTime = 10.f,					//время, проводимое в обмороке
-				pilotMaxG = 5.f;						//максимальная перегрузка, выдерживаемая пилотом новичком
+				pilotFaintTime = 10.f,					//mean faint time
+				pilotMaxG = 5.f;						//max g-force for inexperienced pilot
 		};
 
 		class Collisions
