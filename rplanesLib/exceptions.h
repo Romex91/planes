@@ -1,5 +1,6 @@
-#pragma once
-//данный файл содержит исключения
+п»ї#pragma once
+//РґР°РЅРЅС‹Р№ С„Р°Р№Р» СЃРѕРґРµСЂР¶РёС‚ РёСЃРєР»СЋС‡РµРЅРёСЏ пєІ
+
 #include  "stdafx.h"
 
 namespace rplanes
@@ -19,17 +20,17 @@ namespace rplanes
 	private:
 	};
 #define CONSTRUCTOR(x) x (std::string text=""): planesException(text){}
-	//выбрасывается при запросе несуществующего модуля
+	//РІС‹Р±СЂР°СЃС‹РІР°РµС‚СЃСЏ РїСЂРё Р·Р°РїСЂРѕСЃРµ РЅРµСЃСѓС‰РµСЃС‚РІСѓСЋС‰РµРіРѕ РјРѕРґСѓР»СЏ
 	class eModuleNotFound: public planesException 
 	{
 	public:
 		CONSTRUCTOR(eModuleNotFound);
 		virtual const char* what() const
 		{
-			return std::string( "Модуль не содержится в базе данных. " + message).c_str();
+			return std::string( "РњРѕРґСѓР»СЊ РЅРµ СЃРѕРґРµСЂР¶РёС‚СЃСЏ РІ Р±Р°Р·Рµ РґР°РЅРЅС‹С…. " + message).c_str();
 		}
 	};
-	//выбрасывается при запросе несуществующей модели
+	//РІС‹Р±СЂР°СЃС‹РІР°РµС‚СЃСЏ РїСЂРё Р·Р°РїСЂРѕСЃРµ РЅРµСЃСѓС‰РµСЃС‚РІСѓСЋС‰РµР№ РјРѕРґРµР»Рё
 	class eModelTemplateNotFound: public planesException 
 	{
 	public:
@@ -37,17 +38,17 @@ namespace rplanes
 
 		virtual const char* what() const
 		{
-			return std::string("Самолет не содержится в базе данных. " + message).c_str();
+			return std::string("РЎР°РјРѕР»РµС‚ РЅРµ СЃРѕРґРµСЂР¶РёС‚СЃСЏ РІ Р±Р°Р·Рµ РґР°РЅРЅС‹С…. " + message).c_str();
 		}
 	};
-	//выбрасывается при незавершенности объекта modelTemplate
+	//РІС‹Р±СЂР°СЃС‹РІР°РµС‚СЃСЏ РїСЂРё РЅРµР·Р°РІРµСЂС€РµРЅРЅРѕСЃС‚Рё РѕР±СЉРµРєС‚Р° modelTemplate
 	class  eModelTemplateNotFull: public planesException 
 	{
 	public:
 		CONSTRUCTOR(eModelTemplateNotFull);
 		virtual const char* what() const
 		{
-			return std::string("Модель самолета не содержит необходимое количество модулей, либо подан неверный запрос. " + message).c_str();
+			return std::string("РњРѕРґРµР»СЊ СЃР°РјРѕР»РµС‚Р° РЅРµ СЃРѕРґРµСЂР¶РёС‚ РЅРµРѕР±С…РѕРґРёРјРѕРµ РєРѕР»РёС‡РµСЃС‚РІРѕ РјРѕРґСѓР»РµР№, Р»РёР±Рѕ РїРѕРґР°РЅ РЅРµРІРµСЂРЅС‹Р№ Р·Р°РїСЂРѕСЃ. " + message).c_str();
 		}
 	};
 
@@ -57,7 +58,7 @@ namespace rplanes
 		CONSTRUCTOR(eModulType);
 		virtual const char* what() const
 		{
-			return std::string("Несоответствия модуля по типу. " + message).c_str();
+			return std::string("РќРµСЃРѕРѕС‚РІРµС‚СЃС‚РІРёСЏ РјРѕРґСѓР»СЏ РїРѕ С‚РёРїСѓ. " + message).c_str();
 		}
 	};
 
@@ -67,7 +68,7 @@ namespace rplanes
 		CONSTRUCTOR(eMessageNotFound);
 		virtual const char* what() const
 		{
-			return std::string("Не найдено сообщение. " + message).c_str();
+			return std::string("РќРµ РЅР°Р№РґРµРЅРѕ СЃРѕРѕР±С‰РµРЅРёРµ. " + message).c_str();
 		}
 	};
 
@@ -77,7 +78,7 @@ namespace rplanes
 		CONSTRUCTOR(eWriteError);
 		virtual const char* what() const
 		{
-			return std::string("Не удалось отправить сообщение. " + message).c_str();
+			return std::string("РќРµ СѓРґР°Р»РѕСЃСЊ РѕС‚РїСЂР°РІРёС‚СЊ СЃРѕРѕР±С‰РµРЅРёРµ. " + message).c_str();
 		}
 	};
 	class eReadError:public planesException
@@ -86,7 +87,7 @@ namespace rplanes
 		CONSTRUCTOR(eReadError);
 		virtual const char* what() const
 		{
-			return std::string("не удалось получить сообщение. " + message).c_str();
+			return std::string("РЅРµ СѓРґР°Р»РѕСЃСЊ РїРѕР»СѓС‡РёС‚СЊ СЃРѕРѕР±С‰РµРЅРёРµ. " + message).c_str();
 		}
 	};
 	class eClientStatusError:public planesException
@@ -95,7 +96,7 @@ namespace rplanes
 		CONSTRUCTOR(eClientStatusError);
 		virtual const char* what() const
 		{
-			return std::string("Ошибка статуса клиента. " + message).c_str();
+			return std::string("РћС€РёР±РєР° СЃС‚Р°С‚СѓСЃР° РєР»РёРµРЅС‚Р°. " + message).c_str();
 		}
 	};
 	class eLoginFail:public planesException
@@ -104,7 +105,7 @@ namespace rplanes
 		CONSTRUCTOR(eLoginFail);
 		virtual const char* what() const
 		{
-			return std::string("Ошибка авторизации. " + message).c_str();
+			return std::string("РћС€РёР±РєР° Р°РІС‚РѕСЂРёР·Р°С†РёРё. " + message).c_str();
 		}
 	};
 	class eClientsOutOfRange:public planesException
@@ -113,7 +114,7 @@ namespace rplanes
 		CONSTRUCTOR(eClientsOutOfRange);
 		virtual const char* what() const
 		{
-			return std::string("Выход за границы списка клиентов. " + message).c_str();
+			return std::string("Р’С‹С…РѕРґ Р·Р° РіСЂР°РЅРёС†С‹ СЃРїРёСЃРєР° РєР»РёРµРЅС‚РѕРІ. " + message).c_str();
 		}
 	};
 	class eClientNotConnected:public planesException
@@ -122,7 +123,7 @@ namespace rplanes
 		CONSTRUCTOR(eClientNotConnected);
 		virtual const char* what() const
 		{
-			return std::string("Попытка обращения к отключенному соединению. " + message).c_str();
+			return std::string("РџРѕРїС‹С‚РєР° РѕР±СЂР°С‰РµРЅРёСЏ Рє РѕС‚РєР»СЋС‡РµРЅРЅРѕРјСѓ СЃРѕРµРґРёРЅРµРЅРёСЋ. " + message).c_str();
 		}
 	};
 	class eProfileError:public planesException
@@ -131,7 +132,7 @@ namespace rplanes
 		CONSTRUCTOR(eProfileError);
 		virtual const char* what() const
 		{
-			return std::string("Ошибка при работе с профилем. " + message).c_str();
+			return std::string("РћС€РёР±РєР° РїСЂРё СЂР°Р±РѕС‚Рµ СЃ РїСЂРѕС„РёР»РµРј. " + message).c_str();
 		}
 	};
 	class eClientConnectionFail:public planesException
@@ -140,7 +141,7 @@ namespace rplanes
 		CONSTRUCTOR(eClientConnectionFail);
 		virtual const char* what() const
 		{
-			return std::string("Невозможно подключить клиента. " + message).c_str();
+			return std::string("РќРµРІРѕР·РјРѕР¶РЅРѕ РїРѕРґРєР»СЋС‡РёС‚СЊ РєР»РёРµРЅС‚Р°. " + message).c_str();
 		}
 	};
 	class eRoomError:public planesException
@@ -149,7 +150,7 @@ namespace rplanes
 		CONSTRUCTOR(eRoomError);
 		virtual const char* what() const
 		{
-			return std::string("Ошибка комнаты. " + message).c_str();
+			return std::string("РћС€РёР±РєР° РєРѕРјРЅР°С‚С‹. " + message).c_str();
 		}
 	};
 
