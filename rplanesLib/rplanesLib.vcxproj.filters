@@ -106,11 +106,11 @@
     <ClInclude Include="stdafx.h">
       <Filter>Header Files</Filter>
     </ClInclude>
+    <ClInclude Include="configuration.h">
+      <Filter>Header Files</Filter>
+    </ClInclude>
   </ItemGroup>
   <ItemGroup>
-    <CustomBuild Include="configuration.h">
-      <Filter>Header Files</Filter>
-    </CustomBuild>
     <CustomBuild Include="model.h">
       <Filter>Header Files</Filter>
     </CustomBuild>

@@ -10,10 +10,10 @@ namespace rplanes
 		class Pilot
 		{
 		private:
-			size_t engine_,	//навыки : двигатель,
-				flight_,		//маневренность,
-				endurance_,	//выносливость,
-				shooting_,	// стрельба.
+			size_t engine_,	//РЅР°РІС‹РєРё : РґРІРёРіР°С‚РµР»СЊ,
+				flight_,		//РјР°РЅРµРІСЂРµРЅРЅРѕСЃС‚СЊ,
+				endurance_,	//РІС‹РЅРѕСЃР»РёРІРѕСЃС‚СЊ,
+				shooting_,	// СЃС‚СЂРµР»СЊР±Р°.
 				exp_;
 			friend class odb::access;
 		public:

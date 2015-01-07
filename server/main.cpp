@@ -76,7 +76,7 @@ namespace rplanes
 					catch (...)
 					{
 						network::bidirectionalmessages::TextMessage txt;
-						txt.text = playerName + " не найден в базе данных.";
+						txt.text = playerName + " РЅРµ РЅР°Р№РґРµРЅ РІ Р±Р°Р·Рµ РґР°РЅРЅС‹С….";
 						Client.sendMessage(txt);
 						return;
 					}
@@ -193,7 +193,7 @@ namespace rplanes
 				void RoomListRequest::handle()
 				{
 					auto & Client = server.getClient(clientID);
-					Client.profile();//просто для проверки нахождения в ангаре
+					Client.profile();//РїСЂРѕСЃС‚Рѕ РґР»СЏ РїСЂРѕРІРµСЂРєРё РЅР°С…РѕР¶РґРµРЅРёСЏ РІ Р°РЅРіР°СЂРµ
 					network::servermessages::hangar::RoomList message;
 					{
 						MutexLocker ml(server.roomListMessage.mutex);
@@ -231,7 +231,7 @@ namespace rplanes
 					auto & Client = server.getClient(clientID);
 					if ( Client.getStatus() != UNLOGINED )
 					{
-						throw eClientStatusError("Попытка создания нового профиля из ангара или комнаты.");
+						throw eClientStatusError("РџРѕРїС‹С‚РєР° СЃРѕР·РґР°РЅРёСЏ РЅРѕРІРѕРіРѕ РїСЂРѕС„РёР»СЏ РёР· Р°РЅРіР°СЂР° РёР»Рё РєРѕРјРЅР°С‚С‹.");
 					}
 					try
 					{
@@ -244,7 +244,7 @@ namespace rplanes
 					}
 					catch(...)
 					{
-						throw eLoginFail("Не удалось создать профиль. ");
+						throw eLoginFail("РќРµ СѓРґР°Р»РѕСЃСЊ СЃРѕР·РґР°С‚СЊ РїСЂРѕС„РёР»СЊ. ");
 					}
 				}
 
@@ -256,7 +256,7 @@ namespace rplanes
 
 			void TextMessage::handle()
 			{
-				std::cout << "Клиент " << clientID << " пишет: " << text << std::endl; 
+				std::cout << "РљР»РёРµРЅС‚ " << clientID << " РїРёС€РµС‚: " << text << std::endl; 
 			}
 
 			void ExitRoom::handle()
@@ -291,7 +291,7 @@ class consoleHandler
 		}
 		if ( options[0] == "planes" )
 		{
-			MutexLocker ml(server.roomClients_.mutex);//блокируем выполнение комнатной петли
+			MutexLocker ml(server.roomClients_.mutex);//Р±Р»РѕРєРёСЂСѓРµРј РІС‹РїРѕР»РЅРµРЅРёРµ РєРѕРјРЅР°С‚РЅРѕР№ РїРµС‚Р»Рё
 			for ( auto & room : server.rooms_)
 			{
 				std::vector< std::shared_ptr<Player > > players;
@@ -310,7 +310,7 @@ class consoleHandler
 					std::cout << player->name << std::endl;
 					if ( player->plane_.isDestroyed() )
 					{
-						std::cout << "cамолет уничтожен " << std::endl; 
+						std::cout << "cР°РјРѕР»РµС‚ СѓРЅРёС‡С‚РѕР¶РµРЅ " << std::endl; 
 					}
 					player->plane_.showParams();
 				}
@@ -327,7 +327,7 @@ public:
 		std::stringstream ss;
 		while (true)
 		{
-			//получение и разбор команды
+			//РїРѕР»СѓС‡РµРЅРёРµ Рё СЂР°Р·Р±РѕСЂ РєРѕРјР°РЅРґС‹
 			std::getline( std::cin, line );
 			if ( line.size() == 0 )
 			{
@@ -346,7 +346,7 @@ public:
 				ss >> option;
 			}
 
-			//запуск обработчика
+			//Р·Р°РїСѓСЃРє РѕР±СЂР°Р±РѕС‚С‡РёРєР°
 #define CHECK_COMMAND(cmd)\
 	if( #cmd == command )\
 			{\

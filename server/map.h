@@ -41,7 +41,7 @@ public:
 	{
 		if (!spawnPoint_)
 		{
-			throw rplanes::eRoomError(" Указатель на спаунер группы пуст. ");
+			throw rplanes::eRoomError(" РЈРєР°Р·Р°С‚РµР»СЊ РЅР° СЃРїР°СѓРЅРµСЂ РіСЂСѓРїРїС‹ РїСѓСЃС‚. ");
 		}
 		return *spawnPoint_;
 	}
@@ -116,7 +116,7 @@ public:
 	{
 		if (!player)
 		{
-			throw rplanes::eRoomError("В группу передан пустой указатель. ");
+			throw rplanes::eRoomError("Р’ РіСЂСѓРїРїСѓ РїРµСЂРµРґР°РЅ РїСѓСЃС‚РѕР№ СѓРєР°Р·Р°С‚РµР»СЊ. ");
 		}
 		players_.push_back(player);
 		player->groupName_ = name_;
@@ -158,7 +158,7 @@ public:
 	{
 		if ( initialized == false )
 		{
-			throw rplanes::eRoomError("Необходима инициализация группы ботов.");
+			throw rplanes::eRoomError("РќРµРѕР±С…РѕРґРёРјР° РёРЅРёС†РёР°Р»РёР·Р°С†РёСЏ РіСЂСѓРїРїС‹ Р±РѕС‚РѕРІ.");
 		}
 		size_t retval = 0;
 		for ( auto & bot : bots_ )
@@ -175,7 +175,7 @@ public:
 	{
 		if (initialized == false)
 		{
-			throw rplanes::eRoomError("Необходима инициализация группы ботов.");
+			throw rplanes::eRoomError("РќРµРѕР±С…РѕРґРёРјР° РёРЅРёС†РёР°Р»РёР·Р°С†РёСЏ РіСЂСѓРїРїС‹ Р±РѕС‚РѕРІ.");
 		}
 		std::vector< std::shared_ptr<Player> > retval;
 		for (auto & bot : bots_)
@@ -260,19 +260,19 @@ public:
 
 	typedef std::vector<ScriptLine> ScriptText;
 
-	//скрипт запускаемый при старте игры
+	//СЃРєСЂРёРїС‚ Р·Р°РїСѓСЃРєР°РµРјС‹Р№ РїСЂРё СЃС‚Р°СЂС‚Рµ РёРіСЂС‹
 	std::vector<ScriptText> startScripts;
 
-	//скрипт запускаемый при присоединении нового игрока
+	//СЃРєСЂРёРїС‚ Р·Р°РїСѓСЃРєР°РµРјС‹Р№ РїСЂРё РїСЂРёСЃРѕРµРґРёРЅРµРЅРёРё РЅРѕРІРѕРіРѕ РёРіСЂРѕРєР°
 	std::vector<ScriptText> joinScripts;
 
-	//скрипт запускаемый при пересечении границы триггера
+	//СЃРєСЂРёРїС‚ Р·Р°РїСѓСЃРєР°РµРјС‹Р№ РїСЂРё РїРµСЂРµСЃРµС‡РµРЅРёРё РіСЂР°РЅРёС†С‹ С‚СЂРёРіРіРµСЂР°
 	std::vector<TriggerScript> triggerScripts;
 
-	//скрипт запускаемый при убийстве игрока
+	//СЃРєСЂРёРїС‚ Р·Р°РїСѓСЃРєР°РµРјС‹Р№ РїСЂРё СѓР±РёР№СЃС‚РІРµ РёРіСЂРѕРєР°
 	std::vector<KilledScript> killedScripts;
 
-	//скрипт запускаемый периодично
+	//СЃРєСЂРёРїС‚ Р·Р°РїСѓСЃРєР°РµРјС‹Р№ РїРµСЂРёРѕРґРёС‡РЅРѕ
 	std::vector<TimerScript> timerScripts;
 
 	void load(std::string filename);

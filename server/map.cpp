@@ -12,7 +12,7 @@ void Map::load(std::string filename)
 	fs.open(std::string("../Resources/maps/") + filename, std::ios_base::in);
 	if (!fs)
 	{
-		throw eRoomError("Файл с указанной комнатой не найден. ");
+		throw eRoomError("Р¤Р°Р№Р» СЃ СѓРєР°Р·Р°РЅРЅРѕР№ РєРѕРјРЅР°С‚РѕР№ РЅРµ РЅР°Р№РґРµРЅ. ");
 	}
 
 	humanGroups.clear();
@@ -42,7 +42,7 @@ void Map::load(std::string filename)
 		{
 			if ( options.size() < size )
 			{
-				throw eRoomError("Ошибка загрузки комнаты. Команде " + command + " не достаточно аргументов. ");
+				throw eRoomError("РћС€РёР±РєР° Р·Р°РіСЂСѓР·РєРё РєРѕРјРЅР°С‚С‹. РљРѕРјР°РЅРґРµ " + command + " РЅРµ РґРѕСЃС‚Р°С‚РѕС‡РЅРѕ Р°СЂРіСѓРјРµРЅС‚РѕРІ. ");
 			}
 		};
 
@@ -83,9 +83,9 @@ void Map::load(std::string filename)
 			if ( spawnPoint == spawnPoints.end() )
 			{
 				throw eRoomError( std::string() 
-					+ "Не найден спаунер " 
+					+ "РќРµ РЅР°Р№РґРµРЅ СЃРїР°СѓРЅРµСЂ " 
 					+ options[2]
-					+ " во время загрузки сценария."
+					+ " РІРѕ РІСЂРµРјСЏ Р·Р°РіСЂСѓР·РєРё СЃС†РµРЅР°СЂРёСЏ."
 					);
 			}
 
@@ -119,9 +119,9 @@ void Map::load(std::string filename)
 			if (spawnPoint == spawnPoints.end())
 			{
 				throw eRoomError(std::string()
-					+ "Не найден спаунер "
+					+ "РќРµ РЅР°Р№РґРµРЅ СЃРїР°СѓРЅРµСЂ "
 					+ options[3]
-					+ " во время загрузки сценария.");
+					+ " РІРѕ РІСЂРµРјСЏ Р·Р°РіСЂСѓР·РєРё СЃС†РµРЅР°СЂРёСЏ.");
 			}
 			BotGroup newGroup(options[0], spawnPoint->second, atoi(options[4].c_str()  ), options[2], botType );
 			botGroups.push_back(newGroup);
@@ -283,7 +283,7 @@ void SpawnPoint::spawn(std::shared_ptr<Player> player, float timeDelay)
 {
 	if (!player)
 	{
-		throw rplanes::eRoomError("Спаунеру передан пустой указатель.");
+		throw rplanes::eRoomError("РЎРїР°СѓРЅРµСЂСѓ РїРµСЂРµРґР°РЅ РїСѓСЃС‚РѕР№ СѓРєР°Р·Р°С‚РµР»СЊ.");
 	}
 	spawnQueue.push_back(SpawnPair(player, timeDelay));
 }

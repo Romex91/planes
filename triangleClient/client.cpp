@@ -1,28 +1,28 @@
-#define PLANES_CLIENT //должно стоять до messages.h
+#define PLANES_CLIENT //РґРѕР»Р¶РЅРѕ СЃС‚РѕСЏС‚СЊ РґРѕ messages.h
 #include "stdafx.h"
 using boost::asio::ip::tcp;
 
 std::string server_ip = "127.0.0.1";
 
-float scale = 2.f; //увеличивает серверные данные при отрисовке
+float scale = 2.f; //СѓРІРµР»РёС‡РёРІР°РµС‚ СЃРµСЂРІРµСЂРЅС‹Рµ РґР°РЅРЅС‹Рµ РїСЂРё РѕС‚СЂРёСЃРѕРІРєРµ
 
 boost::asio::io_service io_service;
 
-//особенности общения с сервером
-//если в процессе общения с клиентом что-то идет не так, сервер обрывает соединение без передачи дополнительной информации
-//соединение может быть оборвано:
+//РѕСЃРѕР±РµРЅРЅРѕСЃС‚Рё РѕР±С‰РµРЅРёСЏ СЃ СЃРµСЂРІРµСЂРѕРј
+//РµСЃР»Рё РІ РїСЂРѕС†РµСЃСЃРµ РѕР±С‰РµРЅРёСЏ СЃ РєР»РёРµРЅС‚РѕРј С‡С‚Рѕ-С‚Рѕ РёРґРµС‚ РЅРµ С‚Р°Рє, СЃРµСЂРІРµСЂ РѕР±СЂС‹РІР°РµС‚ СЃРѕРµРґРёРЅРµРЅРёРµ Р±РµР· РїРµСЂРµРґР°С‡Рё РґРѕРїРѕР»РЅРёС‚РµР»СЊРЅРѕР№ РёРЅС„РѕСЂРјР°С†РёРё
+//СЃРѕРµРґРёРЅРµРЅРёРµ РјРѕР¶РµС‚ Р±С‹С‚СЊ РѕР±РѕСЂРІР°РЅРѕ:
 
-//1)Если клиент находится в ангаре и отправил больше чем configuration().server.hangarMessagesPerFrame сообщений за configuration().server.hangarFrameTime
-//2)Если клиент находится в комнате, и  отправляет больше чем configuration().server.roomMessagesPerFrame сообщений за configuration().server.roomFrameTime;
-//3)Если клиент отправил сообщение, имея несоответствующий статус
-//4)В случае возникновения любой ошибки у сервера, клиент удаляется
+//1)Р•СЃР»Рё РєР»РёРµРЅС‚ РЅР°С…РѕРґРёС‚СЃСЏ РІ Р°РЅРіР°СЂРµ Рё РѕС‚РїСЂР°РІРёР» Р±РѕР»СЊС€Рµ С‡РµРј configuration().server.hangarMessagesPerFrame СЃРѕРѕР±С‰РµРЅРёР№ Р·Р° configuration().server.hangarFrameTime
+//2)Р•СЃР»Рё РєР»РёРµРЅС‚ РЅР°С…РѕРґРёС‚СЃСЏ РІ РєРѕРјРЅР°С‚Рµ, Рё  РѕС‚РїСЂР°РІР»СЏРµС‚ Р±РѕР»СЊС€Рµ С‡РµРј configuration().server.roomMessagesPerFrame СЃРѕРѕР±С‰РµРЅРёР№ Р·Р° configuration().server.roomFrameTime;
+//3)Р•СЃР»Рё РєР»РёРµРЅС‚ РѕС‚РїСЂР°РІРёР» СЃРѕРѕР±С‰РµРЅРёРµ, РёРјРµСЏ РЅРµСЃРѕРѕС‚РІРµС‚СЃС‚РІСѓСЋС‰РёР№ СЃС‚Р°С‚СѓСЃ
+//4)Р’ СЃР»СѓС‡Р°Рµ РІРѕР·РЅРёРєРЅРѕРІРµРЅРёСЏ Р»СЋР±РѕР№ РѕС€РёР±РєРё Сѓ СЃРµСЂРІРµСЂР°, РєР»РёРµРЅС‚ СѓРґР°Р»СЏРµС‚СЃСЏ
 
 
 class Client
 {
 public:
 
-	//сообщение, передаваемое серверу каждый серверный кадр
+	//СЃРѕРѕР±С‰РµРЅРёРµ, РїРµСЂРµРґР°РІР°РµРјРѕРµ СЃРµСЂРІРµСЂСѓ РєР°Р¶РґС‹Р№ СЃРµСЂРІРµСЂРЅС‹Р№ РєР°РґСЂ
 	rplanes::network::clientmessages::room::SendControllable controllable;
 
 	rplanes::network::Connection connection;
@@ -37,7 +37,7 @@ public:
 		connection.connect(endpoint_iterator);
 	}
 
-	//все следующие штуки мы получаем от сервера
+	//РІСЃРµ СЃР»РµРґСѓСЋС‰РёРµ С€С‚СѓРєРё РјС‹ РїРѕР»СѓС‡Р°РµРј РѕС‚ СЃРµСЂРІРµСЂР°
 
 	class plane : public sf::Drawable, public rplanes::network::servermessages::room::Plane
 	{
@@ -118,35 +118,35 @@ public:
 			target.draw(circle);
 		}
 	};
-	//в данном клиенте ракеты игнорируются.
+	//РІ РґР°РЅРЅРѕРј РєР»РёРµРЅС‚Рµ СЂР°РєРµС‚С‹ РёРіРЅРѕСЂРёСЂСѓСЋС‚СЃСЏ.
 
 
-	//список видимых самолетов. изменяется сообщениями createPlanes destroyPlanes
+	//СЃРїРёСЃРѕРє РІРёРґРёРјС‹С… СЃР°РјРѕР»РµС‚РѕРІ. РёР·РјРµРЅСЏРµС‚СЃСЏ СЃРѕРѕР±С‰РµРЅРёСЏРјРё createPlanes destroyPlanes
 	std::map<size_t, plane> planes;
-	//список пуль. Новые пули создаются в сообщении createBullets, при попаданиях пули удаляются сообщением destroyBullets, иначе в главной петле при излете
+	//СЃРїРёСЃРѕРє РїСѓР»СЊ. РќРѕРІС‹Рµ РїСѓР»Рё СЃРѕР·РґР°СЋС‚СЃСЏ РІ СЃРѕРѕР±С‰РµРЅРёРё createBullets, РїСЂРё РїРѕРїР°РґР°РЅРёСЏС… РїСѓР»Рё СѓРґР°Р»СЏСЋС‚СЃСЏ СЃРѕРѕР±С‰РµРЅРёРµРј destroyBullets, РёРЅР°С‡Рµ РІ РіР»Р°РІРЅРѕР№ РїРµС‚Р»Рµ РїСЂРё РёР·Р»РµС‚Рµ
 	std::map<size_t, bullet> bullets;
-	//статус клиента
-	//	UNLOGINED - не прошел авторизацию, если в течении 1 секунды не придет легальное сообщение login, соединение будет оборвано
-	//	HANGAR - клиент находится в ангаре. Может покупать самолеты и прочее, управлять комнатами и т.п.
-	//находясь в ангаре клиент может отправлять запросы покупок и т.п. Чтобы увидеть результат этих действий, необходимо запросить профиль у сервера
-	//	ROOM - клиент находится в комнате может отправлять данные управления, сообщение выхода из комнаты
-	//Если клиент находясь, например, в ангаре попробует отправить данные управления, и в подобных случаях, соединение будет удалено без предупреждения
-	//Изменять статус можно сообщениями login, joinRoom, exitRoom, logout
-	//После того как было отправлено одно из этих сообщений, необходимо запросить статус у сервера
+	//СЃС‚Р°С‚СѓСЃ РєР»РёРµРЅС‚Р°
+	//	UNLOGINED - РЅРµ РїСЂРѕС€РµР» Р°РІС‚РѕСЂРёР·Р°С†РёСЋ, РµСЃР»Рё РІ С‚РµС‡РµРЅРёРё 1 СЃРµРєСѓРЅРґС‹ РЅРµ РїСЂРёРґРµС‚ Р»РµРіР°Р»СЊРЅРѕРµ СЃРѕРѕР±С‰РµРЅРёРµ login, СЃРѕРµРґРёРЅРµРЅРёРµ Р±СѓРґРµС‚ РѕР±РѕСЂРІР°РЅРѕ
+	//	HANGAR - РєР»РёРµРЅС‚ РЅР°С…РѕРґРёС‚СЃСЏ РІ Р°РЅРіР°СЂРµ. РњРѕР¶РµС‚ РїРѕРєСѓРїР°С‚СЊ СЃР°РјРѕР»РµС‚С‹ Рё РїСЂРѕС‡РµРµ, СѓРїСЂР°РІР»СЏС‚СЊ РєРѕРјРЅР°С‚Р°РјРё Рё С‚.Рї.
+	//РЅР°С…РѕРґСЏСЃСЊ РІ Р°РЅРіР°СЂРµ РєР»РёРµРЅС‚ РјРѕР¶РµС‚ РѕС‚РїСЂР°РІР»СЏС‚СЊ Р·Р°РїСЂРѕСЃС‹ РїРѕРєСѓРїРѕРє Рё С‚.Рї. Р§С‚РѕР±С‹ СѓРІРёРґРµС‚СЊ СЂРµР·СѓР»СЊС‚Р°С‚ СЌС‚РёС… РґРµР№СЃС‚РІРёР№, РЅРµРѕР±С…РѕРґРёРјРѕ Р·Р°РїСЂРѕСЃРёС‚СЊ РїСЂРѕС„РёР»СЊ Сѓ СЃРµСЂРІРµСЂР°
+	//	ROOM - РєР»РёРµРЅС‚ РЅР°С…РѕРґРёС‚СЃСЏ РІ РєРѕРјРЅР°С‚Рµ РјРѕР¶РµС‚ РѕС‚РїСЂР°РІР»СЏС‚СЊ РґР°РЅРЅС‹Рµ СѓРїСЂР°РІР»РµРЅРёСЏ, СЃРѕРѕР±С‰РµРЅРёРµ РІС‹С…РѕРґР° РёР· РєРѕРјРЅР°С‚С‹
+	//Р•СЃР»Рё РєР»РёРµРЅС‚ РЅР°С…РѕРґСЏСЃСЊ, РЅР°РїСЂРёРјРµСЂ, РІ Р°РЅРіР°СЂРµ РїРѕРїСЂРѕР±СѓРµС‚ РѕС‚РїСЂР°РІРёС‚СЊ РґР°РЅРЅС‹Рµ СѓРїСЂР°РІР»РµРЅРёСЏ, Рё РІ РїРѕРґРѕР±РЅС‹С… СЃР»СѓС‡Р°СЏС…, СЃРѕРµРґРёРЅРµРЅРёРµ Р±СѓРґРµС‚ СѓРґР°Р»РµРЅРѕ Р±РµР· РїСЂРµРґСѓРїСЂРµР¶РґРµРЅРёСЏ
+	//РР·РјРµРЅСЏС‚СЊ СЃС‚Р°С‚СѓСЃ РјРѕР¶РЅРѕ СЃРѕРѕР±С‰РµРЅРёСЏРјРё login, joinRoom, exitRoom, logout
+	//РџРѕСЃР»Рµ С‚РѕРіРѕ РєР°Рє Р±С‹Р»Рѕ РѕС‚РїСЂР°РІР»РµРЅРѕ РѕРґРЅРѕ РёР· СЌС‚РёС… СЃРѕРѕР±С‰РµРЅРёР№, РЅРµРѕР±С…РѕРґРёРјРѕ Р·Р°РїСЂРѕСЃРёС‚СЊ СЃС‚Р°С‚СѓСЃ Сѓ СЃРµСЂРІРµСЂР°
 	rplanes::network::ClientStatus status;
-	//показания приборов, уровень перегрузки и прочее
+	//РїРѕРєР°Р·Р°РЅРёСЏ РїСЂРёР±РѕСЂРѕРІ, СѓСЂРѕРІРµРЅСЊ РїРµСЂРµРіСЂСѓР·РєРё Рё РїСЂРѕС‡РµРµ
 	rplanes::network::servermessages::room::InterfaceData interfaceData;
-	//профиль игрока. Содержит список самолетов в ангаре, игровую статисктику и проч.
+	//РїСЂРѕС„РёР»СЊ РёРіСЂРѕРєР°. РЎРѕРґРµСЂР¶РёС‚ СЃРїРёСЃРѕРє СЃР°РјРѕР»РµС‚РѕРІ РІ Р°РЅРіР°СЂРµ, РёРіСЂРѕРІСѓСЋ СЃС‚Р°С‚РёСЃРєС‚РёРєСѓ Рё РїСЂРѕС‡.
 	rplanes::playerdata::Profile profile;
 
-	//информация о комнатах
+	//РёРЅС„РѕСЂРјР°С†РёСЏ Рѕ РєРѕРјРЅР°С‚Р°С…
 	typedef rplanes::network::servermessages::hangar::RoomList::RoomInfo RoomInfo;
 	std::vector<RoomInfo> rooms;
 
-	//время используется для синхронизации при получении некоторых сообщений
-	//время, переданное сервером
+	//РІСЂРµРјСЏ РёСЃРїРѕР»СЊР·СѓРµС‚СЃСЏ РґР»СЏ СЃРёРЅС…СЂРѕРЅРёР·Р°С†РёРё РїСЂРё РїРѕР»СѓС‡РµРЅРёРё РЅРµРєРѕС‚РѕСЂС‹С… СЃРѕРѕР±С‰РµРЅРёР№
+	//РІСЂРµРјСЏ, РїРµСЂРµРґР°РЅРЅРѕРµ СЃРµСЂРІРµСЂРѕРј
 	float serverTime;
-	//время, используемое клиентом. Плавно корректироется c serverTime
+	//РІСЂРµРјСЏ, РёСЃРїРѕР»СЊР·СѓРµРјРѕРµ РєР»РёРµРЅС‚РѕРј. РџР»Р°РІРЅРѕ РєРѕСЂСЂРµРєС‚РёСЂРѕРµС‚СЃСЏ c serverTime
 	float clientTime;
 }client;
 
@@ -157,20 +157,20 @@ namespace rplanes
 	{
 		namespace servermessages
 		{
-			//приходит после отправки запроса статуса
+			//РїСЂРёС…РѕРґРёС‚ РїРѕСЃР»Рµ РѕС‚РїСЂР°РІРєРё Р·Р°РїСЂРѕСЃР° СЃС‚Р°С‚СѓСЃР°
 			void StatusMessage::handle()
 			{
 				client.status = status;
 
 			}
 
-			//сообщения отправляемые клиенту, находящимуся в ангаре
+			//СЃРѕРѕР±С‰РµРЅРёСЏ РѕС‚РїСЂР°РІР»СЏРµРјС‹Рµ РєР»РёРµРЅС‚Сѓ, РЅР°С…РѕРґСЏС‰РёРјСѓСЃСЏ РІ Р°РЅРіР°СЂРµ
 			namespace hangar
 			{
-				//после успешной авторизации сервер отсылает конфигурацию, необходимую для корректной работы interpolate и т.п.
+				//РїРѕСЃР»Рµ СѓСЃРїРµС€РЅРѕР№ Р°РІС‚РѕСЂРёР·Р°С†РёРё СЃРµСЂРІРµСЂ РѕС‚СЃС‹Р»Р°РµС‚ РєРѕРЅС„РёРіСѓСЂР°С†РёСЋ, РЅРµРѕР±С…РѕРґРёРјСѓСЋ РґР»СЏ РєРѕСЂСЂРµРєС‚РЅРѕР№ СЂР°Р±РѕС‚С‹ interpolate Рё С‚.Рї.
 				void ServerConfiguration::handle()
 				{
-					std::cout << "Получена конфигурация сервера " << std::endl;
+					std::cout << "РџРѕР»СѓС‡РµРЅР° РєРѕРЅС„РёРіСѓСЂР°С†РёСЏ СЃРµСЂРІРµСЂР° " << std::endl;
 					rplanes::configuration() = conf;
 				}
 				void SendProfile::handle()
@@ -184,25 +184,25 @@ namespace rplanes
 
 			}
 
-			//сообщения отправляемые клиенту, находящимуся в комнате
+			//СЃРѕРѕР±С‰РµРЅРёСЏ РѕС‚РїСЂР°РІР»СЏРµРјС‹Рµ РєР»РёРµРЅС‚Сѓ, РЅР°С…РѕРґСЏС‰РёРјСѓСЃСЏ РІ РєРѕРјРЅР°С‚Рµ
 			namespace room
 			{
 
 				void ChangeMap::handle()
 				{
-					std::cout << "Карта сменена на " << mapName << std::endl;
+					std::cout << "РљР°СЂС‚Р° СЃРјРµРЅРµРЅР° РЅР° " << mapName << std::endl;
 				}
 
-				//сообщение приходит после запроса серверного времени
+				//СЃРѕРѕР±С‰РµРЅРёРµ РїСЂРёС…РѕРґРёС‚ РїРѕСЃР»Рµ Р·Р°РїСЂРѕСЃР° СЃРµСЂРІРµСЂРЅРѕРіРѕ РІСЂРµРјРµРЅРё
 				void ServerTime::handle()
 				{
 					client.serverTime = time;
 
-					//запрашиваем серверное время
+					//Р·Р°РїСЂР°С€РёРІР°РµРј СЃРµСЂРІРµСЂРЅРѕРµ РІСЂРµРјСЏ
 					client.connection.sendMessage(clientmessages::room::ServerTimeRequest());
 
-					//клиент должен отсылать управление как можно чаще, но при этом не привышать квоту
-					//поэтому отправляем данные управления вместе с запросом времени
+					//РєР»РёРµРЅС‚ РґРѕР»Р¶РµРЅ РѕС‚СЃС‹Р»Р°С‚СЊ СѓРїСЂР°РІР»РµРЅРёРµ РєР°Рє РјРѕР¶РЅРѕ С‡Р°С‰Рµ, РЅРѕ РїСЂРё СЌС‚РѕРј РЅРµ РїСЂРёРІС‹С€Р°С‚СЊ РєРІРѕС‚Сѓ
+					//РїРѕСЌС‚РѕРјСѓ РѕС‚РїСЂР°РІР»СЏРµРј РґР°РЅРЅС‹Рµ СѓРїСЂР°РІР»РµРЅРёСЏ РІРјРµСЃС‚Рµ СЃ Р·Р°РїСЂРѕСЃРѕРј РІСЂРµРјРµРЅРё
 					client.connection.sendMessage(client.controllable);
 				}
 
@@ -210,15 +210,15 @@ namespace rplanes
 				{
 					for (auto & bullet : bullets)
 					{
-						//сдвигаем пулю на актуальную на данный момент позицию
+						//СЃРґРІРёРіР°РµРј РїСѓР»СЋ РЅР° Р°РєС‚СѓР°Р»СЊРЅСѓСЋ РЅР° РґР°РЅРЅС‹Р№ РјРѕРјРµРЅС‚ РїРѕР·РёС†РёСЋ
 						if (client.clientTime > time)
 							bullet.move(client.clientTime - time);
 						client.bullets[bullet.ID] = bullet;
 					}
 				}
 
-				//данный клиент игнорирует ракеты
-				void СreateMissiles::handle()
+				//РґР°РЅРЅС‹Р№ РєР»РёРµРЅС‚ РёРіРЅРѕСЂРёСЂСѓРµС‚ СЂР°РєРµС‚С‹
+				void CreateMissiles::handle()
 				{
 				}
 
@@ -229,9 +229,9 @@ namespace rplanes
 
 						if (client.planes.count(plane.id) != 0)
 						{
-							std::cout << "повторное создание самолета" << std::endl;
+							std::cout << "РїРѕРІС‚РѕСЂРЅРѕРµ СЃРѕР·РґР°РЅРёРµ СЃР°РјРѕР»РµС‚Р°" << std::endl;
 						}
-						std::cout << " Появился новый самолет " << " "
+						std::cout << " РџРѕСЏРІРёР»СЃСЏ РЅРѕРІС‹Р№ СЃР°РјРѕР»РµС‚ " << " "
 							<< plane.planeName << " "
 							<< plane.playerName << " "
 							<< plane.id << std::endl;
@@ -240,9 +240,9 @@ namespace rplanes
 
 				}
 
-				//логически идентична createBullets
-				//можно использовать другие графические эффекты, и т.п.
-				void СreateRicochetes::handle()
+				//Р»РѕРіРёС‡РµСЃРєРё РёРґРµРЅС‚РёС‡РЅР° createBullets
+				//РјРѕР¶РЅРѕ РёСЃРїРѕР»СЊР·РѕРІР°С‚СЊ РґСЂСѓРіРёРµ РіСЂР°С„РёС‡РµСЃРєРёРµ СЌС„С„РµРєС‚С‹, Рё С‚.Рї.
+				void CreateRicochetes::handle()
 				{
 					for (auto & bullet : bullets)
 					{
@@ -252,10 +252,10 @@ namespace rplanes
 					}
 				}
 
-				//приходит только при попаданиях. Остальные пули удаляются в главной петле
+				//РїСЂРёС…РѕРґРёС‚ С‚РѕР»СЊРєРѕ РїСЂРё РїРѕРїР°РґР°РЅРёСЏС…. РћСЃС‚Р°Р»СЊРЅС‹Рµ РїСѓР»Рё СѓРґР°Р»СЏСЋС‚СЃСЏ РІ РіР»Р°РІРЅРѕР№ РїРµС‚Р»Рµ
 				void DestroyBullets::handle()
 				{
-					//пуля уничтожена во время коллизий
+					//РїСѓР»СЏ СѓРЅРёС‡С‚РѕР¶РµРЅР° РІРѕ РІСЂРµРјСЏ РєРѕР»Р»РёР·РёР№
 					for (auto & bullet : bullets)
 					{
 						client.bullets.erase(bullet.bulletID);
@@ -266,7 +266,7 @@ namespace rplanes
 				{
 				}
 
-				//может означать не только уничтожение, но и вылет за границы видимости
+				//РјРѕР¶РµС‚ РѕР·РЅР°С‡Р°С‚СЊ РЅРµ С‚РѕР»СЊРєРѕ СѓРЅРёС‡С‚РѕР¶РµРЅРёРµ, РЅРѕ Рё РІС‹Р»РµС‚ Р·Р° РіСЂР°РЅРёС†С‹ РІРёРґРёРјРѕСЃС‚Рё
 				void DestroyPlanes::handle()
 				{
 					for (auto & destroyedPlane : planes)
@@ -274,33 +274,33 @@ namespace rplanes
 						switch (destroyedPlane.reason)
 						{
 						case rplanes::network::servermessages::room::DestroyPlanes::MODULE_DESTROYED:
-							std::cout << "Самолет" << destroyedPlane.planeID << " уничтожен по милости модуля " << destroyedPlane.moduleNo 
+							std::cout << "РЎР°РјРѕР»РµС‚" << destroyedPlane.planeID << " СѓРЅРёС‡С‚РѕР¶РµРЅ РїРѕ РјРёР»РѕСЃС‚Рё РјРѕРґСѓР»СЏ " << destroyedPlane.moduleNo 
 								<< " " << rplanes::moduleTypesNames[ client.planes[destroyedPlane.planeID].modules[destroyedPlane.moduleNo].type ] << std::endl;
 							break;
 						case rplanes::network::servermessages::room::DestroyPlanes::FUEL:
-							std::cout << "Самолет" << destroyedPlane.planeID << " уничтожен, закончилось топливо " << std::endl;
+							std::cout << "РЎР°РјРѕР»РµС‚" << destroyedPlane.planeID << " СѓРЅРёС‡С‚РѕР¶РµРЅ, Р·Р°РєРѕРЅС‡РёР»РѕСЃСЊ С‚РѕРїР»РёРІРѕ " << std::endl;
 							break;
 						case rplanes::network::servermessages::room::DestroyPlanes::VANISH:
-							std::cout << "Самолет " << destroyedPlane.planeID << " исчез!" << std::endl;
+							std::cout << "РЎР°РјРѕР»РµС‚ " << destroyedPlane.planeID << " РёСЃС‡РµР·!" << std::endl;
 							break;
 						case  rplanes::network::servermessages::room::DestroyPlanes::RAMMED:
-							std::cout << "Самолет уничтожен тараном " << destroyedPlane.planeID << std::endl;
+							std::cout << "РЎР°РјРѕР»РµС‚ СѓРЅРёС‡С‚РѕР¶РµРЅ С‚Р°СЂР°РЅРѕРј " << destroyedPlane.planeID << std::endl;
 							break;
 						case rplanes::network::servermessages::room::DestroyPlanes::FIRE:
-							std::cout << "Самолет уничтожен пожаром " << destroyedPlane.planeID << std::endl;
+							std::cout << "РЎР°РјРѕР»РµС‚ СѓРЅРёС‡С‚РѕР¶РµРЅ РїРѕР¶Р°СЂРѕРј " << destroyedPlane.planeID << std::endl;
 							break;
 						}
 						client.planes.erase(destroyedPlane.planeID);
 					}
 				}
 
-				//приходит каждый серверный кадр
+				//РїСЂРёС…РѕРґРёС‚ РєР°Р¶РґС‹Р№ СЃРµСЂРІРµСЂРЅС‹Р№ РєР°РґСЂ
 				void InterfaceData::handle()
 				{
 					client.interfaceData = *this;
 				}
 
-				//приходит каждый серверный кадр
+				//РїСЂРёС…РѕРґРёС‚ РєР°Р¶РґС‹Р№ СЃРµСЂРІРµСЂРЅС‹Р№ РєР°РґСЂ
 				void SetPlanesPositions::handle()
 				{
 					for (auto & position : positions)
@@ -308,12 +308,12 @@ namespace rplanes
 						auto & plane = client.planes[position.planeID];
 						plane.extrapolationData = position.extrapolationData;
 						plane.pos = position.pos;
-						//сдвигаем самолет на актуальную позицию
+						//СЃРґРІРёРіР°РµРј СЃР°РјРѕР»РµС‚ РЅР° Р°РєС‚СѓР°Р»СЊРЅСѓСЋ РїРѕР·РёС†РёСЋ
 						plane.extrapolate(client.clientTime - time);
 					}
 				}
 
-				//приходит только при изменении параметров модулей
+				//РїСЂРёС…РѕРґРёС‚ С‚РѕР»СЊРєРѕ РїСЂРё РёР·РјРµРЅРµРЅРёРё РїР°СЂР°РјРµС‚СЂРѕРІ РјРѕРґСѓР»РµР№
 				void UpdateModules::handle()
 				{
 					for (auto & module : modules)
@@ -328,19 +328,19 @@ namespace rplanes
 						//switch (module.reason)
 						//{
 						//case rplanes::planedata::ModuleHP::FIRE:
-						//	std::cout << " Модуль поврежден пожаром. ";
+						//	std::cout << " РњРѕРґСѓР»СЊ РїРѕРІСЂРµР¶РґРµРЅ РїРѕР¶Р°СЂРѕРј. ";
 						//	break;
 						//case rplanes::planedata::ModuleHP::HIT:
-						//	std::cout << " Модуль поврежден пулей. ";
+						//	std::cout << " РњРѕРґСѓР»СЊ РїРѕРІСЂРµР¶РґРµРЅ РїСѓР»РµР№. ";
 						//	break;
 						//case rplanes::planedata::ModuleHP::REPAIR:
-						//	std::cout << " Модуль восстановлен. ";
+						//	std::cout << " РњРѕРґСѓР»СЊ РІРѕСЃСЃС‚Р°РЅРѕРІР»РµРЅ. ";
 						//	break;
 						//}
 
-						//std::cout << "Номер модуля " << module.moduleNo << ". ";
+						//std::cout << "РќРѕРјРµСЂ РјРѕРґСѓР»СЏ " << module.moduleNo << ". ";
 						//auto moduleType = plane.modules[module.moduleNo].type;
-						//std::cout << "Тип модуля " << moduleTypesNames[moduleType] << "." << std::endl;
+						//std::cout << "РўРёРї РјРѕРґСѓР»СЏ " << moduleTypesNames[moduleType] << "." << std::endl;
 					}
 				}
 
@@ -349,23 +349,23 @@ namespace rplanes
 				{
 					/*for (auto & player : newPlayers)
 					{
-						std::cout << player.name + " присоединился на самолете " + player.planeName + "." << std::endl;
+						std::cout << player.name + " РїСЂРёСЃРѕРµРґРёРЅРёР»СЃСЏ РЅР° СЃР°РјРѕР»РµС‚Рµ " + player.planeName + "." << std::endl;
 					}
 					for (auto & player : disconnectedPlayers)
 					{
-						std::cout << player + " покинул комнату." << std::endl;
+						std::cout << player + " РїРѕРєРёРЅСѓР» РєРѕРјРЅР°С‚Сѓ." << std::endl;
 					}
-					std::cout << "Ваша текущая цель - " + goal.description + "." << std::endl;
+					std::cout << "Р’Р°С€Р° С‚РµРєСѓС‰Р°СЏ С†РµР»СЊ - " + goal.description + "." << std::endl;
 					for (auto & stat : updatedStatistics)
 					{
 						std::cout
-							<< "Статистика игрока "
+							<< "РЎС‚Р°С‚РёСЃС‚РёРєР° РёРіСЂРѕРєР° "
 							<< stat.first
-							<< " обновлена. Убито : "
+							<< " РѕР±РЅРѕРІР»РµРЅР°. РЈР±РёС‚Рѕ : "
 							<< stat.second.destroyed
-							<< " умер : "
+							<< " СѓРјРµСЂ : "
 							<< stat.second.crashes
-							<< " союзников уничтожено : "
+							<< " СЃРѕСЋР·РЅРёРєРѕРІ СѓРЅРёС‡С‚РѕР¶РµРЅРѕ : "
 							<< stat.second.friendsDestroyed
 							<< std::endl;
 					}*/
@@ -377,11 +377,11 @@ namespace rplanes
 		{
 			void TextMessage::handle()
 			{
-				std::cout << "Сервер  пишет " << text << std::endl;
+				std::cout << "РЎРµСЂРІРµСЂ  РїРёС€РµС‚ " << text << std::endl;
 			}
 			void ExitRoom::handle()
 			{
-				std::cout << " клиент выброшен из комнаты " << std::endl;
+				std::cout << " РєР»РёРµРЅС‚ РІС‹Р±СЂРѕС€РµРЅ РёР· РєРѕРјРЅР°С‚С‹ " << std::endl;
 			}
 		}
 	}
@@ -394,28 +394,28 @@ void loginAndJoinRoom(std::string profileName, size_t planeNo, bool bot = false)
 {
 	std::chrono::milliseconds hangarFrameTime(static_cast<long long> (rplanes::configuration().server.hangarFrameTime * 1000));
 
-	//заранее создаем сообщение авторизации
+	//Р·Р°СЂР°РЅРµРµ СЃРѕР·РґР°РµРј СЃРѕРѕР±С‰РµРЅРёРµ Р°РІС‚РѕСЂРёР·Р°С†РёРё
 	rplanes::network::clientmessages::unlogined::Login loginMessage;
 	loginMessage.name = profileName;
 	loginMessage.encryptedPassword = password;
 
-	//подключаемся к серверу
+	//РїРѕРґРєР»СЋС‡Р°РµРјСЃСЏ Рє СЃРµСЂРІРµСЂСѓ
 	client.connect();
 	client.connection.non_blocking(true);
 
-	//отправляем сообщение авторизации
+	//РѕС‚РїСЂР°РІР»СЏРµРј СЃРѕРѕР±С‰РµРЅРёРµ Р°РІС‚РѕСЂРёР·Р°С†РёРё
 	client.connection.sendMessage(loginMessage);
-	std::cout << "Отправлен запрос авторизации" << std::endl;
+	std::cout << "РћС‚РїСЂР°РІР»РµРЅ Р·Р°РїСЂРѕСЃ Р°РІС‚РѕСЂРёР·Р°С†РёРё" << std::endl;
 
-	//ждем, чтобы не привысить квоту
+	//Р¶РґРµРј, С‡С‚РѕР±С‹ РЅРµ РїСЂРёРІС‹СЃРёС‚СЊ РєРІРѕС‚Сѓ
 	std::this_thread::sleep_for(hangarFrameTime);
 
-	//если все прошло успешно, мы находимся в ангаре. Для проверки на acmd клиенте можно запросить у сервера статус.
+	//РµСЃР»Рё РІСЃРµ РїСЂРѕС€Р»Рѕ СѓСЃРїРµС€РЅРѕ, РјС‹ РЅР°С…РѕРґРёРјСЃСЏ РІ Р°РЅРіР°СЂРµ. Р”Р»СЏ РїСЂРѕРІРµСЂРєРё РЅР° acmd РєР»РёРµРЅС‚Рµ РјРѕР¶РЅРѕ Р·Р°РїСЂРѕСЃРёС‚СЊ Сѓ СЃРµСЂРІРµСЂР° СЃС‚Р°С‚СѓСЃ.
 
-	//запрашиваем список комнат
+	//Р·Р°РїСЂР°С€РёРІР°РµРј СЃРїРёСЃРѕРє РєРѕРјРЅР°С‚
 	client.connection.sendMessage(rplanes::network::clientmessages::hangar::RoomListRequest());
 
-	//ждем ответа
+	//Р¶РґРµРј РѕС‚РІРµС‚Р°
 	size_t tries = 0;
 	for (; tries < 10; tries++)
 	{
@@ -430,34 +430,34 @@ void loginAndJoinRoom(std::string profileName, size_t planeNo, bool bot = false)
 	}
 	if (tries == 10)
 	{
-		std::cout << "хуйня хэппенд" << std::endl;
+		std::cout << "С…СѓР№РЅСЏ С…СЌРїРїРµРЅРґ" << std::endl;
 		return;
 	}
 
 	std::this_thread::sleep_for(hangarFrameTime);
 
-	//имя игрока, к комнате которого мы присоединимся
+	//РёРјСЏ РёРіСЂРѕРєР°, Рє РєРѕРјРЅР°С‚Рµ РєРѕС‚РѕСЂРѕРіРѕ РјС‹ РїСЂРёСЃРѕРµРґРёРЅРёРјСЃСЏ
 	std::string roomCreatorName;
 
-	//если список комнат пуст, создаем свою. Имя игрока может оставаться пустым.
+	//РµСЃР»Рё СЃРїРёСЃРѕРє РєРѕРјРЅР°С‚ РїСѓСЃС‚, СЃРѕР·РґР°РµРј СЃРІРѕСЋ. РРјСЏ РёРіСЂРѕРєР° РјРѕР¶РµС‚ РѕСЃС‚Р°РІР°С‚СЊСЃСЏ РїСѓСЃС‚С‹Рј.
 	if (client.rooms.size() == 0)
 	{
 		rplanes::network::clientmessages::hangar::CreateRoomRequest crr;
-		crr.description = "ракам не входить, маму выебу!";
+		crr.description = "СЂР°РєР°Рј РЅРµ РІС…РѕРґРёС‚СЊ, РјР°РјСѓ РІС‹РµР±Сѓ!";
 		crr.mapName = "bot.map";
 		client.connection.sendMessage(crr);
 		std::this_thread::sleep_for(hangarFrameTime);
 	}
-	//иначе запоминаем имя владельца первой комнаты
+	//РёРЅР°С‡Рµ Р·Р°РїРѕРјРёРЅР°РµРј РёРјСЏ РІР»Р°РґРµР»СЊС†Р° РїРµСЂРІРѕР№ РєРѕРјРЅР°С‚С‹
 	else
 	{
 		roomCreatorName = client.rooms.front().creatorName;
 	}
 
-	//считаем что все прошло успешно
+	//СЃС‡РёС‚Р°РµРј С‡С‚Рѕ РІСЃРµ РїСЂРѕС€Р»Рѕ СѓСЃРїРµС€РЅРѕ
 
 
-	//перед отправкой запроса присоединения к комнате создаем окно и прочее.
+	//РїРµСЂРµРґ РѕС‚РїСЂР°РІРєРѕР№ Р·Р°РїСЂРѕСЃР° РїСЂРёСЃРѕРµРґРёРЅРµРЅРёСЏ Рє РєРѕРјРЅР°С‚Рµ СЃРѕР·РґР°РµРј РѕРєРЅРѕ Рё РїСЂРѕС‡РµРµ.
 	sf::RenderWindow window(sf::VideoMode(1366, 768), "Sudden poligons!");
 
 	window.setFramerateLimit(25);
@@ -495,41 +495,41 @@ void loginAndJoinRoom(std::string profileName, size_t planeNo, bool bot = false)
 	aimCircle.setOutlineColor(sf::Color::Red);
 
 
-	//подключаемся к первой комнате
+	//РїРѕРґРєР»СЋС‡Р°РµРјСЃСЏ Рє РїРµСЂРІРѕР№ РєРѕРјРЅР°С‚Рµ
 	rplanes::network::clientmessages::hangar::JoinRoomRequest jrr;
 	jrr.planeNo = planeNo;
 	jrr.playerName = roomCreatorName;
 
 	client.connection.sendMessage(jrr);
 
-	//запрашиваем серверное время. Последующие запросы будут отправлены из обработчика ServerTime
+	//Р·Р°РїСЂР°С€РёРІР°РµРј СЃРµСЂРІРµСЂРЅРѕРµ РІСЂРµРјСЏ. РџРѕСЃР»РµРґСѓСЋС‰РёРµ Р·Р°РїСЂРѕСЃС‹ Р±СѓРґСѓС‚ РѕС‚РїСЂР°РІР»РµРЅС‹ РёР· РѕР±СЂР°Р±РѕС‚С‡РёРєР° ServerTime
 	client.connection.sendMessage(rplanes::network::clientmessages::room::ServerTimeRequest());
 
-	//есть ли фокус на окне
+	//РµСЃС‚СЊ Р»Рё С„РѕРєСѓСЃ РЅР° РѕРєРЅРµ
 	bool focusPocus = true;
 
 	//graphic loop
 	while (window.isOpen())
 	{
 		iterationBegin = std::chrono::steady_clock::now();
-		//увеличиваем время
+		//СѓРІРµР»РёС‡РёРІР°РµРј РІСЂРµРјСЏ
 		client.serverTime += frameTime.count();
 		client.clientTime += frameTime.count();
 
-		//плавно корректируем клиентское время
+		//РїР»Р°РІРЅРѕ РєРѕСЂСЂРµРєС‚РёСЂСѓРµРј РєР»РёРµРЅС‚СЃРєРѕРµ РІСЂРµРјСЏ
 		client.clientTime += (client.serverTime - client.clientTime) * frameTime.count();
 		if (std::abs(client.clientTime - client.serverTime) > 1.0)
 		{
 			client.clientTime = client.serverTime;
 		}
 
-		//экстраполируем
+		//СЌРєСЃС‚СЂР°РїРѕР»РёСЂСѓРµРј
 		for (auto & plane : client.planes)
 		{
 			plane.second.extrapolate(frameTime.count());
 		}
 
-		//сдвигаем пули и удаляем пули на излете
+		//СЃРґРІРёРіР°РµРј РїСѓР»Рё Рё СѓРґР°Р»СЏРµРј РїСѓР»Рё РЅР° РёР·Р»РµС‚Рµ
 		std::vector<size_t> erasedBulletsKeys;
 		for (auto & bullet : client.bullets)
 		{
@@ -544,7 +544,7 @@ void loginAndJoinRoom(std::string profileName, size_t planeNo, bool bot = false)
 			client.bullets.erase(key);
 		}
 
-		//считываем управление
+		//СЃС‡РёС‚С‹РІР°РµРј СѓРїСЂР°РІР»РµРЅРёРµ
 		sf::Event event;
 		client.controllable.params.shootingDistanceOffset = 0;
 		while (window.pollEvent(event))
@@ -558,7 +558,7 @@ void loginAndJoinRoom(std::string profileName, size_t planeNo, bool bot = false)
 				rplanes::network::clientmessages::room::AdministerRoom ar;
 				ar.operation = rplanes::network::clientmessages::room::AdministerRoom::RESTART;
 				client.connection.sendMessage(ar);
-				std::cout << " Серверу отправлена команда рестарта." << std::endl;
+				std::cout << " РЎРµСЂРІРµСЂСѓ РѕС‚РїСЂР°РІР»РµРЅР° РєРѕРјР°РЅРґР° СЂРµСЃС‚Р°СЂС‚Р°." << std::endl;
 			}
 			if (!bot)
 			{
@@ -622,7 +622,7 @@ void loginAndJoinRoom(std::string profileName, size_t planeNo, bool bot = false)
 			client.controllable.params.shootingDistanceOffset = (0.5f - static_cast<float>(rand()) / RAND_MAX) * 10.f;
 		}
 
-		//управление мощностью двигателя
+		//СѓРїСЂР°РІР»РµРЅРёРµ РјРѕС‰РЅРѕСЃС‚СЊСЋ РґРІРёРіР°С‚РµР»СЏ
 		{
 
 			auto & controllable = client.controllable.params;
@@ -662,12 +662,12 @@ void loginAndJoinRoom(std::string profileName, size_t planeNo, bool bot = false)
 		}
 
 
-		//принимаем серверные сообщения. Будут созданы новые пули, самолеты, и обновлено состояние самолетов
+		//РїСЂРёРЅРёРјР°РµРј СЃРµСЂРІРµСЂРЅС‹Рµ СЃРѕРѕР±С‰РµРЅРёСЏ. Р‘СѓРґСѓС‚ СЃРѕР·РґР°РЅС‹ РЅРѕРІС‹Рµ РїСѓР»Рё, СЃР°РјРѕР»РµС‚С‹, Рё РѕР±РЅРѕРІР»РµРЅРѕ СЃРѕСЃС‚РѕСЏРЅРёРµ СЃР°РјРѕР»РµС‚РѕРІ
 		while (client.connection.handleInput())
 		{
 		};
 
-		//вращаем зоны повреждения
+		//РІСЂР°С‰Р°РµРј Р·РѕРЅС‹ РїРѕРІСЂРµР¶РґРµРЅРёСЏ
 		for (auto & plane : client.planes)
 		{
 			for (auto & module : plane.second.modules)
@@ -676,21 +676,21 @@ void loginAndJoinRoom(std::string profileName, size_t planeNo, bool bot = false)
 			}
 		}
 
-		//рисуем сетку
+		//СЂРёСЃСѓРµРј СЃРµС‚РєСѓ
 		for (auto & cell : grid)
 		{
 			window.draw(cell);
 		}
-		//рисуем самолеты
+		//СЂРёСЃСѓРµРј СЃР°РјРѕР»РµС‚С‹
 		for (auto & plane : client.planes)
 		{
-			//центруем камеру по нашему самолету и рисуем интерфейс
+			//С†РµРЅС‚СЂСѓРµРј РєР°РјРµСЂСѓ РїРѕ РЅР°С€РµРјСѓ СЃР°РјРѕР»РµС‚Сѓ Рё СЂРёСЃСѓРµРј РёРЅС‚РµСЂС„РµР№СЃ
 			if (plane.second.playerName == profileName)
 			{
 				camera.setCenter(plane.second.pos.x * scale, plane.second.pos.y * scale);
 				camera.setRotation(plane.second.pos.angle + 90);
 
-				//слайдер поворота
+				//СЃР»Р°Р№РґРµСЂ РїРѕРІРѕСЂРѕС‚Р°
 				sf::Vector2f sliderPos;
 				sliderPos.x = plane.second.pos.x
 					+ std::cos((plane.second.pos.angle + client.controllable.params.turningVal * 0.3f) / 180.f * M_PI) * client.interfaceData.shootingDistance;
@@ -700,12 +700,12 @@ void loginAndJoinRoom(std::string profileName, size_t planeNo, bool bot = false)
 				turningSlider.setPosition(sliderPos.x * scale - 5,
 					sliderPos.y * scale - 5);
 
-				//затемнение экрана при перегрузках
+				//Р·Р°С‚РµРјРЅРµРЅРёРµ СЌРєСЂР°РЅР° РїСЂРё РїРµСЂРµРіСЂСѓР·РєР°С…
 				faintRECTALgle.setPosition(plane.second.pos.x * scale - 400, plane.second.pos.y * scale - 300);
 
-				//прицел
-				//по хорошему прицел должен сдвигаться относительно пушек, а не центра самолета
-				//но это бы запутало и так говновый кот
+				//РїСЂРёС†РµР»
+				//РїРѕ С…РѕСЂРѕС€РµРјСѓ РїСЂРёС†РµР» РґРѕР»Р¶РµРЅ СЃРґРІРёРіР°С‚СЊСЃСЏ РѕС‚РЅРѕСЃРёС‚РµР»СЊРЅРѕ РїСѓС€РµРє, Р° РЅРµ С†РµРЅС‚СЂР° СЃР°РјРѕР»РµС‚Р°
+				//РЅРѕ СЌС‚Рѕ Р±С‹ Р·Р°РїСѓС‚Р°Р»Рѕ Рё С‚Р°Рє РіРѕРІРЅРѕРІС‹Р№ РєРѕС‚
 				sf::Vector2f aimPos;
 				aimPos.x = plane.second.pos.x
 					+ std::cos(plane.second.pos.angle / 180.f * M_PI) * client.interfaceData.shootingDistance;
@@ -719,14 +719,14 @@ void loginAndJoinRoom(std::string profileName, size_t planeNo, bool bot = false)
 		}
 		window.draw(turningSlider);
 		window.draw(aimCircle);
-		//рисуем пули
+		//СЂРёСЃСѓРµРј РїСѓР»Рё
 		for (auto & bullet : client.bullets)
 		{
 			window.draw(bullet.second);
 		}
 		window.setView(camera);
 
-		//обморочное затемнение экрана
+		//РѕР±РјРѕСЂРѕС‡РЅРѕРµ Р·Р°С‚РµРјРЅРµРЅРёРµ СЌРєСЂР°РЅР°
 		unsigned int fv = std::pow(client.interfaceData.faintVal / 100.f, 4.0) * 255;
 		if (fv > 255)
 		{
@@ -743,16 +743,16 @@ void loginAndJoinRoom(std::string profileName, size_t planeNo, bool bot = false)
 
 void registry(std::string profileName)
 {
-	//заранее создаем сообщение регистрации
+	//Р·Р°СЂР°РЅРµРµ СЃРѕР·РґР°РµРј СЃРѕРѕР±С‰РµРЅРёРµ СЂРµРіРёСЃС‚СЂР°С†РёРё
 	rplanes::network::clientmessages::unlogined::Registry registryMessage;
 	registryMessage.name = profileName;
 	registryMessage.password = password;
 
-	//подключаемся к серверу
+	//РїРѕРґРєР»СЋС‡Р°РµРјСЃСЏ Рє СЃРµСЂРІРµСЂСѓ
 	client.connect();
-	//отправляем сообщение
+	//РѕС‚РїСЂР°РІР»СЏРµРј СЃРѕРѕР±С‰РµРЅРёРµ
 	client.connection.sendMessage(registryMessage);
-	//обрабатываем вывод сервера
+	//РѕР±СЂР°Р±Р°С‚С‹РІР°РµРј РІС‹РІРѕРґ СЃРµСЂРІРµСЂР°
 	while (client.connection.handleInput())
 	{
 	}
@@ -760,30 +760,30 @@ void registry(std::string profileName)
 
 void loginAndBuyPlane(std::string profileName, std::string planeName)
 {
-	//заранее создаем сообщение авторизации
+	//Р·Р°СЂР°РЅРµРµ СЃРѕР·РґР°РµРј СЃРѕРѕР±С‰РµРЅРёРµ Р°РІС‚РѕСЂРёР·Р°С†РёРё
 	rplanes::network::clientmessages::unlogined::Login loginMessage;
 	loginMessage.name = profileName;
 	loginMessage.encryptedPassword = password;
 
-	//подключаемся к серверу
+	//РїРѕРґРєР»СЋС‡Р°РµРјСЃСЏ Рє СЃРµСЂРІРµСЂСѓ
 	client.connect();
 	client.connection.non_blocking(true);
 
 
-	//отправляем сообщение авторизации
+	//РѕС‚РїСЂР°РІР»СЏРµРј СЃРѕРѕР±С‰РµРЅРёРµ Р°РІС‚РѕСЂРёР·Р°С†РёРё
 	client.connection.sendMessage(loginMessage);
-	std::cout << "Отправлен запрос авторизации" << std::endl;
-	//ждем секунду, чтобы не привысить квоту
+	std::cout << "РћС‚РїСЂР°РІР»РµРЅ Р·Р°РїСЂРѕСЃ Р°РІС‚РѕСЂРёР·Р°С†РёРё" << std::endl;
+	//Р¶РґРµРј СЃРµРєСѓРЅРґСѓ, С‡С‚РѕР±С‹ РЅРµ РїСЂРёРІС‹СЃРёС‚СЊ РєРІРѕС‚Сѓ
 	std::this_thread::sleep_for(std::chrono::seconds(1));
 
-	//похорошему нужно запросить у сервера статус клиента
+	//РїРѕС…РѕСЂРѕС€РµРјСѓ РЅСѓР¶РЅРѕ Р·Р°РїСЂРѕСЃРёС‚СЊ Сѓ СЃРµСЂРІРµСЂР° СЃС‚Р°С‚СѓСЃ РєР»РёРµРЅС‚Р°
 
-	//теперь мы в ангаре, купим самолет
+	//С‚РµРїРµСЂСЊ РјС‹ РІ Р°РЅРіР°СЂРµ, РєСѓРїРёРј СЃР°РјРѕР»РµС‚
 
 	client.connection.sendMessage(rplanes::network::clientmessages::hangar::ProfileRequest());
-	//если авторизация не прошла успешно, сервер оборвет подклбчение.
+	//РµСЃР»Рё Р°РІС‚РѕСЂРёР·Р°С†РёСЏ РЅРµ РїСЂРѕС€Р»Р° СѓСЃРїРµС€РЅРѕ, СЃРµСЂРІРµСЂ РѕР±РѕСЂРІРµС‚ РїРѕРґРєР»Р±С‡РµРЅРёРµ.
 
-	//ждем ответа сервера
+	//Р¶РґРµРј РѕС‚РІРµС‚Р° СЃРµСЂРІРµСЂР°
 	size_t tries = 0;
 	for (; tries < 3; tries++)
 	{
@@ -791,7 +791,7 @@ void loginAndBuyPlane(std::string profileName, std::string planeName)
 		{
 			if (rplanes::network::servermessages::hangar::SendProfile().getId() == client.connection.getLastMessageId())
 			{
-				std::cout << "Авторизация прошла успешно" << std::endl;
+				std::cout << "РђРІС‚РѕСЂРёР·Р°С†РёСЏ РїСЂРѕС€Р»Р° СѓСЃРїРµС€РЅРѕ" << std::endl;
 				break;
 			}
 		}
@@ -799,7 +799,7 @@ void loginAndBuyPlane(std::string profileName, std::string planeName)
 	}
 	if (tries == 10)
 	{
-		std::cout << "хуйня хэппенд" << std::endl;
+		std::cout << "РїСЂР°РІР°Р»" << std::endl;
 		return;
 	}
 
@@ -807,8 +807,8 @@ void loginAndBuyPlane(std::string profileName, std::string planeName)
 	rplanes::network::clientmessages::hangar::BuyPlaneRequest bpr;
 	bpr.planeName = planeName;
 	client.connection.sendMessage(bpr);
-	std::cout << "отправлен запрос покупки самолета " << std::endl;
-	//обрабатываем вывод сервера
+	std::cout << "РѕС‚РїСЂР°РІР»РµРЅ Р·Р°РїСЂРѕСЃ РїРѕРєСѓРїРєРё СЃР°РјРѕР»РµС‚Р° " << std::endl;
+	//РѕР±СЂР°Р±Р°С‚С‹РІР°РµРј РІС‹РІРѕРґ СЃРµСЂРІРµСЂР°
 	while (true)
 	{
 		client.connection.handleInput();
@@ -823,7 +823,7 @@ int main(int argc, char* argv[])
 
 	if (argc < 2)
 	{
-		std::cout << "данные введены неверно " << std::endl;
+		std::cout << "РґР°РЅРЅС‹Рµ РІРІРµРґРµРЅС‹ РЅРµРІРµСЂРЅРѕ " << std::endl;
 		return 0;
 	}
 
@@ -835,7 +835,7 @@ int main(int argc, char* argv[])
 		{
 			if (argc != 4 && argc != 5)
 			{
-				std::cout << "данные введены неверно " << std::endl;
+				std::cout << "РґР°РЅРЅС‹Рµ РІРІРµРґРµРЅС‹ РЅРµРІРµСЂРЅРѕ " << std::endl;
 				return 0;
 			}
 			if (argc == 5)
@@ -852,7 +852,7 @@ int main(int argc, char* argv[])
 		{
 			if (argc != 4 && argc != 5)
 			{
-				std::cout << "данные введены неверно " << std::endl;
+				std::cout << "РґР°РЅРЅС‹Рµ РІРІРµРґРµРЅС‹ РЅРµРІРµСЂРЅРѕ " << std::endl;
 				return 0;
 			}
 			if (argc == 5)
@@ -869,7 +869,7 @@ int main(int argc, char* argv[])
 		{
 			if (argc != 3 && argc != 4)
 			{
-				std::cout << "данные введены неверно " << std::endl;
+				std::cout << "РґР°РЅРЅС‹Рµ РІРІРµРґРµРЅС‹ РЅРµРІРµСЂРЅРѕ " << std::endl;
 				return 0;
 			}
 			if (argc == 4)
@@ -882,7 +882,7 @@ int main(int argc, char* argv[])
 		{
 			if (argc != 4 && argc != 5)
 			{
-				std::cout << "данные введены неверно " << std::endl;
+				std::cout << "РґР°РЅРЅС‹Рµ РІРІРµРґРµРЅС‹ РЅРµРІРµСЂРЅРѕ " << std::endl;
 				return 0;
 			}
 			if (argc == 5)
@@ -893,7 +893,7 @@ int main(int argc, char* argv[])
 		}
 		else
 		{
-			std::cout << "данные введены неверно " << std::endl;
+			std::cout << "РґР°РЅРЅС‹Рµ РІРІРµРґРµРЅС‹ РЅРµРІРµСЂРЅРѕ " << std::endl;
 		}
 	}
 	catch (std::exception & e)

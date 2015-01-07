@@ -15,17 +15,17 @@ public:
 		};
 
 
-		//если бот имел цель, пересчитываем количество игроков, целящихся в нее
+		//РµСЃР»Рё Р±РѕС‚ РёРјРµР» С†РµР»СЊ, РїРµСЂРµСЃС‡РёС‚С‹РІР°РµРј РєРѕР»РёС‡РµСЃС‚РІРѕ РёРіСЂРѕРєРѕРІ, С†РµР»СЏС‰РёС…СЃСЏ РІ РЅРµРµ
 		if ( targets.count(botId) != 0 )
 		{
 			comparableValue = targets[botId];
 			nAttackersMap[targets[botId]] = count_if(targets.begin(), targets.end(), compare);
 		}
 
-		//присваиваем новую цель
+		//РїСЂРёСЃРІР°РёРІР°РµРј РЅРѕРІСѓСЋ С†РµР»СЊ
 		targets[botId] = targetId;
 
-		//пересчитываем количество игроков, целящихся в новую цель
+		//РїРµСЂРµСЃС‡РёС‚С‹РІР°РµРј РєРѕР»РёС‡РµСЃС‚РІРѕ РёРіСЂРѕРєРѕРІ, С†РµР»СЏС‰РёС…СЃСЏ РІ РЅРѕРІСѓСЋ С†РµР»СЊ
 		comparableValue = targetId;
 		nAttackersMap[targetId] = count_if(targets.begin(), targets.end(), compare);
 	}
@@ -42,7 +42,7 @@ public:
 		}
 		return 0;
 	}
-	//если бот не имеет цели, вернет botId
+	//РµСЃР»Рё Р±РѕС‚ РЅРµ РёРјРµРµС‚ С†РµР»Рё, РІРµСЂРЅРµС‚ botId
 	size_t getTarget(size_t botId)
 	{
 		auto i = targets.find(botId);
@@ -58,45 +58,45 @@ public:
 		nAttackersMap.clear();
 	}
 private:
-	//список целей каждого бота
+	//СЃРїРёСЃРѕРє С†РµР»РµР№ РєР°Р¶РґРѕРіРѕ Р±РѕС‚Р°
 	std::map< size_t, size_t > targets;
-	//количество атакующих ботов
+	//РєРѕР»РёС‡РµСЃС‚РІРѕ Р°С‚Р°РєСѓСЋС‰РёС… Р±РѕС‚РѕРІ
 	std::map< size_t, size_t> nAttackersMap;
 };
 
 class BotCondition
 {
 public:
-	//управление ботом
+	//СѓРїСЂР°РІР»РµРЅРёРµ Р±РѕС‚РѕРј
 	void control(Player & player, float frameTime, BotTargetsStorage & botTargetsStorage)
 	{
 		control_derv(player,frameTime, botTargetsStorage);
 		player.setControllable(controllable_);
 	}
-	//инициализация списка переходных состояний
+	//РёРЅРёС†РёР°Р»РёР·Р°С†РёСЏ СЃРїРёСЃРєР° РїРµСЂРµС…РѕРґРЅС‹С… СЃРѕСЃС‚РѕСЏРЅРёР№
 	virtual void initializeConditionList() = 0;
-	//обработка списка переходных состояний
+	//РѕР±СЂР°Р±РѕС‚РєР° СЃРїРёСЃРєР° РїРµСЂРµС…РѕРґРЅС‹С… СЃРѕСЃС‚РѕСЏРЅРёР№
 	std::shared_ptr<BotCondition> handleConditionList(Player & player);
 protected:
 	virtual void control_derv(Player & player, float frameTime, BotTargetsStorage & botTargetsStorage) = 0;
-	//угол берется относительно носа самолета
+	//СѓРіРѕР» Р±РµСЂРµС‚СЃСЏ РѕС‚РЅРѕСЃРёС‚РµР»СЊРЅРѕ РЅРѕСЃР° СЃР°РјРѕР»РµС‚Р°
 
 	void accelerate(Player & player,
-		//требуемая скорость
+		//С‚СЂРµР±СѓРµРјР°СЏ СЃРєРѕСЂРѕСЃС‚СЊ
 		unsigned short speed,
-		//точность следования критическим показателям. Чем ближе к еденице тем быстрее разгон при значениях > 1 двигатель будет повреждаться
+		//С‚РѕС‡РЅРѕСЃС‚СЊ СЃР»РµРґРѕРІР°РЅРёСЏ РєСЂРёС‚РёС‡РµСЃРєРёРј РїРѕРєР°Р·Р°С‚РµР»СЏРј. Р§РµРј Р±Р»РёР¶Рµ Рє РµРґРµРЅРёС†Рµ С‚РµРј Р±С‹СЃС‚СЂРµРµ СЂР°Р·РіРѕРЅ РїСЂРё Р·РЅР°С‡РµРЅРёСЏС… > 1 РґРІРёРіР°С‚РµР»СЊ Р±СѓРґРµС‚ РїРѕРІСЂРµР¶РґР°С‚СЊСЃСЏ
 		float exp,
-		//скорость набора мощности
+		//СЃРєРѕСЂРѕСЃС‚СЊ РЅР°Р±РѕСЂР° РјРѕС‰РЅРѕСЃС‚Рё
 		short increaseValue,
-		//скорость сброса мощности
+		//СЃРєРѕСЂРѕСЃС‚СЊ СЃР±СЂРѕСЃР° РјРѕС‰РЅРѕСЃС‚Рё
 		short decreaseValue );
 	void turnToPoint(Player & player,
 		rplanes::PointXY point,
-		//уровень обморока до которого будет происходить набор угловой скорости. от 0 до 100
+		//СѓСЂРѕРІРµРЅСЊ РѕР±РјРѕСЂРѕРєР° РґРѕ РєРѕС‚РѕСЂРѕРіРѕ Р±СѓРґРµС‚ РїСЂРѕРёСЃС…РѕРґРёС‚СЊ РЅР°Р±РѕСЂ СѓРіР»РѕРІРѕР№ СЃРєРѕСЂРѕСЃС‚Рё. РѕС‚ 0 РґРѕ 100
 		unsigned short maxFaint,
-		//интенсивность поворота
+		//РёРЅС‚РµРЅСЃРёРІРЅРѕСЃС‚СЊ РїРѕРІРѕСЂРѕС‚Р°
 		unsigned short turnValue,
-		//точность следования направлению
+		//С‚РѕС‡РЅРѕСЃС‚СЊ СЃР»РµРґРѕРІР°РЅРёСЏ РЅР°РїСЂР°РІР»РµРЅРёСЋ
 		float angleExp
 		);
 	
@@ -173,7 +173,7 @@ namespace botconditions
 			virtual void control_derv(Player & player, float frameTime, BotTargetsStorage & botTargetsStorage);
 		private:
 			void selectTarget(Player & player, std::vector< DestroyablePlane * > & targets, BotTargetsStorage & botTargetsStorage);
-			//если < 0 значит подходящая цель не найдена
+			//РµСЃР»Рё < 0 Р·РЅР°С‡РёС‚ РїРѕРґС…РѕРґСЏС‰Р°СЏ С†РµР»СЊ РЅРµ РЅР°Р№РґРµРЅР°
 			int targetNo_;
 			float selectTimer_;
 		};
@@ -214,7 +214,7 @@ public:
 	{
 		if ( !condition_ || !player_ )
 		{
-			throw rplanes::eRoomError("Ошибка бота. ");
+			throw rplanes::eRoomError("РћС€РёР±РєР° Р±РѕС‚Р°. ");
 		}
 		condition_->control(*player_, frameTime, botTargetsStorage);
 		auto newCondition = condition_->handleConditionList(*player_);
@@ -229,7 +229,7 @@ public:
 	{
 		if ( !player_ )
 		{
-			throw rplanes::eRoomError("Ошибка бота. ");
+			throw rplanes::eRoomError("РћС€РёР±РєР° Р±РѕС‚Р°. ");
 		}
 		return player_;
 	}

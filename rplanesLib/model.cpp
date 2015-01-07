@@ -29,13 +29,13 @@ namespace rplanes
 					price += minPrice;
 				}
 			}
-			//макрос для модулей, содержащихся в векторе
+			//РјР°РєСЂРѕСЃ РґР»СЏ РјРѕРґСѓР»РµР№, СЃРѕРґРµСЂР¶Р°С‰РёС…СЃСЏ РІ РІРµРєС‚РѕСЂРµ
 #define VECTORED_MODULES(TYPE, COUNT, NAME)\
 	if(COUNT>0)\
 	moduleName = getCheapestModule( minPrice, TYPE, db);\
 	retVal.NAME = std::vector<std::string>( COUNT, moduleName);\
 	price += minPrice * COUNT;
-			//макрос для одиночных модулей
+			//РјР°РєСЂРѕСЃ РґР»СЏ РѕРґРёРЅРѕС‡РЅС‹С… РјРѕРґСѓР»РµР№
 #define SINGLE_MODULES( TYPE, NAME )\
 	retVal.NAME = getCheapestModule( minPrice, TYPE, db);\
 	price += minPrice;	
@@ -63,9 +63,9 @@ namespace rplanes
 			{
 				float modulePrice;
 				{
-					//загрузка модуля с указанным именем из базы данных
+					//Р·Р°РіСЂСѓР·РєР° РјРѕРґСѓР»СЏ СЃ СѓРєР°Р·Р°РЅРЅС‹Рј РёРјРµРЅРµРј РёР· Р±Р°Р·С‹ РґР°РЅРЅС‹С…
 					auto Module = loadModule(moduleName, db);
-					//если модуль не подходит по типу, проверяем список дальше
+					//РµСЃР»Рё РјРѕРґСѓР»СЊ РЅРµ РїРѕРґС…РѕРґРёС‚ РїРѕ С‚РёРїСѓ, РїСЂРѕРІРµСЂСЏРµРј СЃРїРёСЃРѕРє РґР°Р»СЊС€Рµ
 					if ( Module->getType() != MT )
 					{
 						continue;
@@ -87,7 +87,7 @@ namespace rplanes
 				}
 			}
 			if ( retval.size() == 0 )
-				throw(eModelTemplateNotFull("Название самолета " + planeName + ". "));
+				throw(eModelTemplateNotFull("РќР°Р·РІР°РЅРёРµ СЃР°РјРѕР»РµС‚Р° " + planeName + ". "));
 			return retval;
 		}
 
@@ -99,14 +99,14 @@ namespace rplanes
 			{
 				float modulePrice;
 				{
-					//загрузка модуля с указанным именем из базы данных
+					//Р·Р°РіСЂСѓР·РєР° РјРѕРґСѓР»СЏ СЃ СѓРєР°Р·Р°РЅРЅС‹Рј РёРјРµРЅРµРј РёР· Р±Р°Р·С‹ РґР°РЅРЅС‹С…
 					auto Module = loadModule( moduleName, db);
-					//если модуль не подходит по типу, проверяем список дальше
+					//РµСЃР»Рё РјРѕРґСѓР»СЊ РЅРµ РїРѕРґС…РѕРґРёС‚ РїРѕ С‚РёРїСѓ, РїСЂРѕРІРµСЂСЏРµРј СЃРїРёСЃРѕРє РґР°Р»СЊС€Рµ
 					if ( Module->getType() != GUN )
 					{
 						continue;
 					}
-					//если пушка не соответствует подвеске, проверяем список дальше
+					//РµСЃР»Рё РїСѓС€РєР° РЅРµ СЃРѕРѕС‚РІРµС‚СЃС‚РІСѓРµС‚ РїРѕРґРІРµСЃРєРµ, РїСЂРѕРІРµСЂСЏРµРј СЃРїРёСЃРѕРє РґР°Р»СЊС€Рµ
 					if ( !dynamic_cast<Gun*> (Module.get())->isSuitable(GT) )
 					{
 						continue;
@@ -128,7 +128,7 @@ namespace rplanes
 				}
 			}
 			if ( retval.size() == 0 )
-				throw(eModelTemplateNotFull("Название самолета " + planeName + "."));
+				throw(eModelTemplateNotFull("РќР°Р·РІР°РЅРёРµ СЃР°РјРѕР»РµС‚Р° " + planeName + "."));
 			return retval;
 		}
 
@@ -145,11 +145,11 @@ namespace rplanes
 			}
 			catch(odb::object_not_persistent)
 			{
-				throw (eModuleNotFound("Название модуля " + moduleName + ". "));
+				throw (eModuleNotFound("РќР°Р·РІР°РЅРёРµ РјРѕРґСѓР»СЏ " + moduleName + ". "));
 			}
 			if ( module->getType() != MT)
 			{
-				throw(eModulType("Название модуля " + moduleName + ". "));
+				throw(eModulType("РќР°Р·РІР°РЅРёРµ РјРѕРґСѓР»СЏ " + moduleName + ". "));
 			}
 			return module;
 		}
@@ -165,7 +165,7 @@ namespace rplanes
 			}
 			catch(odb::object_not_persistent)
 			{
-				throw (eModuleNotFound("Название модуля " + moduleName + ". "));
+				throw (eModuleNotFound("РќР°Р·РІР°РЅРёРµ РјРѕРґСѓР»СЏ " + moduleName + ". "));
 			}
 			return module;
 		}

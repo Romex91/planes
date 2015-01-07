@@ -22,31 +22,31 @@ namespace rplanes
 	{
 		static boost::random::mt19937 gen;
 
-		void Plane::updateStatical() // Запускается при изменении параметров модулей.
+		void Plane::updateStatical() // Р—Р°РїСѓСЃРєР°РµС‚СЃСЏ РїСЂРё РёР·РјРµРЅРµРЅРёРё РїР°СЂР°РјРµС‚СЂРѕРІ РјРѕРґСѓР»РµР№.
 		{
-			//рассчет массы
+			//СЂР°СЃСЃС‡РµС‚ РјР°СЃСЃС‹
 			statical.mass = 0;
 			for( auto & Module : modules )
 			{
 				statical.mass += Module->weigth;
 			}
 
-			//рассчет мощности
+			//СЂР°СЃСЃС‡РµС‚ РјРѕС‰РЅРѕСЃС‚Рё
 			statical.maxPower = 0;
 
 			for( size_t i = 0; i < engines.size(); i++ )
 			{
 				statical.maxPower += engines[i].maxPower;
 			}
-			//рассчет показателей корпуса
+			//СЂР°СЃСЃС‡РµС‚ РїРѕРєР°Р·Р°С‚РµР»РµР№ РєРѕСЂРїСѓСЃР°
 			statical.Vmax = framework.defectVmax();
 
 			statical.Vmin = framework.Vmin;
 			statical.Gmax = framework.Gmax;
 
-			//рассчет коэффициента маневренности
+			//СЂР°СЃСЃС‡РµС‚ РєРѕСЌС„С„РёС†РёРµРЅС‚Р° РјР°РЅРµРІСЂРµРЅРЅРѕСЃС‚Рё
 			statical.mobilityFactor = tail.defectMobilityFactor();
-			//рассчет площади крыла и управляемости
+			//СЂР°СЃСЃС‡РµС‚ РїР»РѕС‰Р°РґРё РєСЂС‹Р»Р° Рё СѓРїСЂР°РІР»СЏРµРјРѕСЃС‚Рё
 			statical.surface = 0;
 			statical.rollSpeed = 0;
 			for( size_t i=0; i< wings.size(); i++ )
@@ -56,7 +56,7 @@ namespace rplanes
 			}
 			statical.rollSpeed /= wings.size();
 		}
-		void Plane::updateDependent() // Запускается при изменении параметров модулей.
+		void Plane::updateDependent() // Р—Р°РїСѓСЃРєР°РµС‚СЃСЏ РїСЂРё РёР·РјРµРЅРµРЅРёРё РїР°СЂР°РјРµС‚СЂРѕРІ РјРѕРґСѓР»РµР№.
 		{
 			dependent.frictionFactor 
 				= statical.maxPower 
@@ -87,7 +87,7 @@ namespace rplanes
 				controllable.power = 0;
 			}
 			float currentPower = controllable.power / 100.f * ( statical.maxPower - dependent.minPower ) + dependent.minPower ;
-			//в случае обморока выдается минимальная мощность двигателя
+			//РІ СЃР»СѓС‡Р°Рµ РѕР±РјРѕСЂРѕРєР° РІС‹РґР°РµС‚СЃСЏ РјРёРЅРёРјР°Р»СЊРЅР°СЏ РјРѕС‰РЅРѕСЃС‚СЊ РґРІРёРіР°С‚РµР»СЏ
 			if( target.faintTimer < 0 )
 			{
 				interim.additionalPower = pilot.get_skill_engine( cabine.hp.isDefected() ) 
@@ -131,8 +131,8 @@ namespace rplanes
 			interim.force = ( interim.engineForce - interim.frictionForce - interim.maneuverFrictionForce ) * 10000 *
 				configuration().flight.forceFactor;
 
-			//дальность стрелбы
-			//максимальные показатели
+			//РґР°Р»СЊРЅРѕСЃС‚СЊ СЃС‚СЂРµР»Р±С‹
+			//РјР°РєСЃРёРјР°Р»СЊРЅС‹Рµ РїРѕРєР°Р·Р°С‚РµР»Рё
 			interim.maxShootingDistane = 0.f;
 			interim.maxMissileDistance = 0.f;
 			if ( bestGun != NULL )
@@ -144,7 +144,7 @@ namespace rplanes
 				interim.maxMissileDistance = currentMissile->getMaxDistance(target.V);
 			}
 
-			//проверка максимальных показателей
+			//РїСЂРѕРІРµСЂРєР° РјР°РєСЃРёРјР°Р»СЊРЅС‹С… РїРѕРєР°Р·Р°С‚РµР»РµР№
 			if ( interim.maxShootingDistane > configuration().shooting.maxDistance )
 			{
 				interim.maxShootingDistane = configuration().shooting.maxDistance;
@@ -177,7 +177,7 @@ namespace rplanes
 			while( position.angle < 0 )
 				position.angle += 360;
 
-			//перегрузки
+			//РїРµСЂРµРіСЂСѓР·РєРё
 			target.faintVal 
 				= interim.ACS 
 				/ pilot.get_skill_endurance(cabine.hp.isDefected()) 
@@ -200,7 +200,7 @@ namespace rplanes
 					, 16.f) ;
 			}
 
-			//поступательное движение
+			//РїРѕСЃС‚СѓРїР°С‚РµР»СЊРЅРѕРµ РґРІРёР¶РµРЅРёРµ
 			target.acceleration = interim.force/statical.mass;
 			target.V += target.acceleration * frameTime;
 
@@ -211,11 +211,11 @@ namespace rplanes
 
 			position.x += target.V * std::cos( position.angle / 180.f * M_PI) * frameTime * configuration().flight.speedFactor;
 			position.y += target.V * std::sin( position.angle / 180.f * M_PI ) * frameTime * configuration().flight.speedFactor;
-			//вращательное движение
+			//РІСЂР°С‰Р°С‚РµР»СЊРЅРѕРµ РґРІРёР¶РµРЅРёРµ
 
-			//расчет модуля приращения угловой скорости
-			//набор угловой скорости происходит до того как перегрузка( пилота / ЛА) не возрастет до максимума 
-			//или не будет достигнута максимальная угловая скорость
+			//СЂР°СЃС‡РµС‚ РјРѕРґСѓР»СЏ РїСЂРёСЂР°С‰РµРЅРёСЏ СѓРіР»РѕРІРѕР№ СЃРєРѕСЂРѕСЃС‚Рё
+			//РЅР°Р±РѕСЂ СѓРіР»РѕРІРѕР№ СЃРєРѕСЂРѕСЃС‚Рё РїСЂРѕРёСЃС…РѕРґРёС‚ РґРѕ С‚РѕРіРѕ РєР°Рє РїРµСЂРµРіСЂСѓР·РєР°( РїРёР»РѕС‚Р° / Р›Рђ) РЅРµ РІРѕР·СЂР°СЃС‚РµС‚ РґРѕ РјР°РєСЃРёРјСѓРјР° 
+			//РёР»Рё РЅРµ Р±СѓРґРµС‚ РґРѕСЃС‚РёРіРЅСѓС‚Р° РјР°РєСЃРёРјР°Р»СЊРЅР°СЏ СѓРіР»РѕРІР°СЏ СЃРєРѕСЂРѕСЃС‚СЊ
 			float  angularVal = std::abs( statical.Gmax * 10.f - interim.ACS )
 				* pilot.get_skill_flight( cabine.hp.isDefected() )
 				* ( 1 - target.angularVelocity / interim.maxAngularVelocity )
@@ -224,7 +224,7 @@ namespace rplanes
 				/ 5.f
 				* statical.rollSpeed;
 			
-			//сброс угловой скорости
+			//СЃР±СЂРѕСЃ СѓРіР»РѕРІРѕР№ СЃРєРѕСЂРѕСЃС‚Рё
 			float reverseAngularVal = statical.Gmax * 10.f
 				* pilot.get_skill_flight( cabine.hp.isDefected() )
 				* configuration().flight.reverseAngleAccelerationFactor
@@ -257,7 +257,7 @@ namespace rplanes
 				sign = -1.f;
 			}
 
-			//расчет требуемой угловой скорости из данных управления
+			//СЂР°СЃС‡РµС‚ С‚СЂРµР±СѓРµРјРѕР№ СѓРіР»РѕРІРѕР№ СЃРєРѕСЂРѕСЃС‚Рё РёР· РґР°РЅРЅС‹С… СѓРїСЂР°РІР»РµРЅРёСЏ
 
 			float maxAngularVelocityG = statical.Gmax * 10.f / std::fabs( target.V ) / M_PI * 180.f;
 
@@ -267,15 +267,15 @@ namespace rplanes
 
 
 			bool stable = false;
-			//расчет углового ускорения
+			//СЂР°СЃС‡РµС‚ СѓРіР»РѕРІРѕРіРѕ СѓСЃРєРѕСЂРµРЅРёСЏ
 			if ( std::abs( target.angularVelocity - stabAngle ) 
 				< configuration().flight.turningExp )
 			{
-				target.angularAcceleration = 0; //если угловая скорость соответствует требуемой, оставляем как есть
+				target.angularAcceleration = 0; //РµСЃР»Рё СѓРіР»РѕРІР°СЏ СЃРєРѕСЂРѕСЃС‚СЊ СЃРѕРѕС‚РІРµС‚СЃС‚РІСѓРµС‚ С‚СЂРµР±СѓРµРјРѕР№, РѕСЃС‚Р°РІР»СЏРµРј РєР°Рє РµСЃС‚СЊ
 				stable = true;
 			} else if( sign * target.angularVelocity > 0  ) 
 			{
-				//если угловая скорость одного знака с требуемой и меньше ее по модулю, наращиваем угловую скорость
+				//РµСЃР»Рё СѓРіР»РѕРІР°СЏ СЃРєРѕСЂРѕСЃС‚СЊ РѕРґРЅРѕРіРѕ Р·РЅР°РєР° СЃ С‚СЂРµР±СѓРµРјРѕР№ Рё РјРµРЅСЊС€Рµ РµРµ РїРѕ РјРѕРґСѓР»СЋ, РЅР°СЂР°С‰РёРІР°РµРј СѓРіР»РѕРІСѓСЋ СЃРєРѕСЂРѕСЃС‚СЊ
 				if ( std::abs(stabAngle) > std::abs(target.angularVelocity) )
 				{
 					target.angularAcceleration = sign * angularVal;
@@ -308,7 +308,7 @@ namespace rplanes
 				* frameTime * configuration().flight.angleVelocityFactor;
 
 
-			//потребление двигателей
+			//РїРѕС‚СЂРµР±Р»РµРЅРёРµ РґРІРёРіР°С‚РµР»РµР№
 			for ( auto & Engine : engines )
 			{
 				float fuelIntake = Engine.fuelIntake 
@@ -327,27 +327,27 @@ namespace rplanes
 				}
 			}
 
-			//температура двигателей
+			//С‚РµРјРїРµСЂР°С‚СѓСЂР° РґРІРёРіР°С‚РµР»РµР№
 			for (auto & engine : engines)
 			{
 				boost::random::normal_distribution<float> dist(engine.defectTimerValueMean, engine.defectTimerValueSigma);
-				//расчет прироста температуры
+				//СЂР°СЃС‡РµС‚ РїСЂРёСЂРѕСЃС‚Р° С‚РµРјРїРµСЂР°С‚СѓСЂС‹
 				if( engine.stabTemperature > engine.temperature  )
 					engine.dt = ( engine.stabTemperature - engine.temperature ) / 20 * engine.heatingFactor;
 				else
 					engine.dt = ( engine.stabTemperature - engine.temperature ) / 20 * engine.cooldownFactor;
-				//проверка повреждений при резком наборе
+				//РїСЂРѕРІРµСЂРєР° РїРѕРІСЂРµР¶РґРµРЅРёР№ РїСЂРё СЂРµР·РєРѕРј РЅР°Р±РѕСЂРµ
 				if ( engine.dt > engine.maxDt )
 				{
-					float chance = configuration().engine.overheatDefectChanceFactor * engine.defectChance * frameTime; //расчет вероятности повреждения
+					float chance = configuration().engine.overheatDefectChanceFactor * engine.defectChance * frameTime; //СЂР°СЃС‡РµС‚ РІРµСЂРѕСЏС‚РЅРѕСЃС‚Рё РїРѕРІСЂРµР¶РґРµРЅРёСЏ
 					if( rand()/static_cast<float>(RAND_MAX) < chance )
 					{
 						engine.breakDown( planedata::ModuleHP::FIRE, dist(gen));
 					}
 				}
-				//приращение температуры
+				//РїСЂРёСЂР°С‰РµРЅРёРµ С‚РµРјРїРµСЂР°С‚СѓСЂС‹
 				engine.temperature += engine.dt * frameTime;
-				//проверка перегрева
+				//РїСЂРѕРІРµСЂРєР° РїРµСЂРµРіСЂРµРІР°
 				if ( engine.temperature > engine.criticalTemperature )
 				{
 					engine.damage( configuration().engine.overheatDamageFactor * engine.hpMax / 100 * frameTime, 
@@ -355,7 +355,7 @@ namespace rplanes
 						planedata::ModuleHP::FIRE);
 				}
 			}
-			//прицел
+			//РїСЂРёС†РµР»
 			target.aimSize = 0;
 			if ( controllable.missileAim && currentMissile!=NULL )
 			{
@@ -375,7 +375,7 @@ namespace rplanes
 			std::fstream in;
 			in.open( std::string("../Resources/hitZones/") + name + ".txt", std::ios_base::in );
 			if ( !in.is_open() )
-				throw( planesException( "Не удалось загрузить зоны повреждения: файл ../Resources/hitZones/" + name + " не найден. " ) );
+				throw( planesException( "РќРµ СѓРґР°Р»РѕСЃСЊ Р·Р°РіСЂСѓР·РёС‚СЊ Р·РѕРЅС‹ РїРѕРІСЂРµР¶РґРµРЅРёСЏ: С„Р°Р№Р» ../Resources/hitZones/" + name + " РЅРµ РЅР°Р№РґРµРЅ. " ) );
 			std::stringstream ss;
 			std::string moduleName, empty, line;
 			HitZone hitZone;
@@ -451,7 +451,7 @@ namespace rplanes
 				}
 				else
 				{
-					throw( planesException( "Не удалось загрузить зоны повреждения: ошибка формата зон повреждения. " ) );
+					throw( planesException( "РќРµ СѓРґР°Р»РѕСЃСЊ Р·Р°РіСЂСѓР·РёС‚СЊ Р·РѕРЅС‹ РїРѕРІСЂРµР¶РґРµРЅРёСЏ: РѕС€РёР±РєР° С„РѕСЂРјР°С‚Р° Р·РѕРЅ РїРѕРІСЂРµР¶РґРµРЅРёСЏ. " ) );
 				}
 				std::getline(in, moduleName);
 			}
@@ -521,10 +521,10 @@ namespace rplanes
 				}
 			}
 		}
-		//провести стрельбу из курсовых орудий и турелей в течении frameTime если пилот не в обмороке
+		//РїСЂРѕРІРµСЃС‚Рё СЃС‚СЂРµР»СЊР±Сѓ РёР· РєСѓСЂСЃРѕРІС‹С… РѕСЂСѓРґРёР№ Рё С‚СѓСЂРµР»РµР№ РІ С‚РµС‡РµРЅРёРё frameTime РµСЃР»Рё РїРёР»РѕС‚ РЅРµ РІ РѕР±РјРѕСЂРѕРєРµ
 		std::vector<Bullet> Plane::shoot( float frameTime, size_t clientID, float serverTime)
 		{
-			//для отдачи
+			//РґР»СЏ РѕС‚РґР°С‡Рё
 			serverTime *= configuration().shooting.impactRandomnesFactor;
 
 			float shootingDistanceImpact = 0.f;
@@ -569,8 +569,8 @@ namespace rplanes
 						newBullet.startSpeed = gun.speed
 							* configuration().shooting.speedFactor;
 
-						newBullet.speedXY = newBullet.startSpeed //пушечная составляющая скорости
-							+ target.V * configuration().flight.speedFactor; //составляющая скорости самолета;
+						newBullet.speedXY = newBullet.startSpeed //РїСѓС€РµС‡РЅР°СЏ СЃРѕСЃС‚Р°РІР»СЏСЋС‰Р°СЏ СЃРєРѕСЂРѕСЃС‚Рё
+							+ target.V * configuration().flight.speedFactor; //СЃРѕСЃС‚Р°РІР»СЏСЋС‰Р°СЏ СЃРєРѕСЂРѕСЃС‚Рё СЃР°РјРѕР»РµС‚Р°;
 
 						boost::random::normal_distribution<float> speedDist( 0.f,
 							std::tan(gun.accuracy / 180 * M_PI) * newBullet.speedXY);
@@ -596,7 +596,7 @@ namespace rplanes
 						newBullet.ID = 0;
 						newBullet.caliber = gun.caliber;
 						retval.push_back(newBullet);
-						//отдача
+						//РѕС‚РґР°С‡Р°
 
 						float verticalTurn = std::sin(serverTime + clientID) + std::sin(serverTime*1.3) + std::sin(serverTime*1.7);
 
@@ -631,7 +631,7 @@ namespace rplanes
 				interim.shootingDistance = interim.maxShootingDistane;
 			}
 
-			//обработка турелей
+			//РѕР±СЂР°Р±РѕС‚РєР° С‚СѓСЂРµР»РµР№
 			size_t gunNo = guns.size();
 			for ( auto & turret : turrets )
 			{
@@ -641,7 +641,7 @@ namespace rplanes
 				}
 				auto & gun = turret.gun;
 				
-				//подсчитываем количество выстрелов
+				//РїРѕРґСЃС‡РёС‚С‹РІР°РµРј РєРѕР»РёС‡РµСЃС‚РІРѕ РІС‹СЃС‚СЂРµР»РѕРІ
 
 				gun.timer += frameTime;
 				size_t nShots = 0;
@@ -657,7 +657,7 @@ namespace rplanes
 					}
 				}
 
-				//получаем позиции орудий
+				//РїРѕР»СѓС‡Р°РµРј РїРѕР·РёС†РёРё РѕСЂСѓРґРёР№
 				auto gunPositions = turret.getRotatedGunsPositions(position.angle, position.roll);
 
 
@@ -703,7 +703,7 @@ namespace rplanes
 						newBullet.ID = 0;
 						newBullet.caliber = gun.caliber;
 						retval.push_back(newBullet);
-						//отдача
+						//РѕС‚РґР°С‡Р°
 
 						float verticalTurn = std::sin(serverTime + clientID) + std::sin(serverTime*1.3) + std::sin(serverTime*1.7);
 
@@ -756,7 +756,7 @@ namespace rplanes
 			{
 				module->reload(clientID);
 			}
-			//выбор пушки
+			//РІС‹Р±РѕСЂ РїСѓС€РєРё
 			float gunRating = 0.f;
 			bestGun = NULL;
 			for( auto & gun: guns )

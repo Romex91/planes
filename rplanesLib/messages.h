@@ -28,7 +28,7 @@ namespace boost {
 #ifdef MACROSES
 //////////////////////////////////////////////////////////////////////////
 //////////////////////////////////////////////////////////////////////////
-////////////////////////Макрос, для размещения в теле сообщений///////////
+////////////////////////РњР°РєСЂРѕСЃ, РґР»СЏ СЂР°Р·РјРµС‰РµРЅРёСЏ РІ С‚РµР»Рµ СЃРѕРѕР±С‰РµРЅРёР№///////////
 //////////////////////////////////////////////////////////////////////////
 //////////////////////////////////////////////////////////////////////////
 
@@ -57,7 +57,7 @@ public:\
 	MESSAGE_HANDLER
 //////////////////////////////////////////////////////////////////////////
 //////////////////////////////////////////////////////////////////////////
-////Макрос, для регистрации сообщения. Размещается после класса///////////
+////РњР°РєСЂРѕСЃ, РґР»СЏ СЂРµРіРёСЃС‚СЂР°С†РёРё СЃРѕРѕР±С‰РµРЅРёСЏ. Р Р°Р·РјРµС‰Р°РµС‚СЃСЏ РїРѕСЃР»Рµ РєР»Р°СЃСЃР°///////////
 //////////////////////////////////////////////////////////////////////////
 //////////////////////////////////////////////////////////////////////////
 #define MESSAGE_REG(className)\
@@ -70,7 +70,7 @@ public:\
 #endif // MACROSES
 
 #ifdef PLANES_CLIENT
-#define MESSAGE_HANDLER void handle(){ std::cout << "Получено недопустимое сообщение"<<std::endl; };
+#define MESSAGE_HANDLER void handle(){ std::cout << "РџРѕР»СѓС‡РµРЅРѕ РЅРµРґРѕРїСѓСЃС‚РёРјРѕРµ СЃРѕРѕР±С‰РµРЅРёРµ"<<std::endl; };
 #else
 #define MESSAGE_HANDLER void handle();
 #endif 
@@ -80,11 +80,11 @@ namespace rplanes
 	namespace network
 	{
 
-		//сообщения, передаваемые только клиентом
+		//СЃРѕРѕР±С‰РµРЅРёСЏ, РїРµСЂРµРґР°РІР°РµРјС‹Рµ С‚РѕР»СЊРєРѕ РєР»РёРµРЅС‚РѕРј
 		namespace clientmessages
 		{
 
-			//отправить запрос на получение статуса клиента
+			//РѕС‚РїСЂР°РІРёС‚СЊ Р·Р°РїСЂРѕСЃ РЅР° РїРѕР»СѓС‡РµРЅРёРµ СЃС‚Р°С‚СѓСЃР° РєР»РёРµРЅС‚Р°
 			class StatusRequest: public Message
 			{
 				template <typename Archive>
@@ -96,10 +96,10 @@ namespace rplanes
 			};
 			MESSAGE_REG(StatusRequest);
 
-			//сообщения отправляемые до авторизации
+			//СЃРѕРѕР±С‰РµРЅРёСЏ РѕС‚РїСЂР°РІР»СЏРµРјС‹Рµ РґРѕ Р°РІС‚РѕСЂРёР·Р°С†РёРё
 			namespace unlogined
 			{
-				//вход в игру.
+				//РІС…РѕРґ РІ РёРіСЂСѓ.
 				class Login: public Message
 				{
 					template <typename Archive>
@@ -111,7 +111,7 @@ namespace rplanes
 				};
 				MESSAGE_REG(Login);
 
-				//регистрация нового игрока
+				//СЂРµРіРёСЃС‚СЂР°С†РёСЏ РЅРѕРІРѕРіРѕ РёРіСЂРѕРєР°
 				class Registry: public Message
 				{
 				private:
@@ -124,11 +124,11 @@ namespace rplanes
 				MESSAGE_REG(Registry);
 			}
 
-			//сообщения отправляемые только из ангара
+			//СЃРѕРѕР±С‰РµРЅРёСЏ РѕС‚РїСЂР°РІР»СЏРµРјС‹Рµ С‚РѕР»СЊРєРѕ РёР· Р°РЅРіР°СЂР°
 			namespace hangar
 			{
 
-				//запрос на отправку списка имеющихся комнат
+				//Р·Р°РїСЂРѕСЃ РЅР° РѕС‚РїСЂР°РІРєСѓ СЃРїРёСЃРєР° РёРјРµСЋС‰РёС…СЃСЏ РєРѕРјРЅР°С‚
 				class RoomListRequest: public Message
 				{
 					template <typename Archive>
@@ -137,7 +137,7 @@ namespace rplanes
 				};
 				MESSAGE_REG(RoomListRequest);
 
-				//запрос на создание комнаты
+				//Р·Р°РїСЂРѕСЃ РЅР° СЃРѕР·РґР°РЅРёРµ РєРѕРјРЅР°С‚С‹
 				class CreateRoomRequest: public Message
 				{
 					template <typename Archive>
@@ -149,7 +149,7 @@ namespace rplanes
 				};
 				MESSAGE_REG(CreateRoomRequest);
 
-				//запрос на удаление комнаты
+				//Р·Р°РїСЂРѕСЃ РЅР° СѓРґР°Р»РµРЅРёРµ РєРѕРјРЅР°С‚С‹
 				class DestroyRoomRequest : public Message
 				{
 					template <typename Archive>
@@ -160,7 +160,7 @@ namespace rplanes
 				MESSAGE_REG(DestroyRoomRequest);
 
 
-				//запрос на присоединение к комнате
+				//Р·Р°РїСЂРѕСЃ РЅР° РїСЂРёСЃРѕРµРґРёРЅРµРЅРёРµ Рє РєРѕРјРЅР°С‚Рµ
 				class JoinRoomRequest: public Message
 				{
 					template <typename Archive>
@@ -172,7 +172,7 @@ namespace rplanes
 				};
 				MESSAGE_REG(JoinRoomRequest);
 
-				//запрос данных игрока
+				//Р·Р°РїСЂРѕСЃ РґР°РЅРЅС‹С… РёРіСЂРѕРєР°
 				class ProfileRequest: public Message
 				{
 					template <typename Archive>
@@ -182,7 +182,7 @@ namespace rplanes
 				};
 				MESSAGE_REG(ProfileRequest);
 
-				//запрос данных другого игрока. Для возможности фаллометрии
+				//Р·Р°РїСЂРѕСЃ РґР°РЅРЅС‹С… РґСЂСѓРіРѕРіРѕ РёРіСЂРѕРєР°. Р”Р»СЏ РІРѕР·РјРѕР¶РЅРѕСЃС‚Рё С„Р°Р»Р»РѕРјРµС‚СЂРёРё
 				class PlayerProfileRequest : public Message
 				{
 					template <typename Archive>
@@ -193,8 +193,8 @@ namespace rplanes
 				};
 				MESSAGE_REG(PlayerProfileRequest);
 
-				//Запрос покупки самолета.
-				//в ответ сервер отошлет textMessage со статусом выполнения
+				//Р—Р°РїСЂРѕСЃ РїРѕРєСѓРїРєРё СЃР°РјРѕР»РµС‚Р°.
+				//РІ РѕС‚РІРµС‚ СЃРµСЂРІРµСЂ РѕС‚РѕС€Р»РµС‚ textMessage СЃРѕ СЃС‚Р°С‚СѓСЃРѕРј РІС‹РїРѕР»РЅРµРЅРёСЏ
 				class BuyPlaneRequest: public Message
 				{
 					template <typename Archive>
@@ -205,28 +205,28 @@ namespace rplanes
 				};
 				MESSAGE_REG(BuyPlaneRequest);
 
-				//Запрос установки модуля. Если модуль отсутствует на складе, он будет куплен.
+				//Р—Р°РїСЂРѕСЃ СѓСЃС‚Р°РЅРѕРІРєРё РјРѕРґСѓР»СЏ. Р•СЃР»Рё РјРѕРґСѓР»СЊ РѕС‚СЃСѓС‚СЃС‚РІСѓРµС‚ РЅР° СЃРєР»Р°РґРµ, РѕРЅ Р±СѓРґРµС‚ РєСѓРїР»РµРЅ.
 				class BuyModuleRequest: public Message
 				{
 					template <typename Archive>
 					void serialize(Archive& ar, const unsigned int version);
 				public:
-					//самолет, на который устанавливается модуль
+					//СЃР°РјРѕР»РµС‚, РЅР° РєРѕС‚РѕСЂС‹Р№ СѓСЃС‚Р°РЅР°РІР»РёРІР°РµС‚СЃСЏ РјРѕРґСѓР»СЊ
 					std::string planeName;
-					//название модуля
+					//РЅР°Р·РІР°РЅРёРµ РјРѕРґСѓР»СЏ
 					std::string moduleName;
-					//если true, модуль будет установлен везде где можно, иначе только в moduleNo
+					//РµСЃР»Рё true, РјРѕРґСѓР»СЊ Р±СѓРґРµС‚ СѓСЃС‚Р°РЅРѕРІР»РµРЅ РІРµР·РґРµ РіРґРµ РјРѕР¶РЅРѕ, РёРЅР°С‡Рµ С‚РѕР»СЊРєРѕ РІ moduleNo
 					bool setToAllSlots;
-					//номер заменяемого модуля.
+					//РЅРѕРјРµСЂ Р·Р°РјРµРЅСЏРµРјРѕРіРѕ РјРѕРґСѓР»СЏ.
 					size_t moduleNo;
-					//тип модуля
+					//С‚РёРї РјРѕРґСѓР»СЏ
 					rplanes::ModuleType moduleType;
 					MESSAGE_BODY(BuyModuleRequest, 10);
 				};
 				MESSAGE_REG(BuyModuleRequest);
 
-				//Запрос продажи самолета.
-				//в ответ сервер отошлет textMessage со статусом выполнения
+				//Р—Р°РїСЂРѕСЃ РїСЂРѕРґР°Р¶Рё СЃР°РјРѕР»РµС‚Р°.
+				//РІ РѕС‚РІРµС‚ СЃРµСЂРІРµСЂ РѕС‚РѕС€Р»РµС‚ textMessage СЃРѕ СЃС‚Р°С‚СѓСЃРѕРј РІС‹РїРѕР»РЅРµРЅРёСЏ
 				class SellPlaneRequest: public Message
 				{
 					template <typename Archive>
@@ -237,21 +237,21 @@ namespace rplanes
 				};
 				MESSAGE_REG(SellPlaneRequest);
 
-				//Запрос продажи модуля со склада.
-				//в ответ сервер отошлет textMessage со статусом выполнения и измененный профиль sendProfile					
+				//Р—Р°РїСЂРѕСЃ РїСЂРѕРґР°Р¶Рё РјРѕРґСѓР»СЏ СЃРѕ СЃРєР»Р°РґР°.
+				//РІ РѕС‚РІРµС‚ СЃРµСЂРІРµСЂ РѕС‚РѕС€Р»РµС‚ textMessage СЃРѕ СЃС‚Р°С‚СѓСЃРѕРј РІС‹РїРѕР»РЅРµРЅРёСЏ Рё РёР·РјРµРЅРµРЅРЅС‹Р№ РїСЂРѕС„РёР»СЊ sendProfile					
 				class SellModuleRequest: public Message
 				{
 					template <typename Archive>
 					void serialize(Archive& ar, const unsigned int version);
 				public:
 					std::string moduleName;
-					//количество продаваемых модулей
+					//РєРѕР»РёС‡РµСЃС‚РІРѕ РїСЂРѕРґР°РІР°РµРјС‹С… РјРѕРґСѓР»РµР№
 					size_t nModulesToSell;
 					MESSAGE_BODY(SellModuleRequest, 12)
 				};
 				MESSAGE_REG(SellModuleRequest);
 
-				//запрос повышения навыка
+				//Р·Р°РїСЂРѕСЃ РїРѕРІС‹С€РµРЅРёСЏ РЅР°РІС‹РєР°
 				class UpSkillRequest: public Message
 				{
 					template <typename Archive>
@@ -264,7 +264,7 @@ namespace rplanes
 				MESSAGE_REG(UpSkillRequest);
 			}
 
-			//сообщения отправляемые только из комнаты
+			//СЃРѕРѕР±С‰РµРЅРёСЏ РѕС‚РїСЂР°РІР»СЏРµРјС‹Рµ С‚РѕР»СЊРєРѕ РёР· РєРѕРјРЅР°С‚С‹
 			namespace room
 			{
 				class ServerTimeRequest: public Message
@@ -275,7 +275,7 @@ namespace rplanes
 				};
 				MESSAGE_REG(ServerTimeRequest);
 
-				//отправить серверу данные управления
+				//РѕС‚РїСЂР°РІРёС‚СЊ СЃРµСЂРІРµСЂСѓ РґР°РЅРЅС‹Рµ СѓРїСЂР°РІР»РµРЅРёСЏ
 				class SendControllable: public Message
 				{
 					template <typename Archive>
@@ -286,7 +286,7 @@ namespace rplanes
 				};
 				MESSAGE_REG(SendControllable);
 
-				//администрирование комнаты. Необходимо быть ее владельцем
+				//Р°РґРјРёРЅРёСЃС‚СЂРёСЂРѕРІР°РЅРёРµ РєРѕРјРЅР°С‚С‹. РќРµРѕР±С…РѕРґРёРјРѕ Р±С‹С‚СЊ РµРµ РІР»Р°РґРµР»СЊС†РµРј
 				class AdministerRoom : public Message
 				{
 				private:
@@ -295,17 +295,17 @@ namespace rplanes
 				public:
 					enum Operation
 					{
-						//в опциях имена выбрасываемых игроков
+						//РІ РѕРїС†РёСЏС… РёРјРµРЅР° РІС‹Р±СЂР°СЃС‹РІР°РµРјС‹С… РёРіСЂРѕРєРѕРІ
 						KICK_PLAYERS,
-						//в опциях имена игроков, добавляемых в черный список
+						//РІ РѕРїС†РёСЏС… РёРјРµРЅР° РёРіСЂРѕРєРѕРІ, РґРѕР±Р°РІР»СЏРµРјС‹С… РІ С‡РµСЂРЅС‹Р№ СЃРїРёСЃРѕРє
 						BAN_PLAYERS,
-						//в опциях название карты
+						//РІ РѕРїС†РёСЏС… РЅР°Р·РІР°РЅРёРµ РєР°СЂС‚С‹
 						CHANGE_MAP,
 						//
 						RESTART,
-						//в опциях имена игроков
+						//РІ РѕРїС†РёСЏС… РёРјРµРЅР° РёРіСЂРѕРєРѕРІ
 						KILL_PLAYERS,
-						//в опциях имена игроков
+						//РІ РѕРїС†РёСЏС… РёРјРµРЅР° РёРіСЂРѕРєРѕРІ
 						UNBAN_PLAYERS
 					};
 					Operation operation;
@@ -320,7 +320,7 @@ namespace rplanes
 
 #undef  MESSAGE_HANDLER
 #ifdef PLANES_SERVER
-#define MESSAGE_HANDLER void handle(){ std::cout << "Получено недопустимое сообщение"<<std::endl; };
+#define MESSAGE_HANDLER void handle(){ std::cout << "РџРѕР»СѓС‡РµРЅРѕ РЅРµРґРѕРїСѓСЃС‚РёРјРѕРµ СЃРѕРѕР±С‰РµРЅРёРµ"<<std::endl; };
 #else
 #define MESSAGE_HANDLER void handle();
 #endif 
@@ -331,19 +331,19 @@ namespace rplanes
 	{
 		enum  ClientStatus
 		{
-			//клиент не авторизован. Будет отключен если не авторизуется
+			//РєР»РёРµРЅС‚ РЅРµ Р°РІС‚РѕСЂРёР·РѕРІР°РЅ. Р‘СѓРґРµС‚ РѕС‚РєР»СЋС‡РµРЅ РµСЃР»Рё РЅРµ Р°РІС‚РѕСЂРёР·СѓРµС‚СЃСЏ
 			UNLOGINED,
-			//клиент авторизован.
+			//РєР»РёРµРЅС‚ Р°РІС‚РѕСЂРёР·РѕРІР°РЅ.
 			HANGAR,
-			//клиент в комнате.
+			//РєР»РёРµРЅС‚ РІ РєРѕРјРЅР°С‚Рµ.
 			ROOM		
 		};
 
-		//сообщения, передаваемые только сервером
+		//СЃРѕРѕР±С‰РµРЅРёСЏ, РїРµСЂРµРґР°РІР°РµРјС‹Рµ С‚РѕР»СЊРєРѕ СЃРµСЂРІРµСЂРѕРј
 		namespace servermessages
 		{
 
-			//статус клиента
+			//СЃС‚Р°С‚СѓСЃ РєР»РёРµРЅС‚Р°
 			class StatusMessage: public Message
 			{
 				template <typename Archive>
@@ -356,7 +356,7 @@ namespace rplanes
 
 			namespace room
 			{
-				//сообщения создания пуль
+				//СЃРѕРѕР±С‰РµРЅРёСЏ СЃРѕР·РґР°РЅРёСЏ РїСѓР»СЊ
 				class CreateBullets: public Message
 				{
 					template <typename Archive>
@@ -369,7 +369,7 @@ namespace rplanes
 				};
 				MESSAGE_REG(CreateBullets);
 
-				//данные  отправляемые сервером для визуализации
+				//РґР°РЅРЅС‹Рµ  РѕС‚РїСЂР°РІР»СЏРµРјС‹Рµ СЃРµСЂРІРµСЂРѕРј РґР»СЏ РІРёР·СѓР°Р»РёР·Р°С†РёРё
 				class InterfaceData: public Message
 				{
 					template <typename Archive>
@@ -377,17 +377,17 @@ namespace rplanes
 				public:
 					
 					unsigned short
-						//- уровень затемнения экрана при перегрузках [0,100]
+						//- СѓСЂРѕРІРµРЅСЊ Р·Р°С‚РµРјРЅРµРЅРёСЏ СЌРєСЂР°РЅР° РїСЂРё РїРµСЂРµРіСЂСѓР·РєР°С… [0,100]
 						faintVal,
-						//- радиус прицельной рамки. В метрах
+						//- СЂР°РґРёСѓСЃ РїСЂРёС†РµР»СЊРЅРѕР№ СЂР°РјРєРё. Р’ РјРµС‚СЂР°С…
 						aimSize,
-						//- положение прицельной рамки относительно пушек (не самолета). В метрах
+						//- РїРѕР»РѕР¶РµРЅРёРµ РїСЂРёС†РµР»СЊРЅРѕР№ СЂР°РјРєРё РѕС‚РЅРѕСЃРёС‚РµР»СЊРЅРѕ РїСѓС€РµРє (РЅРµ СЃР°РјРѕР»РµС‚Р°). Р’ РјРµС‚СЂР°С…
 						shootingDistance,
-						//- максимальная скорость м/с
+						//- РјР°РєСЃРёРјР°Р»СЊРЅР°СЏ СЃРєРѕСЂРѕСЃС‚СЊ Рј/СЃ
 						Vmax,
-						//- минимальная скорость м/с
+						//- РјРёРЅРёРјР°Р»СЊРЅР°СЏ СЃРєРѕСЂРѕСЃС‚СЊ Рј/СЃ
 						Vmin,
-						//- скорость м/с
+						//- СЃРєРѕСЂРѕСЃС‚СЊ Рј/СЃ
 						V;
 					class Thermometer
 					{
@@ -401,16 +401,16 @@ namespace rplanes
 							ar & dT;
 						}
 						short int
-							//температура при которой двигатель повреждается. 0.1 градус цельсия
+							//С‚РµРјРїРµСЂР°С‚СѓСЂР° РїСЂРё РєРѕС‚РѕСЂРѕР№ РґРІРёРіР°С‚РµР»СЊ РїРѕРІСЂРµР¶РґР°РµС‚СЃСЏ. 0.1 РіСЂР°РґСѓСЃ С†РµР»СЊСЃРёСЏ
 							criticalTemperature,
-							//- температура двигателя. 0.1 градус цельсия
+							//- С‚РµРјРїРµСЂР°С‚СѓСЂР° РґРІРёРіР°С‚РµР»СЏ. 0.1 РіСЂР°РґСѓСЃ С†РµР»СЊСЃРёСЏ
 							temperature,
-							//- прирост температуры двигателя при котором двигатель повреждается. 0.1 градус цельсия
+							//- РїСЂРёСЂРѕСЃС‚ С‚РµРјРїРµСЂР°С‚СѓСЂС‹ РґРІРёРіР°С‚РµР»СЏ РїСЂРё РєРѕС‚РѕСЂРѕРј РґРІРёРіР°С‚РµР»СЊ РїРѕРІСЂРµР¶РґР°РµС‚СЃСЏ. 0.1 РіСЂР°РґСѓСЃ С†РµР»СЊСЃРёСЏ
 							dTmax,
-							//- прирост температуры. 0.1 градус цельсия
+							//- РїСЂРёСЂРѕСЃС‚ С‚РµРјРїРµСЂР°С‚СѓСЂС‹. 0.1 РіСЂР°РґСѓСЃ С†РµР»СЊСЃРёСЏ
 							dT;						
 					};
-					//показания приборов для каждого из двигателей
+					//РїРѕРєР°Р·Р°РЅРёСЏ РїСЂРёР±РѕСЂРѕРІ РґР»СЏ РєР°Р¶РґРѕРіРѕ РёР· РґРІРёРіР°С‚РµР»РµР№
 					std::vector<Thermometer> thermometers;
 
 					class Ammo
@@ -424,9 +424,9 @@ namespace rplanes
 						}
 
 						unsigned short 
-							//калибр. 0,01 мм. К примеру, 7.62 будет иметь значение 762
+							//РєР°Р»РёР±СЂ. 0,01 РјРј. Рљ РїСЂРёРјРµСЂСѓ, 7.62 Р±СѓРґРµС‚ РёРјРµС‚СЊ Р·РЅР°С‡РµРЅРёРµ 762
 							caliber,
-							//боезапас. штука
+							//Р±РѕРµР·Р°РїР°СЃ. С€С‚СѓРєР°
 							capacity;
 					};
 					std::vector<Ammo> ammunitions;
@@ -441,9 +441,9 @@ namespace rplanes
 							ar & capacity;
 						}
 						unsigned short 
-							//запас в литрах
+							//Р·Р°РїР°СЃ РІ Р»РёС‚СЂР°С…
 							fuel, 
-							//емкость в литрах
+							//РµРјРєРѕСЃС‚СЊ РІ Р»РёС‚СЂР°С…
 							capacity;
 					} gasTank;
 
@@ -458,7 +458,7 @@ namespace rplanes
 					}
 
 
-					//серверный метод
+					//СЃРµСЂРІРµСЂРЅС‹Р№ РјРµС‚РѕРґ
 					void update( const serverdata::Plane & Plane )
 					{
 						faintVal = Plane.target.faintVal * 100;
@@ -500,31 +500,31 @@ namespace rplanes
 				MESSAGE_REG(InterfaceData);
 
 
-				//сообщение логически идентичное CreateBullets
-				class СreateRicochetes: public Message
+				//СЃРѕРѕР±С‰РµРЅРёРµ Р»РѕРіРёС‡РµСЃРєРё РёРґРµРЅС‚РёС‡РЅРѕРµ CreateBullets 
+				class CreateRicochetes: public Message
 				{
 					template <typename Archive>
 					void serialize(Archive& ar, const unsigned int version);
 				public:			
 					std::vector <serverdata::Bullet> bullets;
 					float time;
-					MESSAGE_BODY(СreateRicochetes, 20);
+					MESSAGE_BODY(CreateRicochetes, 20);
 				};
-				MESSAGE_REG(СreateRicochetes);
+				MESSAGE_REG(CreateRicochetes);
 				
-				//сообщение создания ракет
-				class СreateMissiles: public Message
+				//СЃРѕРѕР±С‰РµРЅРёРµ СЃРѕР·РґР°РЅРёСЏ СЂР°РєРµС‚
+				class CreateMissiles: public Message
 				{
 					template <typename Archive>
 					void serialize(Archive& ar, const unsigned int version);
 				public:
 					std::vector<serverdata::LaunchedMissile> missiles;
 					float time;
-					MESSAGE_BODY(СreateMissiles, 21);
+					MESSAGE_BODY(CreateMissiles, 21);
 				};
-				MESSAGE_REG(СreateMissiles);
+				MESSAGE_REG(CreateMissiles);
 				
-				//сообщение уничтожения пуль. Передается только при попаданиях. В случае излета клиент должен сам удалить пулю
+				//СЃРѕРѕР±С‰РµРЅРёРµ СѓРЅРёС‡С‚РѕР¶РµРЅРёСЏ РїСѓР»СЊ. РџРµСЂРµРґР°РµС‚СЃСЏ С‚РѕР»СЊРєРѕ РїСЂРё РїРѕРїР°РґР°РЅРёСЏС…. Р’ СЃР»СѓС‡Р°Рµ РёР·Р»РµС‚Р° РєР»РёРµРЅС‚ РґРѕР»Р¶РµРЅ СЃР°Рј СѓРґР°Р»РёС‚СЊ РїСѓР»СЋ
 				class DestroyBullets: public Message
 				{
 					template <typename Archive>
@@ -548,7 +548,7 @@ namespace rplanes
 				};
 				MESSAGE_REG(DestroyBullets);
 
-				//сообщения уничтожения ракет
+				//СЃРѕРѕР±С‰РµРЅРёСЏ СѓРЅРёС‡С‚РѕР¶РµРЅРёСЏ СЂР°РєРµС‚
 				class DestroyMissiles: public Message
 				{
 					template <typename Archive>
@@ -559,7 +559,7 @@ namespace rplanes
 				};
 				MESSAGE_REG(DestroyMissiles);
 				
-				//уведомление о смене карты
+				//СѓРІРµРґРѕРјР»РµРЅРёРµ Рѕ СЃРјРµРЅРµ РєР°СЂС‚С‹
 				class ChangeMap : public Message
 				{
 					template <typename Archive>
@@ -571,7 +571,7 @@ namespace rplanes
 				MESSAGE_REG(ChangeMap);
 
 
-				//данные самолета передаваемые клиенту
+				//РґР°РЅРЅС‹Рµ СЃР°РјРѕР»РµС‚Р° РїРµСЂРµРґР°РІР°РµРјС‹Рµ РєР»РёРµРЅС‚Сѓ
 				class Plane
 				{
 				public:
@@ -617,13 +617,13 @@ namespace rplanes
 					std::vector<Module> modules;
 
 					Plane(){}
-					//запускается на сервере
+					//Р·Р°РїСѓСЃРєР°РµС‚СЃСЏ РЅР° СЃРµСЂРІРµСЂРµ
 					void init( const serverdata::Plane & Plane , std::string PlayerName, size_t ID );
-					//запускается на клиенте
+					//Р·Р°РїСѓСЃРєР°РµС‚СЃСЏ РЅР° РєР»РёРµРЅС‚Рµ
 					void extrapolate( float frameTime );
 				};
 
-				//создание нового самолета. Необязательно спаун нового игрока. Самолеты появляются и при вхождении в область видимости
+				//СЃРѕР·РґР°РЅРёРµ РЅРѕРІРѕРіРѕ СЃР°РјРѕР»РµС‚Р°. РќРµРѕР±СЏР·Р°С‚РµР»СЊРЅРѕ СЃРїР°СѓРЅ РЅРѕРІРѕРіРѕ РёРіСЂРѕРєР°. РЎР°РјРѕР»РµС‚С‹ РїРѕСЏРІР»СЏСЋС‚СЃСЏ Рё РїСЂРё РІС…РѕР¶РґРµРЅРёРё РІ РѕР±Р»Р°СЃС‚СЊ РІРёРґРёРјРѕСЃС‚Рё
 				class CreatePlanes : public Message
 				{
 					template <typename Archive>
@@ -634,7 +634,7 @@ namespace rplanes
 				};
 				MESSAGE_REG(CreatePlanes);
 
-				//уничтожение самолета
+				//СѓРЅРёС‡С‚РѕР¶РµРЅРёРµ СЃР°РјРѕР»РµС‚Р°
 				class DestroyPlanes : public Message
 				{
 					template <typename Archive>
@@ -653,12 +653,12 @@ namespace rplanes
 					public:
 						template <typename Archive>
 						void serialize(Archive& ar, const unsigned int version);
-						//номер модуля в векторе
+						//РЅРѕРјРµСЂ РјРѕРґСѓР»СЏ РІ РІРµРєС‚РѕСЂРµ
 						size_t moduleNo;
 						size_t planeID;
 						size_t killerId;
 						Reason reason;
-						//На нужды ботов
+						//РќР° РЅСѓР¶РґС‹ Р±РѕС‚РѕРІ
 						rplanes::Nation nation;
 					};
 					std::vector<DestroyedPlane> planes;
@@ -666,7 +666,7 @@ namespace rplanes
 				};
 				MESSAGE_REG(DestroyPlanes);
 						
-				//позиции всех отображаемых самолетов					
+				//РїРѕР·РёС†РёРё РІСЃРµС… РѕС‚РѕР±СЂР°Р¶Р°РµРјС‹С… СЃР°РјРѕР»РµС‚РѕРІ					
 				class SetPlanesPositions: public Message
 				{
 					template <typename Archive>
@@ -687,7 +687,7 @@ namespace rplanes
 				};
 				MESSAGE_REG(SetPlanesPositions);
 
-				//обновить состояние модуля
+				//РѕР±РЅРѕРІРёС‚СЊ СЃРѕСЃС‚РѕСЏРЅРёРµ РјРѕРґСѓР»СЏ
 				class UpdateModules: public Message
 				{
 					template <typename Archive>
@@ -708,7 +708,7 @@ namespace rplanes
 				};
 				MESSAGE_REG(UpdateModules);
 
-				//передать текущее время сервера. Необходимо для избавления от дрожжания
+				//РїРµСЂРµРґР°С‚СЊ С‚РµРєСѓС‰РµРµ РІСЂРµРјСЏ СЃРµСЂРІРµСЂР°. РќРµРѕР±С…РѕРґРёРјРѕ РґР»СЏ РёР·Р±Р°РІР»РµРЅРёСЏ РѕС‚ РґСЂРѕР¶Р¶Р°РЅРёСЏ
 				class ServerTime: public Message
 				{
 					template <typename Archive>
@@ -719,7 +719,7 @@ namespace rplanes
 				};
 				MESSAGE_REG(ServerTime);
 
-				//передача информации о игроках в текущей комнате. Сообщение отправляется после обновления данных.
+				//РїРµСЂРµРґР°С‡Р° РёРЅС„РѕСЂРјР°С†РёРё Рѕ РёРіСЂРѕРєР°С… РІ С‚РµРєСѓС‰РµР№ РєРѕРјРЅР°С‚Рµ. РЎРѕРѕР±С‰РµРЅРёРµ РѕС‚РїСЂР°РІР»СЏРµС‚СЃСЏ РїРѕСЃР»Рµ РѕР±РЅРѕРІР»РµРЅРёСЏ РґР°РЅРЅС‹С….
 				class RoomInfo: public Message
 				{
 					template <typename Archive>
@@ -756,16 +756,16 @@ namespace rplanes
 
 					void clear();
 
-					//игроки зашедшие в комнату
+					//РёРіСЂРѕРєРё Р·Р°С€РµРґС€РёРµ РІ РєРѕРјРЅР°С‚Сѓ
 					std::vector<NewPlayerInfo> newPlayers;
 					
-					//игроки, вышедшие из комнаты
+					//РёРіСЂРѕРєРё, РІС‹С€РµРґС€РёРµ РёР· РєРѕРјРЅР°С‚С‹
 					std::vector<std::string> disconnectedPlayers;
 					
-					//ключ - имя игрока, статистика которого изменилась
+					//РєР»СЋС‡ - РёРјСЏ РёРіСЂРѕРєР°, СЃС‚Р°С‚РёСЃС‚РёРєР° РєРѕС‚РѕСЂРѕРіРѕ РёР·РјРµРЅРёР»Р°СЃСЊ
 					std::map< std::string, Statistics > updatedStatistics;
 					
-					//куда лететь и что делать
+					//РєСѓРґР° Р»РµС‚РµС‚СЊ Рё С‡С‚Рѕ РґРµР»Р°С‚СЊ
 					Goal goal;
 
 					MESSAGE_BODY(RoomInfo, 30);
@@ -775,7 +775,7 @@ namespace rplanes
 
 			namespace hangar
 			{
-				//список доступных комнат
+				//СЃРїРёСЃРѕРє РґРѕСЃС‚СѓРїРЅС‹С… РєРѕРјРЅР°С‚
 				class RoomList: public Message
 				{
 					template <typename Archive>
@@ -807,7 +807,7 @@ namespace rplanes
 				};
 				MESSAGE_REG(RoomList);
 
-				//отправить данные ирока. profile
+				//РѕС‚РїСЂР°РІРёС‚СЊ РґР°РЅРЅС‹Рµ РёСЂРѕРєР°. profile
 				class SendProfile: public Message
 				{
 					template <typename Archive>
@@ -818,7 +818,7 @@ namespace rplanes
 				};
 				MESSAGE_REG(SendProfile);
 
-				//конфигурация сервера. Необходима для выполнения синохронных с сервером действий
+				//РєРѕРЅС„РёРіСѓСЂР°С†РёСЏ СЃРµСЂРІРµСЂР°. РќРµРѕР±С…РѕРґРёРјР° РґР»СЏ РІС‹РїРѕР»РЅРµРЅРёСЏ СЃРёРЅРѕС…СЂРѕРЅРЅС‹С… СЃ СЃРµСЂРІРµСЂРѕРј РґРµР№СЃС‚РІРёР№
 				class ServerConfiguration: public Message
 				{
 					template <typename Archive>
@@ -840,10 +840,10 @@ namespace rplanes
 {
 	namespace network
 	{
-		//сообщения, передаваемые и клиентом и сервером 
+		//СЃРѕРѕР±С‰РµРЅРёСЏ, РїРµСЂРµРґР°РІР°РµРјС‹Рµ Рё РєР»РёРµРЅС‚РѕРј Рё СЃРµСЂРІРµСЂРѕРј 
 		namespace bidirectionalmessages
 		{
-			//отправить текстовое сообщение. text
+			//РѕС‚РїСЂР°РІРёС‚СЊ С‚РµРєСЃС‚РѕРІРѕРµ СЃРѕРѕР±С‰РµРЅРёРµ. text
 			class TextMessage: public Message 
 			{
 				template <typename Archive>
@@ -854,7 +854,7 @@ namespace rplanes
 			};
 			MESSAGE_REG(TextMessage);
 
-			//сообщение о выходе из комнаты
+			//СЃРѕРѕР±С‰РµРЅРёРµ Рѕ РІС‹С…РѕРґРµ РёР· РєРѕРјРЅР°С‚С‹
 			class ExitRoom: public Message
 			{
 				template <typename Archive>

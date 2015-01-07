@@ -17,7 +17,7 @@ namespace rplanes
 			retval.nation = nation;
 			std::shared_ptr<planedata::Module> module;
 
-			//макрос для одиночных модулей
+			//РјР°РєСЂРѕСЃ РґР»СЏ РѕРґРёРЅРѕС‡РЅС‹С… РјРѕРґСѓР»РµР№
 #define SINGLE_MODULES( NAME, TYPE, CLASSNAME )\
 	module = planedata::loadModule(NAME, TYPE, db);\
 	retval.NAME = * dynamic_cast<CLASSNAME *>( module.get() )
@@ -27,7 +27,7 @@ namespace rplanes
 			SINGLE_MODULES(framework, FRAMEWORK, planedata::Framework  );
 			SINGLE_MODULES( tail, TAIL, planedata::Tail );
 
-				//макрос для модулей, содержащихся в векторе
+				//РјР°РєСЂРѕСЃ РґР»СЏ РјРѕРґСѓР»РµР№, СЃРѕРґРµСЂР¶Р°С‰РёС…СЃСЏ РІ РІРµРєС‚РѕСЂРµ
 #define VECTORED_MODULES( NAME, TYPE, CLASSNAME )\
 	for(auto & i : NAME)\
 			{\
@@ -43,7 +43,7 @@ namespace rplanes
 				VECTORED_MODULES(turrets, TURRET, planedata::Turret)
 #undef VECTORED_MODULES
 #undef SINGLE_MODULES
-				//загружаем ПУШКИ для турелей
+				//Р·Р°РіСЂСѓР¶Р°РµРј РџРЈРЁРљР РґР»СЏ С‚СѓСЂРµР»РµР№
 				for ( auto & turret : retval.turrets )
 				{
 					turret.gun = dynamic_cast<planedata::Gun&>( *planedata::loadModule( turret.gunName, db )  );
@@ -71,11 +71,11 @@ namespace rplanes
 		{
 			int price = 0;
 			std::shared_ptr<planedata::Module> m;
-			//макрос для одиночных модулей
+			//РјР°РєСЂРѕСЃ РґР»СЏ РѕРґРёРЅРѕС‡РЅС‹С… РјРѕРґСѓР»РµР№
 #define SINGLE_MODULES( NAME, TYPE)\
 	m = planedata::loadModule(NAME, TYPE, planesDB);\
 	price += m->price;
-			//макрос для модулей, содержащихся в векторе
+			//РјР°РєСЂРѕСЃ РґР»СЏ РјРѕРґСѓР»РµР№, СЃРѕРґРµСЂР¶Р°С‰РёС…СЃСЏ РІ РІРµРєС‚РѕСЂРµ
 #define VECTORED_MODULES( NAME, TYPE)\
 	for(auto & i : NAME)\
 			{\
@@ -99,7 +99,7 @@ namespace rplanes
 
 		bool Plane::isReadyForJoinRoom()
 		{
-			//проверяем симметричность некоторых модулей
+			//РїСЂРѕРІРµСЂСЏРµРј СЃРёРјРјРµС‚СЂРёС‡РЅРѕСЃС‚СЊ РЅРµРєРѕС‚РѕСЂС‹С… РјРѕРґСѓР»РµР№
 #define CHECK_SYMMETRY(vector)\
 			for (size_t i = 0; i < vector.size() / 2; i++)\
 			{\
@@ -138,7 +138,7 @@ namespace rplanes
 
 		void Profile::save( std::shared_ptr< odb::database > profilesDB )
 		{
-			//сохранение профиля
+			//СЃРѕС…СЂР°РЅРµРЅРёРµ РїСЂРѕС„РёР»СЏ
 			try
 			{
 				odb::transaction t(profilesDB->begin());
@@ -151,12 +151,12 @@ namespace rplanes
 				profilesDB->update(*this);
 				t.commit();
 			}
-			//сохранение самолетов профиля
+			//СЃРѕС…СЂР°РЅРµРЅРёРµ СЃР°РјРѕР»РµС‚РѕРІ РїСЂРѕС„РёР»СЏ
 			for (auto & i: planes)
 			{
 				i.save( profilesDB );
 			}
-			//поиск в базе данных самолетов, остутствующих в профиле
+			//РїРѕРёСЃРє РІ Р±Р°Р·Рµ РґР°РЅРЅС‹С… СЃР°РјРѕР»РµС‚РѕРІ, РѕСЃС‚СѓС‚СЃС‚РІСѓСЋС‰РёС… РІ РїСЂРѕС„РёР»Рµ
 			typedef odb::result<Plane> result;
 			typedef odb::query<Plane> query;
 
@@ -178,7 +178,7 @@ namespace rplanes
 					idToDelete.push_back(pt.id);
 				}
 			}
-			//удаление найденных самолетов из базы данных
+			//СѓРґР°Р»РµРЅРёРµ РЅР°Р№РґРµРЅРЅС‹С… СЃР°РјРѕР»РµС‚РѕРІ РёР· Р±Р°Р·С‹ РґР°РЅРЅС‹С…
 			for( auto & ID: idToDelete )
 			{
 				profilesDB->erase<Plane>( ID );
@@ -200,7 +200,7 @@ namespace rplanes
 			}
 			catch (odb::object_not_persistent)
 			{
-				return "Самолета с таким именем не существует " + planeName + ".";
+				return "РЎР°РјРѕР»РµС‚Р° СЃ С‚Р°РєРёРј РёРјРµРЅРµРј РЅРµ СЃСѓС‰РµСЃС‚РІСѓРµС‚ " + planeName + ".";
 			}
 			try
 			{
@@ -212,25 +212,25 @@ namespace rplanes
 			}
 			if ( openedPlanes.count( planeName ) == 0 )
 			{
-				return "Самолет не открыт. Проходите миссии, чтобы открыть самолеты.";
+				return "РЎР°РјРѕР»РµС‚ РЅРµ РѕС‚РєСЂС‹С‚. РџСЂРѕС…РѕРґРёС‚Рµ РјРёСЃСЃРёРё, С‡С‚РѕР±С‹ РѕС‚РєСЂС‹С‚СЊ СЃР°РјРѕР»РµС‚С‹.";
 			}
 
 			if( price > money )
-				return "Недостаточно денег.";
+				return "РќРµРґРѕСЃС‚Р°С‚РѕС‡РЅРѕ РґРµРЅРµРі.";
 
 			for(auto i = planes.begin(); i != planes.end(); i++ )
 			{
 				if( i->id.planeName == planeName )
-					return std::string("У вас уже есть ") + planeName + ".";
+					return std::string("РЈ РІР°СЃ СѓР¶Рµ РµСЃС‚СЊ ") + planeName + ".";
 			}
 			money -= price;
 			planes.push_back( newPlane );
-			return planeName + " куплен.";
+			return planeName + " РєСѓРїР»РµРЅ.";
 		}
 
 		std::string Profile::buyModule( std::string planeName, size_t moduleNo, std::string moduleName, std::shared_ptr<odb::database > planesDB )
 		{	
-			//поиск самолета в профиле
+			//РїРѕРёСЃРє СЃР°РјРѕР»РµС‚Р° РІ РїСЂРѕС„РёР»Рµ
 			auto Plane = planes.begin();
 			for( ; Plane!=planes.end(); Plane++ )
 			{
@@ -238,8 +238,8 @@ namespace rplanes
 					break;
 			}
 			if ( Plane == planes.end() )
-				return std::string("В ангаре нет самолета ") + planeName + " profile::buyModule";
-			//поиск модуля в базе данных
+				return std::string("Р’ Р°РЅРіР°СЂРµ РЅРµС‚ СЃР°РјРѕР»РµС‚Р° ") + planeName + " profile::buyModule";
+			//РїРѕРёСЃРє РјРѕРґСѓР»СЏ РІ Р±Р°Р·Рµ РґР°РЅРЅС‹С…
 			std::shared_ptr<planedata::Module> Module;
 			try
 			{
@@ -249,9 +249,9 @@ namespace rplanes
 			}
 			catch( odb::object_not_persistent )
 			{
-				return "Модуль с именем " + moduleName + " не найден в базе данных.";
+				return "РњРѕРґСѓР»СЊ СЃ РёРјРµРЅРµРј " + moduleName + " РЅРµ РЅР°Р№РґРµРЅ РІ Р±Р°Р·Рµ РґР°РЅРЅС‹С….";
 			}
-			//проверка возможности установки
+			//РїСЂРѕРІРµСЂРєР° РІРѕР·РјРѕР¶РЅРѕСЃС‚Рё СѓСЃС‚Р°РЅРѕРІРєРё
 			try
 			{
 				auto priceList = modulePriceList(planeName, Module->getType(), moduleNo, planesDB);
@@ -265,7 +265,7 @@ namespace rplanes
 				}
 				if ( i == priceList.end() )
 				{
-					return "На самолет " + planeName + " нельзя поставить модуль " + moduleName + "." ;
+					return "РќР° СЃР°РјРѕР»РµС‚ " + planeName + " РЅРµР»СЊР·СЏ РїРѕСЃС‚Р°РІРёС‚СЊ РјРѕРґСѓР»СЊ " + moduleName + "." ;
 				}
 			}
 			catch( planesException & e )
@@ -273,29 +273,29 @@ namespace rplanes
 				return e.what();
 			}
 
-			//проверка возможности покупки или установки со склада
+			//РїСЂРѕРІРµСЂРєР° РІРѕР·РјРѕР¶РЅРѕСЃС‚Рё РїРѕРєСѓРїРєРё РёР»Рё СѓСЃС‚Р°РЅРѕРІРєРё СЃРѕ СЃРєР»Р°РґР°
 			if ( std::find( moduleStore.begin(), moduleStore.end(), moduleName ) == moduleStore.end() )
 				if ( Module->price > money )
-					return "Не хватает денег.";
+					return "РќРµ С…РІР°С‚Р°РµС‚ РґРµРЅРµРі.";
 
-			// установка модуля на самолет
+			// СѓСЃС‚Р°РЅРѕРІРєР° РјРѕРґСѓР»СЏ РЅР° СЃР°РјРѕР»РµС‚
 
 
-			//макросы установки модуля конкретного типа
+			//РјР°РєСЂРѕСЃС‹ СѓСЃС‚Р°РЅРѕРІРєРё РјРѕРґСѓР»СЏ РєРѕРЅРєСЂРµС‚РЅРѕРіРѕ С‚РёРїР°
 #define VECTORED_MODULES( vectorName )\
 	if ( moduleNo >= Plane->vectorName.size())\
 			{\
-			return "Параметр moduleNo задан не неверно.";\
+			return "РџР°СЂР°РјРµС‚СЂ moduleNo Р·Р°РґР°РЅ РЅРµ РЅРµРІРµСЂРЅРѕ.";\
 				}\
 				if( Plane->vectorName[moduleNo] == moduleName )\
-				return "Данный мудуль уже установлен.";\
+				return "Р”Р°РЅРЅС‹Р№ РјСѓРґСѓР»СЊ СѓР¶Рµ СѓСЃС‚Р°РЅРѕРІР»РµРЅ.";\
 				moduleStore.push_back( Plane->vectorName[moduleNo] );\
 				Plane->vectorName[moduleNo] = moduleName;
 
 
 #define SINGLE_MODULES(slot)\
 	if( Plane->slot== moduleName )\
-	return "модуль уже установлен";\
+	return "РјРѕРґСѓР»СЊ СѓР¶Рµ СѓСЃС‚Р°РЅРѕРІР»РµРЅ";\
 	moduleStore.push_back( Plane->slot );\
 	Plane->slot = moduleName;
 
@@ -334,24 +334,24 @@ namespace rplanes
 #undef VECTORED_MODULES
 #undef SINGLE_MODULES	
 
-			//удаление модуля со склада
+			//СѓРґР°Р»РµРЅРёРµ РјРѕРґСѓР»СЏ СЃРѕ СЃРєР»Р°РґР°
 			auto m = std::find( moduleStore.begin(), moduleStore.end(), moduleName );
 			if ( m != moduleStore.end() )
 			{
 				moduleStore.erase(m);
-				return "Модуль установлен со склада.";
+				return "РњРѕРґСѓР»СЊ СѓСЃС‚Р°РЅРѕРІР»РµРЅ СЃРѕ СЃРєР»Р°РґР°.";
 			}
 
-			//снятие денег
+			//СЃРЅСЏС‚РёРµ РґРµРЅРµРі
 			money-= Module->price;
-			return "Модуль приобретен и установлен.";
+			return "РњРѕРґСѓР»СЊ РїСЂРёРѕР±СЂРµС‚РµРЅ Рё СѓСЃС‚Р°РЅРѕРІР»РµРЅ.";
 		}
 
 		std::string Profile::buyModules( std::string planeName, std::string moduleName, std::shared_ptr<odb::database > planesDB )
 		{
 			std::string retval;
 
-			//поиск самолета в профиле
+			//РїРѕРёСЃРє СЃР°РјРѕР»РµС‚Р° РІ РїСЂРѕС„РёР»Рµ
 			auto Plane = planes.begin();
 			for( ; Plane!=planes.end(); Plane++ )
 			{
@@ -359,8 +359,8 @@ namespace rplanes
 					break;
 			}
 			if ( Plane == planes.end() )
-				return std::string("В ангаре нет самолета ") + planeName + " profile::buyModule";
-			//поиск модуля в базе данных
+				return std::string("Р’ Р°РЅРіР°СЂРµ РЅРµС‚ СЃР°РјРѕР»РµС‚Р° ") + planeName + " profile::buyModule";
+			//РїРѕРёСЃРє РјРѕРґСѓР»СЏ РІ Р±Р°Р·Рµ РґР°РЅРЅС‹С…
 			std::shared_ptr<planedata::Module> Module;
 			try
 			{
@@ -370,7 +370,7 @@ namespace rplanes
 			}
 			catch( odb::object_not_persistent )
 			{
-				return "Модуль с именем " + moduleName + " не найден в базе данных.";
+				return "РњРѕРґСѓР»СЊ СЃ РёРјРµРЅРµРј " + moduleName + " РЅРµ РЅР°Р№РґРµРЅ РІ Р±Р°Р·Рµ РґР°РЅРЅС‹С….";
 			}
 
 			auto moduleType = Module->getType();
@@ -428,7 +428,7 @@ namespace rplanes
 		std::vector<std::pair<std::string, int> > Profile::planePriceList( std::shared_ptr<odb::database> planesDB )
 		{
 			std::vector< std::pair <std::string, int> > retval;
-			//загружаем модели открытых самолетов
+			//Р·Р°РіСЂСѓР¶Р°РµРј РјРѕРґРµР»Рё РѕС‚РєСЂС‹С‚С‹С… СЃР°РјРѕР»РµС‚РѕРІ
 			{
 				std::vector<planedata::Model> models;
 				odb::transaction t(planesDB->begin());
@@ -448,7 +448,7 @@ namespace rplanes
 					retval.push_back( std::pair< std::string, int > (Model.planeName, price ) );
 				}
 			}
-			//заменяем цену купленных самолетов на отрицательную
+			//Р·Р°РјРµРЅСЏРµРј С†РµРЅСѓ РєСѓРїР»РµРЅРЅС‹С… СЃР°РјРѕР»РµС‚РѕРІ РЅР° РѕС‚СЂРёС†Р°С‚РµР»СЊРЅСѓСЋ
 			for( auto i = planes.begin(); i != planes.end(); i++ )
 			{
 				for( auto j = retval.begin(); j != retval.end(); j++ )
@@ -469,7 +469,7 @@ namespace rplanes
 
 			std::vector< std::pair< std::string, int > > retval;
 
-			//поиск самолета в профиле
+			//РїРѕРёСЃРє СЃР°РјРѕР»РµС‚Р° РІ РїСЂРѕС„РёР»Рµ
 			auto Plane = planes.begin();
 			for( ; Plane!=planes.end(); Plane++ )
 			{
@@ -479,7 +479,7 @@ namespace rplanes
 			if ( Plane == planes.end() )
 				return retval;
 
-			//загрузка модели
+			//Р·Р°РіСЂСѓР·РєР° РјРѕРґРµР»Рё
 			std::shared_ptr<planedata::Model> model;
 			try
 			{
@@ -489,9 +489,9 @@ namespace rplanes
 			}
 			catch( odb::object_not_persistent )
 			{
-				throw eModelTemplateNotFound( "Название самолета " + planeName + ". ");
+				throw eModelTemplateNotFound( "РќР°Р·РІР°РЅРёРµ СЃР°РјРѕР»РµС‚Р° " + planeName + ". ");
 			}
-			//загрузка устанавливаемых на самолет модулей данного типа
+			//Р·Р°РіСЂСѓР·РєР° СѓСЃС‚Р°РЅР°РІР»РёРІР°РµРјС‹С… РЅР° СЃР°РјРѕР»РµС‚ РјРѕРґСѓР»РµР№ РґР°РЅРЅРѕРіРѕ С‚РёРїР°
 			try
 			{
 				for( auto & Module: model->modules )
@@ -503,10 +503,10 @@ namespace rplanes
 			}
 			catch( odb::object_not_persistent )
 			{
-				throw eModelTemplateNotFull("Название самолета " + planeName + ". ");
+				throw eModelTemplateNotFull("РќР°Р·РІР°РЅРёРµ СЃР°РјРѕР»РµС‚Р° " + planeName + ". ");
 			}
 
-			//пометить имеющиеся в ангаре
+			//РїРѕРјРµС‚РёС‚СЊ РёРјРµСЋС‰РёРµСЃСЏ РІ Р°РЅРіР°СЂРµ
 			for( auto i = moduleStore.begin(); i != moduleStore.end(); i++ )
 			{
 				for ( auto j = retval.begin(); j != retval.end(); j++ )
@@ -518,12 +518,12 @@ namespace rplanes
 				}
 			}
 
-			//Убрать не подходящие по типу подвески
+			//РЈР±СЂР°С‚СЊ РЅРµ РїРѕРґС…РѕРґСЏС‰РёРµ РїРѕ С‚РёРїСѓ РїРѕРґРІРµСЃРєРё
 			try
 			{
 				if (MT == GUN)
 				{
-					if ( moduleNo >= model->guns.size() ) //если pos не корректна, вернуть пустой массив
+					if ( moduleNo >= model->guns.size() ) //РµСЃР»Рё pos РЅРµ РєРѕСЂСЂРµРєС‚РЅР°, РІРµСЂРЅСѓС‚СЊ РїСѓСЃС‚РѕР№ РјР°СЃСЃРёРІ
 					{
 						retval.clear();
 						return retval;
@@ -541,13 +541,13 @@ namespace rplanes
 			}
 			catch( odb::object_not_persistent )
 			{
-				throw eModelTemplateNotFull("Название самолета " + planeName + ". ");
+				throw eModelTemplateNotFull("РќР°Р·РІР°РЅРёРµ СЃР°РјРѕР»РµС‚Р° " + planeName + ". ");
 			}
 
 
-			//убрать уже установленные модули
+			//СѓР±СЂР°С‚СЊ СѓР¶Рµ СѓСЃС‚Р°РЅРѕРІР»РµРЅРЅС‹Рµ РјРѕРґСѓР»Рё
 
-			//макросы установки модуля конкретного типа
+			//РјР°РєСЂРѕСЃС‹ СѓСЃС‚Р°РЅРѕРІРєРё РјРѕРґСѓР»СЏ РєРѕРЅРєСЂРµС‚РЅРѕРіРѕ С‚РёРїР°
 #define VECTORED_MODULES( vectorName )\
 	if ( moduleNo >= Plane->vectorName.size() )\
 			{\
@@ -635,7 +635,7 @@ namespace rplanes
 			}
 			if ( Plane == planes.end() )
 			{
-				return "Самолет с именем " + planeName + " отсутствует.";
+				return "РЎР°РјРѕР»РµС‚ СЃ РёРјРµРЅРµРј " + planeName + " РѕС‚СЃСѓС‚СЃС‚РІСѓРµС‚.";
 			}
 			try
 			{
@@ -646,12 +646,12 @@ namespace rplanes
 				return e.what();
 			}
 			planes.erase(Plane);
-			return planeName + " продан.";
+			return planeName + " РїСЂРѕРґР°РЅ.";
 		}
 
 		std::string Profile::sellModule( std::string moduleName, size_t nModules , std::shared_ptr<odb::database> planesDB )
 		{
-			//загружаем указанный модуль из базы данных
+			//Р·Р°РіСЂСѓР¶Р°РµРј СѓРєР°Р·Р°РЅРЅС‹Р№ РјРѕРґСѓР»СЊ РёР· Р±Р°Р·С‹ РґР°РЅРЅС‹С…
 			std::shared_ptr<planedata::Module> m;
 			try
 			{
@@ -661,12 +661,12 @@ namespace rplanes
 			{
 				return e.what();
 			}
-			std::string retval = "продано ";
+			std::string retval = "РїСЂРѕРґР°РЅРѕ ";
 			size_t nSoldModules = 0;
-			//пока не продано достаточное количество модулей
+			//РїРѕРєР° РЅРµ РїСЂРѕРґР°РЅРѕ РґРѕСЃС‚Р°С‚РѕС‡РЅРѕРµ РєРѕР»РёС‡РµСЃС‚РІРѕ РјРѕРґСѓР»РµР№
 			while ( nModules != nModules )
 			{
-				//ищем модуль в хранилище
+				//РёС‰РµРј РјРѕРґСѓР»СЊ РІ С…СЂР°РЅРёР»РёС‰Рµ
 				auto Module = moduleStore.begin();
 				for (; Module!=moduleStore.end(); Module++)
 				{
@@ -676,14 +676,14 @@ namespace rplanes
 				if( Module == moduleStore.end() )
 					break;
 
-				//прибавляем деньги
+				//РїСЂРёР±Р°РІР»СЏРµРј РґРµРЅСЊРіРё
 				money += m->price;
-				//удаляем модуль из хранилища
+				//СѓРґР°Р»СЏРµРј РјРѕРґСѓР»СЊ РёР· С…СЂР°РЅРёР»РёС‰Р°
 				moduleStore.erase( Module );
 
 				nSoldModules++;
 			}
-			return retval + " модулей " + moduleName;
+			return retval + " РјРѕРґСѓР»РµР№ " + moduleName;
 		}
 
 		Profile::Profile()

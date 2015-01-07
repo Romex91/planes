@@ -5,12 +5,12 @@ extern std::shared_ptr<odb::database> profilesDB;
 
 Client::ProfilesInfo Client::profilesInfo_;
 
-bool clientIsInRoom( size_t clientID ) /*определить статус по id */
+bool clientIsInRoom( size_t clientID ) /*РѕРїСЂРµРґРµР»РёС‚СЊ СЃС‚Р°С‚СѓСЃ РїРѕ id */
 {
 	return clientID >= rplanes::configuration().server.maxClientsNumber;
 }
 
-size_t convertIDToPos( size_t clienID ) /*получить положение в векторе из id */
+size_t convertIDToPos( size_t clienID ) /*РїРѕР»СѓС‡РёС‚СЊ РїРѕР»РѕР¶РµРЅРёРµ РІ РІРµРєС‚РѕСЂРµ РёР· id */
 {
 	if ( clientIsInRoom(clienID) )
 	{
@@ -32,16 +32,16 @@ void Client::exitRoom()
 {
 	if ( status_ != ROOM )
 	{
-		throw rplanes::eClientStatusError( "Клиент не состоит в комнате. " );
+		throw rplanes::eClientStatusError( "РљР»РёРµРЅС‚ РЅРµ СЃРѕСЃС‚РѕРёС‚ РІ РєРѕРјРЅР°С‚Рµ. " );
 	}
 	status_ = HANGAR;
 	
 	if ( !player_ )
 	{
-		throw rplanes::eClientStatusError( "Указатель игрока пуст. ");
+		throw rplanes::eClientStatusError( "РЈРєР°Р·Р°С‚РµР»СЊ РёРіСЂРѕРєР° РїСѓСЃС‚. ");
 	}
 
-	//сохраняем прогресс
+	//СЃРѕС…СЂР°РЅСЏРµРј РїСЂРѕРіСЂРµСЃСЃ
 	profile_.statistics[player_->getPlaneName()]+= player_->statistics;
 	profile_.statistics["total"]+=player_->statistics;
 	profile_.money+= player_->statistics.money;
@@ -49,14 +49,14 @@ void Client::exitRoom()
 	
 	profile_.openedMaps.insert(player_->openedMaps.begin(), player_->openedMaps.end());
 	profile_.openedPlanes.insert(player_->openedPlanes.begin(), player_->openedPlanes.end());
-	//выводим сообщение
+	//РІС‹РІРѕРґРёРј СЃРѕРѕР±С‰РµРЅРёРµ
 	std::cout << profile_.login 
-		<< " вышел в ангар " << std::endl;
+		<< " РІС‹С€РµР» РІ Р°РЅРіР°СЂ " << std::endl;
 
-	//сообщаем комнате, что клиент вышел
+	//СЃРѕРѕР±С‰Р°РµРј РєРѕРјРЅР°С‚Рµ, С‡С‚Рѕ РєР»РёРµРЅС‚ РІС‹С€РµР»
 	player_->isJoined = false;
 	player_.reset();
-	//пытаемся сообщить клиенту
+	//РїС‹С‚Р°РµРјСЃСЏ СЃРѕРѕР±С‰РёС‚СЊ РєР»РёРµРЅС‚Сѓ
 	try
 	{
 		sendMessage(rplanes::network::bidirectionalmessages::ExitRoom());
@@ -69,16 +69,16 @@ void Client::joinRoom( Room & room, size_t planeNo)
 {
 	if ( status_ != HANGAR )
 	{
-		throw rplanes::eClientStatusError( "Для входа в комнату необходима авторизация. " );
+		throw rplanes::eClientStatusError( "Р”Р»СЏ РІС…РѕРґР° РІ РєРѕРјРЅР°С‚Сѓ РЅРµРѕР±С…РѕРґРёРјР° Р°РІС‚РѕСЂРёР·Р°С†РёСЏ. " );
 	}
 	if ( planeNo >= profile_.planes.size()  )
 	{
-		throw rplanes::eProfileError("Переданы неверные параметры. ");
+		throw rplanes::eProfileError("РџРµСЂРµРґР°РЅС‹ РЅРµРІРµСЂРЅС‹Рµ РїР°СЂР°РјРµС‚СЂС‹. ");
 	}
 
 	if (!profile_.planes[planeNo].isReadyForJoinRoom())
 	{
-		throw rplanes::eRoomError(" Конфигурация самолета не отвечает требованиям. Крылья, двигатели, ракеты и пушки должны быть установлены симметрично. ");
+		throw rplanes::eRoomError(" РљРѕРЅС„РёРіСѓСЂР°С†РёСЏ СЃР°РјРѕР»РµС‚Р° РЅРµ РѕС‚РІРµС‡Р°РµС‚ С‚СЂРµР±РѕРІР°РЅРёСЏРј. РљСЂС‹Р»СЊСЏ, РґРІРёРіР°С‚РµР»Рё, СЂР°РєРµС‚С‹ Рё РїСѓС€РєРё РґРѕР»Р¶РЅС‹ Р±С‹С‚СЊ СѓСЃС‚Р°РЅРѕРІР»РµРЅС‹ СЃРёРјРјРµС‚СЂРёС‡РЅРѕ. ");
 	}
 
 	rplanes::serverdata::Plane plane;
@@ -104,7 +104,7 @@ rplanes::playerdata::Profile & Client::profile()
 {
 	if ( status_!=HANGAR )
 	{
-		throw rplanes::eClientStatusError("Попытка получить профиль вне ангара.");
+		throw rplanes::eClientStatusError("РџРѕРїС‹С‚РєР° РїРѕР»СѓС‡РёС‚СЊ РїСЂРѕС„РёР»СЊ РІРЅРµ Р°РЅРіР°СЂР°.");
 	}
 	return profile_;
 }
@@ -118,14 +118,14 @@ void Client::logout()
 {
 	if ( status_ == UNLOGINED )
 	{
-		throw rplanes::eClientStatusError("Запрос выхода от неавторизованного клиента.");
+		throw rplanes::eClientStatusError("Р—Р°РїСЂРѕСЃ РІС‹С…РѕРґР° РѕС‚ РЅРµР°РІС‚РѕСЂРёР·РѕРІР°РЅРЅРѕРіРѕ РєР»РёРµРЅС‚Р°.");
 	}
 	status_ = UNLOGINED;
 	{
 		MutexLocker locker( profilesInfo_.Mutex );
 		if( profilesInfo_.loginedProfiles.erase(profile_.login) != 1 )
 		{
-			throw rplanes::eProfileError("Ошибка множества авторизованных пользователей.");
+			throw rplanes::eProfileError("РћС€РёР±РєР° РјРЅРѕР¶РµСЃС‚РІР° Р°РІС‚РѕСЂРёР·РѕРІР°РЅРЅС‹С… РїРѕР»СЊР·РѕРІР°С‚РµР»РµР№.");
 		}
 	}
 	try 
@@ -134,25 +134,25 @@ void Client::logout()
 	}
 	catch(odb::exception & e)
 	{
-		throw rplanes::eProfileError( std::string() + "Ошибка базы данных. " + e.what() );
+		throw rplanes::eProfileError( std::string() + "РћС€РёР±РєР° Р±Р°Р·С‹ РґР°РЅРЅС‹С…. " + e.what() );
 	}
-	std::cout << profile_.login<<" вышел из игры" << std::endl;
+	std::cout << profile_.login<<" РІС‹С€РµР» РёР· РёРіСЂС‹" << std::endl;
 }
 
 void Client::login( std::string name, std::string password )
 {
 	if ( status_ != UNLOGINED )
 	{
-		throw rplanes::eLoginFail("Попытка повторной авторизации. ");
+		throw rplanes::eLoginFail("РџРѕРїС‹С‚РєР° РїРѕРІС‚РѕСЂРЅРѕР№ Р°РІС‚РѕСЂРёР·Р°С†РёРё. ");
 	}
-	//заблокируем множество авторизованных пользователей
+	//Р·Р°Р±Р»РѕРєРёСЂСѓРµРј РјРЅРѕР¶РµСЃС‚РІРѕ Р°РІС‚РѕСЂРёР·РѕРІР°РЅРЅС‹С… РїРѕР»СЊР·РѕРІР°С‚РµР»РµР№
 	MutexLocker locker( profilesInfo_.Mutex );
-	//проверим занятость профиля
+	//РїСЂРѕРІРµСЂРёРј Р·Р°РЅСЏС‚РѕСЃС‚СЊ РїСЂРѕС„РёР»СЏ
 	if ( profilesInfo_.loginedProfiles.count(name) > 0 )
 	{
-		throw rplanes::eLoginFail("Профиль занят. ");
+		throw rplanes::eLoginFail("РџСЂРѕС„РёР»СЊ Р·Р°РЅСЏС‚. ");
 	}
-	//попробуем загрузить профиль с таким именем
+	//РїРѕРїСЂРѕР±СѓРµРј Р·Р°РіСЂСѓР·РёС‚СЊ РїСЂРѕС„РёР»СЊ СЃ С‚Р°РєРёРј РёРјРµРЅРµРј
 	try
 	{
 		odb::transaction t(profilesDB->begin());
@@ -161,29 +161,29 @@ void Client::login( std::string name, std::string password )
 	}
 	catch(...)
 	{
-		throw rplanes::eLoginFail("Имя пользователя или пароль указаны неверно. ");
+		throw rplanes::eLoginFail("РРјСЏ РїРѕР»СЊР·РѕРІР°С‚РµР»СЏ РёР»Рё РїР°СЂРѕР»СЊ СѓРєР°Р·Р°РЅС‹ РЅРµРІРµСЂРЅРѕ. ");
 	}
-	//проверим пароль
+	//РїСЂРѕРІРµСЂРёРј РїР°СЂРѕР»СЊ
 	if ( profile_.password != password )
 	{
-		throw rplanes::eLoginFail("Имя пользователя или пароль указаны неверно. ");
+		throw rplanes::eLoginFail("РРјСЏ РїРѕР»СЊР·РѕРІР°С‚РµР»СЏ РёР»Рё РїР°СЂРѕР»СЊ СѓРєР°Р·Р°РЅС‹ РЅРµРІРµСЂРЅРѕ. ");
 	}
-	//если все предыдущие операции удались, значит авторизация легальна
-	//загружаем самолеты профиля
+	//РµСЃР»Рё РІСЃРµ РїСЂРµРґС‹РґСѓС‰РёРµ РѕРїРµСЂР°С†РёРё СѓРґР°Р»РёСЃСЊ, Р·РЅР°С‡РёС‚ Р°РІС‚РѕСЂРёР·Р°С†РёСЏ Р»РµРіР°Р»СЊРЅР°
+	//Р·Р°РіСЂСѓР¶Р°РµРј СЃР°РјРѕР»РµС‚С‹ РїСЂРѕС„РёР»СЏ
 	try
 	{
 		profile_.loadPlanes(profilesDB);
 	}
 	catch(...)
 	{
-		throw rplanes::eLoginFail("Ошибка базы данных. ");
+		throw rplanes::eLoginFail("РћС€РёР±РєР° Р±Р°Р·С‹ РґР°РЅРЅС‹С…. ");
 	}
-	//регистрируем имя
+	//СЂРµРіРёСЃС‚СЂРёСЂСѓРµРј РёРјСЏ
 	profilesInfo_.loginedProfiles.insert(name);
-	//изменяем статус
+	//РёР·РјРµРЅСЏРµРј СЃС‚Р°С‚СѓСЃ
 	status_ = HANGAR;
-	//выводим сообщение
-	std::cout << profile_.login << " зашел в игру с адреса " 
+	//РІС‹РІРѕРґРёРј СЃРѕРѕР±С‰РµРЅРёРµ
+	std::cout << profile_.login << " Р·Р°С€РµР» РІ РёРіСЂСѓ СЃ Р°РґСЂРµСЃР° " 
 		<< connection_.getIP()
 		<< std::endl;
 }
@@ -192,7 +192,7 @@ void Client::setControllable( rplanes::serverdata::Plane::ControllableParameters
 {
 	if ( status_ != ROOM  || !player_)
 	{
-		throw rplanes::eClientStatusError("Отправка данных управления не из комнаты. ");
+		throw rplanes::eClientStatusError("РћС‚РїСЂР°РІРєР° РґР°РЅРЅС‹С… СѓРїСЂР°РІР»РµРЅРёСЏ РЅРµ РёР· РєРѕРјРЅР°С‚С‹. ");
 	}
 	player_->setControllable(controllable);
 }
@@ -223,7 +223,7 @@ Client::Client( boost::asio::io_service& io_service , size_t clientID /*= 0 */ )
 	MutexLocker( profilesInfo_.Mutex );
 	if ( profilesInfo_.clientsCount >= rplanes::configuration().server.maxClientsNumber )
 	{
-		throw rplanes::eClientConnectionFail("Достигнуто максимальное количество клиентов. ");
+		throw rplanes::eClientConnectionFail("Р”РѕСЃС‚РёРіРЅСѓС‚Рѕ РјР°РєСЃРёРјР°Р»СЊРЅРѕРµ РєРѕР»РёС‡РµСЃС‚РІРѕ РєР»РёРµРЅС‚РѕРІ. ");
 	}
 	profilesInfo_.clientsCount++;
 }
@@ -232,7 +232,7 @@ void Client::sendRoomMessages()
 {
 	if (status_ != ROOM)
 	{
-		throw rplanes::eClientStatusError("Попытка отправить комнантные данные не из комнаты. ");
+		throw rplanes::eClientStatusError("РџРѕРїС‹С‚РєР° РѕС‚РїСЂР°РІРёС‚СЊ РєРѕРјРЅР°РЅС‚РЅС‹Рµ РґР°РЅРЅС‹Рµ РЅРµ РёР· РєРѕРјРЅР°С‚С‹. ");
 	}
 	if (player_->messages.createPlanes.Planes.size() > 0)
 		sendMessage(player_->messages.createPlanes);
@@ -275,7 +275,7 @@ void Client::prepareRoomExit()
 {
 	if (status_ != ROOM)
 	{
-		throw rplanes::eClientStatusError("Клиент пытается выйти не находясь в комнате. ");
+		throw rplanes::eClientStatusError("РљР»РёРµРЅС‚ РїС‹С‚Р°РµС‚СЃСЏ РІС‹Р№С‚Рё РЅРµ РЅР°С…РѕРґСЏСЃСЊ РІ РєРѕРјРЅР°С‚Рµ. ");
 	}
 	player_->isJoined = false;
 }

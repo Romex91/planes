@@ -11,7 +11,7 @@ void rplanes::network::MessageStorage::registryMessage( Message & mess )
 {
 	if (baseMap().count(mess.getId())!= 0)
 	{
-		throw rplanes::planesException("Повторная регистрация сообщения.");
+		throw rplanes::planesException("РџРѕРІС‚РѕСЂРЅР°СЏ СЂРµРіРёСЃС‚СЂР°С†РёСЏ СЃРѕРѕР±С‰РµРЅРёСЏ.");
 	}
 	baseMap()[ mess.getId() ] = mess.copy();
 }
@@ -31,7 +31,7 @@ Message & rplanes::network::MessageStorage::getMessage( unsigned short id )
 	{
 		std::stringstream ss;
 		ss << id;
-		throw( eMessageNotFound( "id сообщения " + ss.str() + ". " ) );
+		throw( eMessageNotFound( "id СЃРѕРѕР±С‰РµРЅРёСЏ " + ss.str() + ". " ) );
 	}
 	lastMessageId_ = id;
 	return *mess->second;
@@ -57,10 +57,10 @@ size_t rplanes::network::Connection::blockingRead( BUFFER & buff, boost::system:
 	return len;
 }
 
-bool rplanes::network::Connection::handleInput() /*неблокирующая обработка одного входящего сообщения */
+bool rplanes::network::Connection::handleInput() /*РЅРµР±Р»РѕРєРёСЂСѓСЋС‰Р°СЏ РѕР±СЂР°Р±РѕС‚РєР° РѕРґРЅРѕРіРѕ РІС…РѕРґСЏС‰РµРіРѕ СЃРѕРѕР±С‰РµРЅРёСЏ */
 {
 	boost::system::error_code error;
-	//получение длины имени класса
+	//РїРѕР»СѓС‡РµРЅРёРµ РґР»РёРЅС‹ РёРјРµРЅРё РєР»Р°СЃСЃР°
 	char id_buffer[sizeof(unsigned short)];
 	socket_.read_some(boost::asio::buffer(id_buffer), error);
 	if ( error )
@@ -76,13 +76,13 @@ bool rplanes::network::Connection::handleInput() /*неблокирующая обработка одног
 		std::istringstream is(std::string(id_buffer, sizeof(unsigned short)));
 		if (!(is >> std::hex >> messageId))
 		{
-			throw(eReadError("Длина сообщения не соответствует формату. "));
+			throw(eReadError("Р”Р»РёРЅР° СЃРѕРѕР±С‰РµРЅРёСЏ РЅРµ СЃРѕРѕС‚РІРµС‚СЃС‚РІСѓРµС‚ С„РѕСЂРјР°С‚Сѓ. "));
 		}
 	}
-	//загрузка сообщения с соответствующим id
+	//Р·Р°РіСЂСѓР·РєР° СЃРѕРѕР±С‰РµРЅРёСЏ СЃ СЃРѕРѕС‚РІРµС‚СЃС‚РІСѓСЋС‰РёРј id
 	auto & message = messages_.getMessage(messageId);
 
-	//получение длины сериализированных данных
+	//РїРѕР»СѓС‡РµРЅРёРµ РґР»РёРЅС‹ СЃРµСЂРёР°Р»РёР·РёСЂРѕРІР°РЅРЅС‹С… РґР°РЅРЅС‹С…
 	char data_header[header_length];
 	blockingRead(boost::asio::buffer(data_header), error);
 	if ( error )
@@ -93,10 +93,10 @@ bool rplanes::network::Connection::handleInput() /*неблокирующая обработка одног
 	std::size_t data_size = 0;
 	if (!(is >> std::hex >> data_size))
 	{
-		throw(eReadError("Длина сообщения не соответствует формату. "));
+		throw(eReadError("Р”Р»РёРЅР° СЃРѕРѕР±С‰РµРЅРёСЏ РЅРµ СЃРѕРѕС‚РІРµС‚СЃС‚РІСѓРµС‚ С„РѕСЂРјР°С‚Сѓ. "));
 	}
 
-	//получение сериализированных данных
+	//РїРѕР»СѓС‡РµРЅРёРµ СЃРµСЂРёР°Р»РёР·РёСЂРѕРІР°РЅРЅС‹С… РґР°РЅРЅС‹С…
 	std::vector<char> data;
 	data.resize(data_size);
 
@@ -109,30 +109,30 @@ bool rplanes::network::Connection::handleInput() /*неблокирующая обработка одног
 	std::string archive_data(&data[0], data.size());
 
 
-	//десериализация данных
+	//РґРµСЃРµСЂРёР°Р»РёР·Р°С†РёСЏ РґР°РЅРЅС‹С…
 	std::istringstream archive_stream(archive_data);
 	boost::archive::binary_iarchive archive(archive_stream, boost::archive::no_header);
 	message.readData(archive);
-	//установка ID клиента и запуск обработчика сообщения
+	//СѓСЃС‚Р°РЅРѕРІРєР° ID РєР»РёРµРЅС‚Р° Рё Р·Р°РїСѓСЃРє РѕР±СЂР°Р±РѕС‚С‡РёРєР° СЃРѕРѕР±С‰РµРЅРёСЏ
 	message.clientID = clientID_;
 	message.handle();
 	return true;
 }
 
-void rplanes::network::Connection::sendMessage( Message & message ) /*отправка сообщения */
+void rplanes::network::Connection::sendMessage( Message & message ) /*РѕС‚РїСЂР°РІРєР° СЃРѕРѕР±С‰РµРЅРёСЏ */
 {
 	std::vector<boost::asio::const_buffer> buffers;
-	//id сообщения
+	//id СЃРѕРѕР±С‰РµРЅРёСЏ
 	std::ostringstream id_stream;
 	id_stream << std::setw(sizeof(unsigned short))
 		<< std::hex << message.getId();
 	if (!id_stream || id_stream.str().size() != sizeof(unsigned short))
 	{
-		throw(eWriteError("Ошибка формирования id сообщения. "));
+		throw(eWriteError("РћС€РёР±РєР° С„РѕСЂРјРёСЂРѕРІР°РЅРёСЏ id СЃРѕРѕР±С‰РµРЅРёСЏ. "));
 	}
 	std::string id_header = id_stream.str();
 
-	//сериализация данных
+	//СЃРµСЂРёР°Р»РёР·Р°С†РёСЏ РґР°РЅРЅС‹С…
 	std::ostringstream archive_stream;
 	boost::archive::binary_oarchive archive(archive_stream, boost::archive::no_header);
 	message.writeData(archive);
@@ -140,17 +140,17 @@ void rplanes::network::Connection::sendMessage( Message & message ) /*отправка с
 	std::string data;
 	data = archive_stream.str();
 
-	//длина сериализированных данных
+	//РґР»РёРЅР° СЃРµСЂРёР°Р»РёР·РёСЂРѕРІР°РЅРЅС‹С… РґР°РЅРЅС‹С…
 	std::ostringstream data_header_stream;
 	data_header_stream << std::setw(header_length)
 		<< std::hex << data.size();
 	if (!data_header_stream || data_header_stream.str().size() != header_length)
 	{
-		throw(eWriteError("Ошибка формирования длины сообщения. "));
+		throw(eWriteError("РћС€РёР±РєР° С„РѕСЂРјРёСЂРѕРІР°РЅРёСЏ РґР»РёРЅС‹ СЃРѕРѕР±С‰РµРЅРёСЏ. "));
 	}
 	std::string data_header = data_header_stream.str();
 
-	//формирование сообщения
+	//С„РѕСЂРјРёСЂРѕРІР°РЅРёРµ СЃРѕРѕР±С‰РµРЅРёСЏ
 	buffers.push_back(boost::asio::buffer(id_header));
 	buffers.push_back(boost::asio::buffer(data_header));
 	buffers.push_back(boost::asio::buffer(data));

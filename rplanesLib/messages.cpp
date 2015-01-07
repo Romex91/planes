@@ -134,7 +134,7 @@ void rplanes::network::servermessages::room::CreateBullets::serialize( Archive& 
 
 
 template <typename Archive>
-void rplanes::network::servermessages::room::СreateRicochetes::serialize( Archive& ar, const unsigned int version )
+void rplanes::network::servermessages::room::CreateRicochetes::serialize( Archive& ar, const unsigned int version )
 {
 	ar & bullets;
 	ar & time;
@@ -142,7 +142,7 @@ void rplanes::network::servermessages::room::СreateRicochetes::serialize( Archiv
 
 
 template <typename Archive>
-void rplanes::network::servermessages::room::СreateMissiles::serialize( Archive& ar, const unsigned int version )
+void rplanes::network::servermessages::room::CreateMissiles::serialize( Archive& ar, const unsigned int version )
 {
 	ar & missiles;
 	ar & time;
@@ -185,11 +185,11 @@ void rplanes::network::servermessages::room::Plane::serialize( Archive& ar, cons
 
 void rplanes::network::servermessages::room::Plane::extrapolate( float frameTime )
 {
-	//поступательное движение
+	//РїРѕСЃС‚СѓРїР°С‚РµР»СЊРЅРѕРµ РґРІРёР¶РµРЅРёРµ
 	extrapolationData.speed += extrapolationData.acceleration * frameTime;
 	pos.x += extrapolationData.speed * std::cos( pos.angle / 180.0 * M_PI) * frameTime * configuration().flight.speedFactor;
 	pos.y += extrapolationData.speed * std::sin( pos.angle / 180.0 * M_PI ) * frameTime * configuration().flight.speedFactor;
-	//вращательное движение
+	//РІСЂР°С‰Р°С‚РµР»СЊРЅРѕРµ РґРІРёР¶РµРЅРёРµ
 	pos.angle += extrapolationData.angleVelocity 
 		* frameTime * configuration().flight.angleVelocityFactor;
 }

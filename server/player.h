@@ -55,7 +55,7 @@ public:
 		needUpdate_ = true;
 		return value_;
 	}
-	//проверить было ли изменено значение со времени последнего вызова confirmUpdate
+	//РїСЂРѕРІРµСЂРёС‚СЊ Р±С‹Р»Рѕ Р»Рё РёР·РјРµРЅРµРЅРѕ Р·РЅР°С‡РµРЅРёРµ СЃРѕ РІСЂРµРјРµРЅРё РїРѕСЃР»РµРґРЅРµРіРѕ РІС‹Р·РѕРІР° confirmUpdate
 	bool isUpdated()
 	{
 		return needUpdate_;
@@ -105,7 +105,7 @@ public:
 	rplanes::serverdata::Plane::PlanePosition previousPosition;
 private:
 	bool destroyed_;
-	//используется в updatePlayers
+	//РёСЃРїРѕР»СЊР·СѓРµС‚СЃСЏ РІ updatePlayers
 	servermessages::room::DestroyPlanes::DestroyedPlane destructionInfo_;
 	size_t id_;
 };
@@ -151,10 +151,10 @@ public:
 		servermessages::room::UpdateModules updateModules;
 
 		servermessages::room::CreateBullets createBullets;
-		servermessages::room::СreateRicochetes createRicochetes;
+		servermessages::room::CreateRicochetes createRicochetes;
 		servermessages::room::DestroyBullets destroyBullets;
 
-		servermessages::room::СreateMissiles createMissiles;
+		servermessages::room::CreateMissiles createMissiles;
 		servermessages::room::DestroyMissiles destroyMissiles;
 
 		servermessages::room::InterfaceData interfaceData;
@@ -195,28 +195,28 @@ public:
 	rplanes::serverdata::Plane::PlanePosition getPrevPosition();
 	rplanes::Nation getNation();
 
-	//прямой доступ. Следующие методы используют только собственные данные
+	//РїСЂСЏРјРѕР№ РґРѕСЃС‚СѓРї. РЎР»РµРґСѓСЋС‰РёРµ РјРµС‚РѕРґС‹ РёСЃРїРѕР»СЊР·СѓСЋС‚ С‚РѕР»СЊРєРѕ СЃРѕР±СЃС‚РІРµРЅРЅС‹Рµ РґР°РЅРЅС‹Рµ
 
-	//Если параметры модулей были изменены, обновляем самолет
+	//Р•СЃР»Рё РїР°СЂР°РјРµС‚СЂС‹ РјРѕРґСѓР»РµР№ Р±С‹Р»Рё РёР·РјРµРЅРµРЅС‹, РѕР±РЅРѕРІР»СЏРµРј СЃР°РјРѕР»РµС‚
 	void updateStaticalIfNeed();
 
-	//если игрок не отключился, возрождаем самолет
+	//РµСЃР»Рё РёРіСЂРѕРє РЅРµ РѕС‚РєР»СЋС‡РёР»СЃСЏ, РІРѕР·СЂРѕР¶РґР°РµРј СЃР°РјРѕР»РµС‚
 	void respawn(float x, float y, float angle);
 	void reload();
 
-	//если состояние модуля было изменено, формируем сообщение обновления модуля. 
-	//если прочность модуля < 0, уничтожаем самолет и обновляем статистику
-	//здесь же проверяем наличие топлива
+	//РµСЃР»Рё СЃРѕСЃС‚РѕСЏРЅРёРµ РјРѕРґСѓР»СЏ Р±С‹Р»Рѕ РёР·РјРµРЅРµРЅРѕ, С„РѕСЂРјРёСЂСѓРµРј СЃРѕРѕР±С‰РµРЅРёРµ РѕР±РЅРѕРІР»РµРЅРёСЏ РјРѕРґСѓР»СЏ. 
+	//РµСЃР»Рё РїСЂРѕС‡РЅРѕСЃС‚СЊ РјРѕРґСѓР»СЏ < 0, СѓРЅРёС‡С‚РѕР¶Р°РµРј СЃР°РјРѕР»РµС‚ Рё РѕР±РЅРѕРІР»СЏРµРј СЃС‚Р°С‚РёСЃС‚РёРєСѓ
+	//Р·РґРµСЃСЊ Р¶Рµ РїСЂРѕРІРµСЂСЏРµРј РЅР°Р»РёС‡РёРµ С‚РѕРїР»РёРІР°
 	bool destroyIfNeed(float frameTime);
 
-	//уничтожить самолет, занеся уничтожение в статистику
+	//СѓРЅРёС‡С‚РѕР¶РёС‚СЊ СЃР°РјРѕР»РµС‚, Р·Р°РЅРµСЃСЏ СѓРЅРёС‡С‚РѕР¶РµРЅРёРµ РІ СЃС‚Р°С‚РёСЃС‚РёРєСѓ
 	void destroy(servermessages::room::DestroyPlanes::Reason reason, size_t moduleNo);
 
-	//уничтожить самолет, не занося уничтожение в статистику
+	//СѓРЅРёС‡С‚РѕР¶РёС‚СЊ СЃР°РјРѕР»РµС‚, РЅРµ Р·Р°РЅРѕСЃСЏ СѓРЅРёС‡С‚РѕР¶РµРЅРёРµ РІ СЃС‚Р°С‚РёСЃС‚РёРєСѓ
 	void setDestroyed(servermessages::room::DestroyPlanes::Reason reason, size_t moduleNo);
 
 
-	//сдвинуть самолеты и пули;
+	//СЃРґРІРёРЅСѓС‚СЊ СЃР°РјРѕР»РµС‚С‹ Рё РїСѓР»Рё;
 	void move(float frameTime);
 
 	void shoot(float frameTime, float serverTime, IdGetter & idGetter);
@@ -227,7 +227,7 @@ public:
 
 	bool isDestroyed()const;
 
-	//перекрестный доступ.
+	//РїРµСЂРµРєСЂРµСЃС‚РЅС‹Р№ РґРѕСЃС‚СѓРї.
 
 	void controlTurrets( float frameTime);
 
@@ -249,7 +249,7 @@ public:
 
 
 private:
-	//данный класс необходим для учета снарядов попадающих в крышу и дно модуля
+	//РґР°РЅРЅС‹Р№ РєР»Р°СЃСЃ РЅРµРѕР±С…РѕРґРёРј РґР»СЏ СѓС‡РµС‚Р° СЃРЅР°СЂСЏРґРѕРІ РїРѕРїР°РґР°СЋС‰РёС… РІ РєСЂС‹С€Сѓ Рё РґРЅРѕ РјРѕРґСѓР»СЏ
 	class CollisionsRegistrar
 	{
 	public:
@@ -271,7 +271,7 @@ private:
 		void handleCollision(ProjectileId projectileId, CollisionInfo collisionInfo)
 		{
 			auto & thisProjectileCollisions = collisions_[projectileId];
-			//если снаряд пересекает границу модуля повторно, удаляем коллизию
+			//РµСЃР»Рё СЃРЅР°СЂСЏРґ РїРµСЂРµСЃРµРєР°РµС‚ РіСЂР°РЅРёС†Сѓ РјРѕРґСѓР»СЏ РїРѕРІС‚РѕСЂРЅРѕ, СѓРґР°Р»СЏРµРј РєРѕР»Р»РёР·РёСЋ
 			for (auto i = thisProjectileCollisions.begin();
 				i != thisProjectileCollisions.end();
 				i++)
@@ -282,7 +282,7 @@ private:
 					return;
 				}
 			}
-			//иначе наоборот заносим
+			//РёРЅР°С‡Рµ РЅР°РѕР±РѕСЂРѕС‚ Р·Р°РЅРѕСЃРёРј
 			thisProjectileCollisions.push_back(collisionInfo);
 		}
 
@@ -320,7 +320,7 @@ private:
 	{
 	public:
 		std::vector< servermessages::room::UpdateModules::Module> updatedModules;
-		//обновляется в move используется в addPlayers
+		//РѕР±РЅРѕРІР»СЏРµС‚СЃСЏ РІ move РёСЃРїРѕР»СЊР·СѓРµС‚СЃСЏ РІ addPlayers
 		servermessages::room::Plane clientPlane;
 		std::vector< rplanes::serverdata::Bullet > newBullets;
 		std::vector< rplanes::serverdata::Bullet> newRicochetes;

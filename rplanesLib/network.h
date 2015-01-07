@@ -12,7 +12,7 @@ namespace rplanes
 		class MessageStorage;
 
 		//////////////////////////////////////////////////////////////////////////
-		//базовый класс сообщений
+		//Р±Р°Р·РѕРІС‹Р№ РєР»Р°СЃСЃ СЃРѕРѕР±С‰РµРЅРёР№
 		class Message
 		{
 		public:
@@ -25,23 +25,23 @@ namespace rplanes
 			size_t clientID;
 			virtual void writeData( boost::archive::binary_oarchive & )=0;
 			virtual void readData(boost::archive::binary_iarchive &) = 0;
-			//виртуальный конструктор для messageStorage()
+			//РІРёСЂС‚СѓР°Р»СЊРЅС‹Р№ РєРѕРЅСЃС‚СЂСѓРєС‚РѕСЂ РґР»СЏ messageStorage()
 			virtual std::shared_ptr<Message> copy() = 0;
 		};
 
 		//////////////////////////////////////////////////////////////////////////
-		//Используется для получения объектов сообщений по id
+		//РСЃРїРѕР»СЊР·СѓРµС‚СЃСЏ РґР»СЏ РїРѕР»СѓС‡РµРЅРёСЏ РѕР±СЉРµРєС‚РѕРІ СЃРѕРѕР±С‰РµРЅРёР№ РїРѕ id
 		class MessageStorage
 		{
 		public:
-			//регистрация сообщений проводится до создания объектов MessageStorage
+			//СЂРµРіРёСЃС‚СЂР°С†РёСЏ СЃРѕРѕР±С‰РµРЅРёР№ РїСЂРѕРІРѕРґРёС‚СЃСЏ РґРѕ СЃРѕР·РґР°РЅРёСЏ РѕР±СЉРµРєС‚РѕРІ MessageStorage
 			static void registryMessage(Message & mess);
 			MessageStorage();
 			Message & getMessage(unsigned short id);
 			unsigned short getLastMessageID();
 		private:
 			std::map < unsigned short,std::shared_ptr< Message > > messages_;
-			//базовая карта сообщений. В ней регистрируются все сообщения.
+			//Р±Р°Р·РѕРІР°СЏ РєР°СЂС‚Р° СЃРѕРѕР±С‰РµРЅРёР№. Р’ РЅРµР№ СЂРµРіРёСЃС‚СЂРёСЂСѓСЋС‚СЃСЏ РІСЃРµ СЃРѕРѕР±С‰РµРЅРёСЏ.
 			static std::map <unsigned short, std::shared_ptr<Message>> & baseMap();
 			unsigned short lastMessageId_;
 		};
@@ -84,8 +84,8 @@ namespace rplanes
 			size_t getClientID( );
 			std::string getIP();
 			unsigned short getLastMessageId();
-			bool handleInput( );//неблокирующая обработка входящих сообщений;
-			void sendMessage( Message & message );//отправка сообщения;
+			bool handleInput( );//РЅРµР±Р»РѕРєРёСЂСѓСЋС‰Р°СЏ РѕР±СЂР°Р±РѕС‚РєР° РІС…РѕРґСЏС‰РёС… СЃРѕРѕР±С‰РµРЅРёР№;
+			void sendMessage( Message & message );//РѕС‚РїСЂР°РІРєР° СЃРѕРѕР±С‰РµРЅРёСЏ;
 		};
 	}
 }

@@ -1,4 +1,4 @@
-﻿#pragma once
+#pragma once
 //данный файл содержит исключения ﺲ
 
 #include  "stdafx.h"

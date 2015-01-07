@@ -4,7 +4,7 @@
 
 void Room::iterate( float frameTime, float serverTime )
 {
-	//удаляем отключенных уничтоженных игроков
+	//СѓРґР°Р»СЏРµРј РѕС‚РєР»СЋС‡РµРЅРЅС‹С… СѓРЅРёС‡С‚РѕР¶РµРЅРЅС‹С… РёРіСЂРѕРєРѕРІ
 	deleteUnlogined();
 	std::vector< std::shared_ptr<Player> > handleList;
 
@@ -22,7 +22,7 @@ void Room::iterate( float frameTime, float serverTime )
 	for (int i = 0; i < handleList.size(); i++)
 	{
 		auto & player = *handleList[i];
-		//перекрестный доступ
+		//РїРµСЂРµРєСЂРµСЃС‚РЅС‹Р№ РґРѕСЃС‚СѓРї
 		for (auto & otherPlayer : handleList)
 		{
 			player.addPlayer(otherPlayer);
@@ -100,7 +100,7 @@ void Room::addPlayer( std::shared_ptr< Player > player )
 {
 	if ( !player )
 	{
-		throw rplanes::eRoomError("В комнату передан пустой указатель. ");
+		throw rplanes::eRoomError("Р’ РєРѕРјРЅР°С‚Сѓ РїРµСЂРµРґР°РЅ РїСѓСЃС‚РѕР№ СѓРєР°Р·Р°С‚РµР»СЊ. ");
 	}
 	bool added = false;
 	for ( auto & group: map_.humanGroups )
@@ -114,7 +114,7 @@ void Room::addPlayer( std::shared_ptr< Player > player )
 	}
 	if ( !added )
 	{
-		throw rplanes::eRoomError("В комнате нет места. ");
+		throw rplanes::eRoomError("Р’ РєРѕРјРЅР°С‚Рµ РЅРµС‚ РјРµСЃС‚Р°. ");
 	}
 	
 	player->setID( playerIDGetter.getID() );
@@ -217,7 +217,7 @@ void Room::executeScript(const std::vector<ScriptLine> & script, std::shared_ptr
 		{
 			if ( !thisPlayer )
 			{
-				throw rplanes::eRoomError("Скрипт пытается обратиться к несуществующему this. ");
+				throw rplanes::eRoomError("РЎРєСЂРёРїС‚ РїС‹С‚Р°РµС‚СЃСЏ РѕР±СЂР°С‚РёС‚СЊСЃСЏ Рє РЅРµСЃСѓС‰РµСЃС‚РІСѓСЋС‰РµРјСѓ this. ");
 			}
 			retval.push_back(thisPlayer);
 			groupFound = true;
@@ -238,9 +238,9 @@ void Room::executeScript(const std::vector<ScriptLine> & script, std::shared_ptr
 		if ( !groupFound )
 		{
 			throw rplanes::eRoomError(std::string()
-				+ "Встречена неизвестная группа "
+				+ "Р’СЃС‚СЂРµС‡РµРЅР° РЅРµРёР·РІРµСЃС‚РЅР°СЏ РіСЂСѓРїРїР° "
 				+ groupName
-				+ " при обработке скрипта.");
+				+ " РїСЂРё РѕР±СЂР°Р±РѕС‚РєРµ СЃРєСЂРёРїС‚Р°.");
 		}
 		return retval;
 	};
@@ -255,7 +255,7 @@ void Room::executeScript(const std::vector<ScriptLine> & script, std::shared_ptr
 			if (options.size() < minSize)
 			{
 				throw rplanes::eRoomError(std::string()
-					+ "Не достаточно агрументов  "
+					+ "РќРµ РґРѕСЃС‚Р°С‚РѕС‡РЅРѕ Р°РіСЂСѓРјРµРЅС‚РѕРІ  "
 					+ command
 					+ ".");
 			}
@@ -270,19 +270,19 @@ void Room::executeScript(const std::vector<ScriptLine> & script, std::shared_ptr
 			|| command == "%")
 		{
 			checkOptionsSize(2);
-			//ищем левую переменную
+			//РёС‰РµРј Р»РµРІСѓСЋ РїРµСЂРµРјРµРЅРЅСѓСЋ
 			auto left = map_.variables.find(options[0]);
 			if (left == map_.variables.end())
 			{
-				throw rplanes::eRoomError(std::string("При  выполнении скипрта не найдена переменная ")
+				throw rplanes::eRoomError(std::string("РџСЂРё  РІС‹РїРѕР»РЅРµРЅРёРё СЃРєРёРїСЂС‚Р° РЅРµ РЅР°Р№РґРµРЅР° РїРµСЂРµРјРµРЅРЅР°СЏ ")
 					+ options[0]
 					+ ".");
 			}
 
-			//определяем правое значение
+			//РѕРїСЂРµРґРµР»СЏРµРј РїСЂР°РІРѕРµ Р·РЅР°С‡РµРЅРёРµ
 			int right = getOperandValue(options[1]);
 			
-			//выполняем операцию
+			//РІС‹РїРѕР»РЅСЏРµРј РѕРїРµСЂР°С†РёСЋ
 			switch (command[0])
 			{
 			case '=':
@@ -364,7 +364,7 @@ void Room::executeScript(const std::vector<ScriptLine> & script, std::shared_ptr
 					if ( player->openedMaps.count( options[2] ) == 0 )
 					{
 						rplanes::network::bidirectionalmessages::TextMessage message;
-						message.text = "Открыта новая карта " + options[2] + ".";
+						message.text = "РћС‚РєСЂС‹С‚Р° РЅРѕРІР°СЏ РєР°СЂС‚Р° " + options[2] + ".";
 						player->messages.textMessages.push_back(message);
 						player->openedMaps.insert(options[2]);
 					}
@@ -377,7 +377,7 @@ void Room::executeScript(const std::vector<ScriptLine> & script, std::shared_ptr
 					if (player->openedPlanes.count(options[2]) == 0)
 					{
 						rplanes::network::bidirectionalmessages::TextMessage message;
-						message.text = "Открыт новый самолет " + options[2] + ".";
+						message.text = "РћС‚РєСЂС‹С‚ РЅРѕРІС‹Р№ СЃР°РјРѕР»РµС‚ " + options[2] + ".";
 						player->messages.textMessages.push_back(message);
 						player->openedPlanes.insert(options[2]);
 					}
@@ -442,7 +442,7 @@ void Room::executeScript(const std::vector<ScriptLine> & script, std::shared_ptr
 			auto players = getGroupPlayers(options[0]);
 			if ( map_.goals.count(options[1]) == 0 )
 			{
-				throw rplanes::eRoomError("Обращение к несуществующей группе " + options[1] + ".");
+				throw rplanes::eRoomError("РћР±СЂР°С‰РµРЅРёРµ Рє РЅРµСЃСѓС‰РµСЃС‚РІСѓСЋС‰РµР№ РіСЂСѓРїРїРµ " + options[1] + ".");
 			}
 			for (auto & player : players)
 			{
@@ -465,7 +465,7 @@ void Room::executeScript(const std::vector<ScriptLine> & script, std::shared_ptr
 					{
 						if ( !thisPlayer )
 						{
-							throw rplanes::eRoomError("При обработке скрипта вызван несуществующий this.");
+							throw rplanes::eRoomError("РџСЂРё РѕР±СЂР°Р±РѕС‚РєРµ СЃРєСЂРёРїС‚Р° РІС‹Р·РІР°РЅ РЅРµСЃСѓС‰РµСЃС‚РІСѓСЋС‰РёР№ this.");
 						}
 						s = thisPlayer->name;
 					}
@@ -529,7 +529,7 @@ void Room::executeScript(const std::vector<ScriptLine> & script, std::shared_ptr
 				}
 				else
 				{
-					rplanes::eRoomError( std::string() + "Неверная причина " + reasonString);
+					rplanes::eRoomError( std::string() + "РќРµРІРµСЂРЅР°СЏ РїСЂРёС‡РёРЅР° " + reasonString);
 				}
 				if ( command == "kill" )
 				{
@@ -547,7 +547,7 @@ void Room::executeScript(const std::vector<ScriptLine> & script, std::shared_ptr
 			if ( command[0] != '/' )
 			{
 				throw rplanes::eRoomError(std::string()
-					+ "В скрипте неизвестная команда "
+					+ "Р’ СЃРєСЂРёРїС‚Рµ РЅРµРёР·РІРµСЃС‚РЅР°СЏ РєРѕРјР°РЅРґР° "
 					+ command
 					+ ".");
 			}
@@ -590,13 +590,13 @@ void Room::spawn(std::shared_ptr<Player> player, float timeDelay)
 	});
 	if (groupsFound == 0)
 	{
-		throw rplanes::eRoomError(std::string() + "Игрок принадлежит неизвестной группе "
+		throw rplanes::eRoomError(std::string() + "РРіСЂРѕРє РїСЂРёРЅР°РґР»РµР¶РёС‚ РЅРµРёР·РІРµСЃС‚РЅРѕР№ РіСЂСѓРїРїРµ "
 			+ player->getGroupName()
 			+ ".");
 	}
 	else if ( groupsFound > 1 )
 	{
-		throw rplanes::eRoomError(std::string() + "Существует несколько групп с именем "
+		throw rplanes::eRoomError(std::string() + "РЎСѓС‰РµСЃС‚РІСѓРµС‚ РЅРµСЃРєРѕР»СЊРєРѕ РіСЂСѓРїРї СЃ РёРјРµРЅРµРј "
 			+ player->getGroupName()
 			+ ".");
 	}
@@ -606,14 +606,14 @@ void Room::handleTriggers()
 {
 	for (auto & script : map_.triggerScripts)
 	{
-		//ищем триггер
+		//РёС‰РµРј С‚СЂРёРіРіРµСЂ
 		if ( map_.triggers.count(script.trigger) == 0 )
 		{
-			throw rplanes::eRoomError("Триггер " + script.trigger + " не найден.");
+			throw rplanes::eRoomError("РўСЂРёРіРіРµСЂ " + script.trigger + " РЅРµ РЅР°Р№РґРµРЅ.");
 		}
 
 		auto & trigger = map_.triggers[script.trigger];
-		//составляем группу игроков
+		//СЃРѕСЃС‚Р°РІР»СЏРµРј РіСЂСѓРїРїСѓ РёРіСЂРѕРєРѕРІ
 		std::vector< std::shared_ptr< Player > > players;
 
 		size_t groupFound = false;
@@ -633,7 +633,7 @@ void Room::handleTriggers()
 		if ( !groupFound )
 		{
 			throw rplanes::eRoomError(std::string()
-				+ "Обращение к неизвестной группе "
+				+ "РћР±СЂР°С‰РµРЅРёРµ Рє РЅРµРёР·РІРµСЃС‚РЅРѕР№ РіСЂСѓРїРїРµ "
 				+ script.group
 				+ ".");
 		}
@@ -644,14 +644,14 @@ void Room::handleTriggers()
 			{
 				continue;
 			}
-			//проверяем пересечение триггера
+			//РїСЂРѕРІРµСЂСЏРµРј РїРµСЂРµСЃРµС‡РµРЅРёРµ С‚СЂРёРіРіРµСЂР°
 			if ((rplanes::distance(player->getPosition(), trigger) - trigger.radius)
 				* (rplanes::distance(player->getPrevPosition(), trigger) - trigger.radius)
 			> 0)
 			{
 				continue;
 			}
-			//проверяем соответствие типа обработчика
+			//РїСЂРѕРІРµСЂСЏРµРј СЃРѕРѕС‚РІРµС‚СЃС‚РІРёРµ С‚РёРїР° РѕР±СЂР°Р±РѕС‚С‡РёРєР°
 			if (rplanes::distance(player->getPosition(), trigger) < trigger.radius && script.type == Map::TriggerScript::ENTER
 				|| rplanes::distance(player->getPosition(), trigger) > trigger.radius && script.type == Map::TriggerScript::ESCAPE)
 			{
@@ -704,7 +704,7 @@ void Room::regroup()
 		if (!added)
 		{
 			rplanes::network::bidirectionalmessages::TextMessage tm;
-			tm.text = "В комнате нет места. ";
+			tm.text = "Р’ РєРѕРјРЅР°С‚Рµ РЅРµС‚ РјРµСЃС‚Р°. ";
 			player->messages.textMessages.push_back(tm);
 			player->isJoined = false;
 		}
@@ -729,7 +729,7 @@ void Room::kickPlayers(std::vector< std::string > & names)
 			if (name == players_[i]->name)
 			{
 				rplanes::network::bidirectionalmessages::TextMessage tm;
-				tm.text = std::string() + "Вы забанены игроком " + creator + ".";
+				tm.text = std::string() + "Р’С‹ Р·Р°Р±Р°РЅРµРЅС‹ РёРіСЂРѕРєРѕРј " + creator + ".";
 
 				players_[i]->messages.textMessages.push_back(tm);
 				players_[i]->destroy(rplanes::network::servermessages::room::DestroyPlanes::FIRE, 0);
@@ -811,7 +811,7 @@ void Room::checkMapEscapes( std::vector<std::shared_ptr<Player>> players )
 			innerAngle += 360;
 		}
 
-		//если игрок улетел за границу карты, направляем его в центр карты
+		//РµСЃР»Рё РёРіСЂРѕРє СѓР»РµС‚РµР» Р·Р° РіСЂР°РЅРёС†Сѓ РєР°СЂС‚С‹, РЅР°РїСЂР°РІР»СЏРµРј РµРіРѕ РІ С†РµРЅС‚СЂ РєР°СЂС‚С‹
 		if (
 			position.x < 0
 			|| position.y < 0
@@ -844,7 +844,7 @@ void Room::checkPlayersOpenedMaps()
 		if ( player->openedMaps.count( map_.name ) == 0 )
 		{
 			rplanes::network::bidirectionalmessages::TextMessage message;
-			message.text = "Карта " + map_.name + " не открыта. Клиент должен сверяться со списком открытых карт в профиле.";
+			message.text = "РљР°СЂС‚Р° " + map_.name + " РЅРµ РѕС‚РєСЂС‹С‚Р°. РљР»РёРµРЅС‚ РґРѕР»Р¶РµРЅ СЃРІРµСЂСЏС‚СЊСЃСЏ СЃРѕ СЃРїРёСЃРєРѕРј РѕС‚РєСЂС‹С‚С‹С… РєР°СЂС‚ РІ РїСЂРѕС„РёР»Рµ.";
 			player->messages.textMessages.push_back(message);
 			player->isJoined = false;
 		}

@@ -39,71 +39,13 @@ std::shared_ptr<BotCondition> BotCondition::handleConditionList(Player & player)
 	return std::shared_ptr<BotCondition>();
 }
 
-//Player::DestroyablePlane & BotCondition::getThisPlane(Player & player)
-//{
-//	return player.plane_;
-//}
-//
-//std::vector< Player::DestroyablePlane * > BotCondition::getFriends(Player & player, float radius /*= -1.f*/)
-//{
-//	
-//	std::vector< Player::DestroyablePlane * > retval;
-//	if (radius < 0.f)
-//	{
-//		for (auto & visiblePlayer : player.visiblePlayers_)
-//		{
-//			if (visiblePlayer.second->getNation() == player.getNation() && visiblePlayer.second->getID() != player.getID())
-//			{
-//				retval.push_back(&(visiblePlayer.second->plane_));
-//			}
-//		}
-//	}
-//	else for (auto & visiblePlayer : player.visiblePlayers_)
-//	{
-//		if (rplanes::distance(visiblePlayer.second->getPosition(), player.getPosition()) < radius)
-//		{
-//			if (visiblePlayer.second->getNation() == player.getNation() && visiblePlayer.second->getID() != player.getID())
-//			{
-//				retval.push_back(&(visiblePlayer.second->plane_));
-//			}
-//		}
-//	}
-//	return retval;
-//}
-//	
-//std::vector< Player::DestroyablePlane * > BotCondition::getEnemies(Player & player, float radius /*= -1.f */)
-//{
-//	std::vector< Player::DestroyablePlane * > retval;
-//	if (radius < 0.f)
-//	{
-//		for (auto & visiblePlayer : player.visiblePlayers_)
-//		{
-//			if (visiblePlayer.second->getNation() != player.getNation())
-//			{
-//				retval.push_back(&(visiblePlayer.second->plane_));
-//			}
-//		}
-//	}
-//	else for (auto & visiblePlayer : player.visiblePlayers_)
-//	{
-//		if (rplanes::distance(visiblePlayer.second->getPosition(), player.getPosition()) < radius)
-//		{
-//			if (visiblePlayer.second->getNation() != player.getNation())
-//			{
-//				retval.push_back(&(visiblePlayer.second->plane_));
-//			}
-//		}
-//	}
-//	return retval;
-//}
-
 void BotCondition::turnToPoint(Player & player,
 	rplanes::PointXY point,
-	/*уровень обморока до которого будет происходить набор угловой скорости. от 0 до 100 */
+	/*СѓСЂРѕРІРµРЅСЊ РѕР±РјРѕСЂРѕРєР° РґРѕ РєРѕС‚РѕСЂРѕРіРѕ Р±СѓРґРµС‚ РїСЂРѕРёСЃС…РѕРґРёС‚СЊ РЅР°Р±РѕСЂ СѓРіР»РѕРІРѕР№ СЃРєРѕСЂРѕСЃС‚Рё. РѕС‚ 0 РґРѕ 100 */
 	unsigned short maxFaint,
-	/*интенсивность поворота */
+	/*РёРЅС‚РµРЅСЃРёРІРЅРѕСЃС‚СЊ РїРѕРІРѕСЂРѕС‚Р° */
 	unsigned short turnValue,
-	/*точность следования направлению */
+	/*С‚РѕС‡РЅРѕСЃС‚СЊ СЃР»РµРґРѕРІР°РЅРёСЏ РЅР°РїСЂР°РІР»РµРЅРёСЋ */
 	float angleExp)
 {
 	auto position = player.getPosition();
@@ -127,18 +69,18 @@ void BotCondition::turnToPoint(Player & player,
 
 void BotCondition::accelerate(
 	Player & player,
-	/*требуемая скорость */
+	/*С‚СЂРµР±СѓРµРјР°СЏ СЃРєРѕСЂРѕСЃС‚СЊ */
 	unsigned short speed,
-	/*точность следования критическим показателям. Чем ближе к еденице тем быстрее разгон при значениях > 1 двигатель будет повреждаться */
-	float exp, /*скорость набора мощности */
-	short increaseValue, /*скорость сброса мощности */
+	/*С‚РѕС‡РЅРѕСЃС‚СЊ СЃР»РµРґРѕРІР°РЅРёСЏ РєСЂРёС‚РёС‡РµСЃРєРёРј РїРѕРєР°Р·Р°С‚РµР»СЏРј. Р§РµРј Р±Р»РёР¶Рµ Рє РµРґРµРЅРёС†Рµ С‚РµРј Р±С‹СЃС‚СЂРµРµ СЂР°Р·РіРѕРЅ РїСЂРё Р·РЅР°С‡РµРЅРёСЏС… > 1 РґРІРёРіР°С‚РµР»СЊ Р±СѓРґРµС‚ РїРѕРІСЂРµР¶РґР°С‚СЊСЃСЏ */
+	float exp, /*СЃРєРѕСЂРѕСЃС‚СЊ РЅР°Р±РѕСЂР° РјРѕС‰РЅРѕСЃС‚Рё */
+	short increaseValue, /*СЃРєРѕСЂРѕСЃС‚СЊ СЃР±СЂРѕСЃР° РјРѕС‰РЅРѕСЃС‚Рё */
 	short decreaseValue)
 {
 	auto & interfaceData = player.messages.interfaceData;
-	//если скорость ниже требуемой
+	//РµСЃР»Рё СЃРєРѕСЂРѕСЃС‚СЊ РЅРёР¶Рµ С‚СЂРµР±СѓРµРјРѕР№
 	if (interfaceData.V < speed)
 	{
-		//наращиваем мощность двигателя пока возможно
+		//РЅР°СЂР°С‰РёРІР°РµРј РјРѕС‰РЅРѕСЃС‚СЊ РґРІРёРіР°С‚РµР»СЏ РїРѕРєР° РІРѕР·РјРѕР¶РЅРѕ
 		bool ableToIncreasePower = true;
 		for (auto & thermometer : interfaceData.thermometers)
 		{
@@ -323,7 +265,7 @@ void botconditions::easy::Attack::control_derv(Player & player, float frameTime,
 	{
 		return;
 	}
-	//если картина боя меняется, переопределяем цель
+	//РµСЃР»Рё РєР°СЂС‚РёРЅР° Р±РѕСЏ РјРµРЅСЏРµС‚СЃСЏ, РїРµСЂРµРѕРїСЂРµРґРµР»СЏРµРј С†РµР»СЊ
 	if (player.messages.createPlanes.Planes.size() != 0 || player.messages.destroyPlanes.planes.size() != 0 || targetNo_ < 0 || selectTimer_ < 0.f)
 	{
 		boost::random::normal_distribution<float> dist(configuration().bots.easyTargetSelectionTimeMean, configuration().bots.easyTargerSelectionTimeSigma);
@@ -336,22 +278,22 @@ void botconditions::easy::Attack::control_derv(Player & player, float frameTime,
 	}
 	auto & target = *enemies[targetNo_ % enemies.size()];
 
-	//сдвигаем рамку прицела непосредственно на цель
+	//СЃРґРІРёРіР°РµРј СЂР°РјРєСѓ РїСЂРёС†РµР»Р° РЅРµРїРѕСЃСЂРµРґСЃС‚РІРµРЅРЅРѕ РЅР° С†РµР»СЊ
 	
 	controllable_.shootingDistanceOffset
 		= (rplanes::distance(player.getPosition(), target.position) - player.messages.interfaceData.shootingDistance)* 
 		configuration().bots.easyShootingDistanceAgility * frameTime;
 
-	//выбираем точку упреждения ориентируясь по собственной скорости
+	//РІС‹Р±РёСЂР°РµРј С‚РѕС‡РєСѓ СѓРїСЂРµР¶РґРµРЅРёСЏ РѕСЂРёРµРЅС‚РёСЂСѓСЏСЃСЊ РїРѕ СЃРѕР±СЃС‚РІРµРЅРЅРѕР№ СЃРєРѕСЂРѕСЃС‚Рё
 	rplanes::PointXY deflectedTarget(target.position.x, target.position.y);
 
 	deflectedTarget.x += player.messages.interfaceData.aimSize * std::cos(target.position.angle / 180.f * M_PI);
 	deflectedTarget.y += player.messages.interfaceData.aimSize * std::sin(target.position.angle / 180.f * M_PI);
 
-	//доворачиваем к точке упреждения
+	//РґРѕРІРѕСЂР°С‡РёРІР°РµРј Рє С‚РѕС‡РєРµ СѓРїСЂРµР¶РґРµРЅРёСЏ
 	turnToPoint(player, deflectedTarget, 80, 80, 1.f);
 
-	//если угол прицеливания верен, производим стрельбу
+	//РµСЃР»Рё СѓРіРѕР» РїСЂРёС†РµР»РёРІР°РЅРёСЏ РІРµСЂРµРЅ, РїСЂРѕРёР·РІРѕРґРёРј СЃС‚СЂРµР»СЊР±Сѓ
 	float innerAngle = (rplanes::angleFromPoints(player.getPosition(), deflectedTarget)
 		- rplanes::angleFromPoints(player.getPrevPosition(), player.getPosition()));
 
@@ -382,7 +324,7 @@ void botconditions::easy::Attack::control_derv(Player & player, float frameTime,
 	{
 		controllable_.isShooting = false;
 	}
-	//полный вперед
+	//РїРѕР»РЅС‹Р№ РІРїРµСЂРµРґ
 	if (shootAbility)
 		accelerate(player, target.target.V + 1.f, 0.8f, 10, 10);
 	else

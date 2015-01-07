@@ -19,14 +19,14 @@ namespace rplanes
 			return GUN;
 		}
 
-		bool Gun::isSuitable( GunType gt ) /*подходит ли пушка к подвеске gt */
+		bool Gun::isSuitable( GunType gt ) /*РїРѕРґС…РѕРґРёС‚ Р»Рё РїСѓС€РєР° Рє РїРѕРґРІРµСЃРєРµ gt */
 		{
-			if ( static_cast <size_t> (gt) < static_cast <size_t> (type)) // если общий ранг подвески меньше ранга пушки - не подходит
+			if ( static_cast <size_t> (gt) < static_cast <size_t> (type)) // РµСЃР»Рё РѕР±С‰РёР№ СЂР°РЅРі РїРѕРґРІРµСЃРєРё РјРµРЅСЊС€Рµ СЂР°РЅРіР° РїСѓС€РєРё - РЅРµ РїРѕРґС…РѕРґРёС‚
 				return false;
-			if( static_cast<size_t> (gt) <= 3 )	//если подвеска пулеметная - точно подходит
+			if( static_cast<size_t> (gt) <= 3 )	//РµСЃР»Рё РїРѕРґРІРµСЃРєР° РїСѓР»РµРјРµС‚РЅР°СЏ - С‚РѕС‡РЅРѕ РїРѕРґС…РѕРґРёС‚
 			{
 				return true;
-			}else if( static_cast<size_t> (type) <= 3 )//если подвеска пушечная, а type - пулемет, не подходит
+			}else if( static_cast<size_t> (type) <= 3 )//РµСЃР»Рё РїРѕРґРІРµСЃРєР° РїСѓС€РµС‡РЅР°СЏ, Р° type - РїСѓР»РµРјРµС‚, РЅРµ РїРѕРґС…РѕРґРёС‚
 			{
 				return false;
 			}
@@ -44,7 +44,7 @@ namespace rplanes
 
 		float Gun::getMaxDistance( float planeSpeed)
 		{
-			//решение задачи о равноускоренном движении из школьной физики
+			//СЂРµС€РµРЅРёРµ Р·Р°РґР°С‡Рё Рѕ СЂР°РІРЅРѕСѓСЃРєРѕСЂРµРЅРЅРѕРј РґРІРёР¶РµРЅРёРё РёР· С€РєРѕР»СЊРЅРѕР№ С„РёР·РёРєРё
 			float startSpeed = planeSpeed * configuration().flight.speedFactor + speed * configuration().shooting.speedFactor;
 			float bulletAcceleration = acceleration * configuration().shooting.accelerationFactor;
 
@@ -55,7 +55,7 @@ namespace rplanes
 
 		float Gun::getHitTime( float shootingDistance, float planeSpeed )
 		{
-			//решение задачи о равноускоренном движении из школьной физики
+			//СЂРµС€РµРЅРёРµ Р·Р°РґР°С‡Рё Рѕ СЂР°РІРЅРѕСѓСЃРєРѕСЂРµРЅРЅРѕРј РґРІРёР¶РµРЅРёРё РёР· С€РєРѕР»СЊРЅРѕР№ С„РёР·РёРєРё
 			float startSpeed = planeSpeed * configuration().flight.speedFactor + speed * configuration().shooting.speedFactor;
 			float bulletAcceleration = acceleration * configuration().shooting.accelerationFactor;
 
@@ -76,7 +76,7 @@ namespace rplanes
 
 		float Gun::getSpeedZ(float shootingDistance, float planeSpeed, float gunHeight)
 		{
-			//решение задачи о равноускоренном движении из школьной физики
+			//СЂРµС€РµРЅРёРµ Р·Р°РґР°С‡Рё Рѕ СЂР°РІРЅРѕСѓСЃРєРѕСЂРµРЅРЅРѕРј РґРІРёР¶РµРЅРёРё РёР· С€РєРѕР»СЊРЅРѕР№ С„РёР·РёРєРё
 
 			float hitTime = getHitTime(shootingDistance, planeSpeed);
 			return hitTime * 10.f * configuration().shooting.gravity / 2.f - gunHeight / hitTime;
@@ -251,7 +251,7 @@ namespace rplanes
 			return false;
 		}
 
-		void Defect::incrementTimer( float offset ) /* при timer >= permanentTimerValue деффект неустраним */
+		void Defect::incrementTimer( float offset ) /* РїСЂРё timer >= permanentTimerValue РґРµС„С„РµРєС‚ РЅРµСѓСЃС‚СЂР°РЅРёРј */
 		{
 			updateRequired_ = true;
 			if ( timer_ < permanentTimerValue_ )
@@ -282,7 +282,7 @@ namespace rplanes
 
 		static boost::mt19937 gen;
 
-		void ModuleHP::damage( float damageVal, size_t clientID, ChangeReason reason ) /*повредить модуль пулей или огнем */
+		void ModuleHP::damage( float damageVal, size_t clientID, ChangeReason reason ) /*РїРѕРІСЂРµРґРёС‚СЊ РјРѕРґСѓР»СЊ РїСѓР»РµР№ РёР»Рё РѕРіРЅРµРј */
 		{
 			boost::random::normal_distribution<float> dist(timerValueMean_, timerValueSigma_);
 			lastHitClient_ = clientID;
@@ -398,20 +398,20 @@ namespace rplanes
 			std::vector<PointXYZ> retval(nGuns, gunsPosition);
 			for (int i = 0; i < nGuns; i++)
 			{
-				//сдвигаем орудие
+				//СЃРґРІРёРіР°РµРј РѕСЂСѓРґРёРµ
 				retval[i].x += (i - static_cast<int>(nGuns) / 2 + 0.5f * ( (nGuns + 1)%2 ) ) * gunShift;
 
-				//вычисляем угол вращения турели в xy
+				//РІС‹С‡РёСЃР»СЏРµРј СѓРіРѕР» РІСЂР°С‰РµРЅРёСЏ С‚СѓСЂРµР»Рё РІ xy
 				float beta = aimAngle / 180 * M_PI;
 				float theta = roll / 180 * M_PI;
 				float alpha = atan(tan(beta) * cos(theta)) / M_PI * 180;
-				//вращаем турель в xy
+				//РІСЂР°С‰Р°РµРј С‚СѓСЂРµР»СЊ РІ xy
 				sf::Vector2f xyPos(retval[i].x, retval[i].y);
 				xyPos = sf::Transform().rotate(alpha, sf::Vector2f(gunsPosition.x, gunsPosition.y)).transformPoint(xyPos);
-				//вращаем самолет в xz
+				//РІСЂР°С‰Р°РµРј СЃР°РјРѕР»РµС‚ РІ xz
 				sf::Vector2f xzPos(xyPos.x, gunsPosition.z);
 				xzPos = sf::Transform().rotate(roll, sf::Vector2f(0.f, 0.f)).transformPoint(xzPos);
-				//вращаем самолет в xy
+				//РІСЂР°С‰Р°РµРј СЃР°РјРѕР»РµС‚ РІ xy
 				xyPos.x = xzPos.x;
 				xyPos = sf::Transform().rotate(angle - 90, sf::Vector2f(0.f, 0.f)).transformPoint(xyPos);
 				retval[i].x = xyPos.x;

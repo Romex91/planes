@@ -450,13 +450,13 @@ int main4()
 		for ( auto & point : points )
 		{
 
-			//вычисляем угол склонения турели
+			//РІС‹С‡РёСЃР»СЏРµРј СѓРіРѕР» СЃРєР»РѕРЅРµРЅРёСЏ С‚СѓСЂРµР»Рё
 			float beta = angle / 180 * M_PI;
 			float theta = roll / 180 * M_PI;
 			float alpha = atan( tan(beta) * cos(theta) ) / M_PI * 180;
-			//вращаем турель
+			//РІСЂР°С‰Р°РµРј С‚СѓСЂРµР»СЊ
 			point = sf::Transform().rotate(alpha, 0.f, 0.f).transformPoint(point);
-			//наклоняем самолет
+			//РЅР°РєР»РѕРЅСЏРµРј СЃР°РјРѕР»РµС‚
 			sf::Vector2f xz(point.x, 0);
 			xz = sf::Transform().rotate(roll, 0.f, 0.f).transformPoint(xz);
 			point.x = xz.x;

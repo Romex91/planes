@@ -19,7 +19,7 @@ void Server::ClientsQueue::join(std::shared_ptr<Client> & client)
 	}
 	else
 	{
-		throw eClientNotConnected("В очередь поступил пустой указатель. ");
+		throw eClientNotConnected("Р’ РѕС‡РµСЂРµРґСЊ РїРѕСЃС‚СѓРїРёР» РїСѓСЃС‚РѕР№ СѓРєР°Р·Р°С‚РµР»СЊ. ");
 	}
 }
 
@@ -37,7 +37,7 @@ std::shared_ptr<Client> Server::ClientsQueue::pop()
 
 std::shared_ptr<Client> & Server::emptyClient(ClientsList & cl, size_t & pos)
 {
-	//ищем свободную позицию в ангарном векторе 
+	//РёС‰РµРј СЃРІРѕР±РѕРґРЅСѓСЋ РїРѕР·РёС†РёСЋ РІ Р°РЅРіР°СЂРЅРѕРј РІРµРєС‚РѕСЂРµ 
 	size_t newClientPos = 0;
 	for (; newClientPos != cl.clients.size(); newClientPos++)
 	{
@@ -46,10 +46,10 @@ std::shared_ptr<Client> & Server::emptyClient(ClientsList & cl, size_t & pos)
 			break;
 		}
 	}
-	//если свободный клиент не найден, добавим новый
+	//РµСЃР»Рё СЃРІРѕР±РѕРґРЅС‹Р№ РєР»РёРµРЅС‚ РЅРµ РЅР°Р№РґРµРЅ, РґРѕР±Р°РІРёРј РЅРѕРІС‹Р№
 	if (newClientPos == cl.clients.size())
 	{
-		//создаем новый клиент
+		//СЃРѕР·РґР°РµРј РЅРѕРІС‹Р№ РєР»РёРµРЅС‚
 		cl.clients.push_back(std::shared_ptr<Client>());
 	}
 	pos = newClientPos;
@@ -80,9 +80,9 @@ void Server::deleteClient(std::shared_ptr<Client> & client)
 {
 	if (!client)
 	{
-		throw eClientStatusError("Попытка удаления пустого клиента. ");
+		throw eClientStatusError("РџРѕРїС‹С‚РєР° СѓРґР°Р»РµРЅРёСЏ РїСѓСЃС‚РѕРіРѕ РєР»РёРµРЅС‚Р°. ");
 	}
-	//пытаемся корректно завершить работу клиента
+	//РїС‹С‚Р°РµРјСЃСЏ РєРѕСЂСЂРµРєС‚РЅРѕ Р·Р°РІРµСЂС€РёС‚СЊ СЂР°Р±РѕС‚Сѓ РєР»РёРµРЅС‚Р°
 	try
 	{
 		switch (client->getStatus())
@@ -100,12 +100,12 @@ void Server::deleteClient(std::shared_ptr<Client> & client)
 	}
 	catch (planesException & e)
 	{
-		std::cout << "При удалении клиента возникли проблемы:" << e.what() << std::endl;
+		std::cout << "РџСЂРё СѓРґР°Р»РµРЅРёРё РєР»РёРµРЅС‚Р° РІРѕР·РЅРёРєР»Рё РїСЂРѕР±Р»РµРјС‹:" << e.what() << std::endl;
 	}
-	//выводим сообщение
-	std::cout << "подключение оборвано "
+	//РІС‹РІРѕРґРёРј СЃРѕРѕР±С‰РµРЅРёРµ
+	std::cout << "РїРѕРґРєР»СЋС‡РµРЅРёРµ РѕР±РѕСЂРІР°РЅРѕ "
 		<< client->connection_.getIP() << std::endl;
-	//удаляем клиент
+	//СѓРґР°Р»СЏРµРј РєР»РёРµРЅС‚
 	client.reset();
 }
 
@@ -113,7 +113,7 @@ void Server::listen()
 {
 	while (true)
 	{
-		//пробуем подключитсья
+		//РїСЂРѕР±СѓРµРј РїРѕРґРєР»СЋС‡РёС‚СЃСЊСЏ
 		static std::shared_ptr<Client> newClient;
 		{
 			try
@@ -126,7 +126,7 @@ void Server::listen()
 				boost::system::error_code err = newClient->connection_.accept(acceptor_);
 				if (err)
 				{
-					//если новых подключений не найдено, завершаем listen
+					//РµСЃР»Рё РЅРѕРІС‹С… РїРѕРґРєР»СЋС‡РµРЅРёР№ РЅРµ РЅР°Р№РґРµРЅРѕ, Р·Р°РІРµСЂС€Р°РµРј listen
 					return;
 				}
 				newClient->connection_.non_blocking(true);
@@ -137,12 +137,12 @@ void Server::listen()
 				return;
 			}
 		}
-		//заносим новый клиент в ангарный вектор
+		//Р·Р°РЅРѕСЃРёРј РЅРѕРІС‹Р№ РєР»РёРµРЅС‚ РІ Р°РЅРіР°СЂРЅС‹Р№ РІРµРєС‚РѕСЂ
 		size_t id;
 		emptyClient(hangarClients_, id) = newClient;
 		newClient->setID(id);
-		//выводим сообщение
-		std::cout << "получено новое подключение " << newClient->connection_.getIP() << std::endl;
+		//РІС‹РІРѕРґРёРј СЃРѕРѕР±С‰РµРЅРёРµ
+		std::cout << "РїРѕР»СѓС‡РµРЅРѕ РЅРѕРІРѕРµ РїРѕРґРєР»СЋС‡РµРЅРёРµ " << newClient->connection_.getIP() << std::endl;
 		newClient.reset();
 	}
 }
@@ -152,29 +152,29 @@ void Server::handleHangarInput()
 	for (size_t i = 0; i < hangarClients_.clients.size(); i++)
 	{
 		size_t handledMessages = 0;
-		while (hangarClients_.clients[i]) //цикл выполняется до тех пор, пока клиент не будет  удален из ангарного списка, либо не кончатся сообщения
+		while (hangarClients_.clients[i]) //С†РёРєР» РІС‹РїРѕР»РЅСЏРµС‚СЃСЏ РґРѕ С‚РµС… РїРѕСЂ, РїРѕРєР° РєР»РёРµРЅС‚ РЅРµ Р±СѓРґРµС‚  СѓРґР°Р»РµРЅ РёР· Р°РЅРіР°СЂРЅРѕРіРѕ СЃРїРёСЃРєР°, Р»РёР±Рѕ РЅРµ РєРѕРЅС‡Р°С‚СЃСЏ СЃРѕРѕР±С‰РµРЅРёСЏ
 		{
-			//пытаемся получить сообщение
+			//РїС‹С‚Р°РµРјСЃСЏ РїРѕР»СѓС‡РёС‚СЊ СЃРѕРѕР±С‰РµРЅРёРµ
 			try
 			{
 				if (!hangarClients_.clients[i]->connection_.handleInput())
 				{
 					break;
 				}
-				//если сообщение получено, проверяем количество обработанных сообщений
+				//РµСЃР»Рё СЃРѕРѕР±С‰РµРЅРёРµ РїРѕР»СѓС‡РµРЅРѕ, РїСЂРѕРІРµСЂСЏРµРј РєРѕР»РёС‡РµСЃС‚РІРѕ РѕР±СЂР°Р±РѕС‚Р°РЅРЅС‹С… СЃРѕРѕР±С‰РµРЅРёР№
 				handledMessages++;
 				if (handledMessages > configuration().server.hangarMessagesPerFrame)
 				{
 					std::cout << handledMessages << std::endl;
-					throw eReadError("Клиент привысил допустимое число сообщений за кадр. ");
+					throw eReadError("РљР»РёРµРЅС‚ РїСЂРёРІС‹СЃРёР» РґРѕРїСѓСЃС‚РёРјРѕРµ С‡РёСЃР»Рѕ СЃРѕРѕР±С‰РµРЅРёР№ Р·Р° РєР°РґСЂ. ");
 				}
 			}
 			catch (planesException & e)
 			{
-				//возникла ошибка, удаляем клиент
+				//РІРѕР·РЅРёРєР»Р° РѕС€РёР±РєР°, СѓРґР°Р»СЏРµРј РєР»РёРµРЅС‚
 				std::cout << typeid(e).name() << std::endl;
-				std::cout << std::string() + "при попытке обработать сообщение возникла ошибка: " + e.what() << std::endl;
-				std::cout << "последнее обработанное сообщение" << hangarClients_.clients[i]->connection_.getLastMessageId() << std::endl;
+				std::cout << std::string() + "РїСЂРё РїРѕРїС‹С‚РєРµ РѕР±СЂР°Р±РѕС‚Р°С‚СЊ СЃРѕРѕР±С‰РµРЅРёРµ РІРѕР·РЅРёРєР»Р° РѕС€РёР±РєР°: " + e.what() << std::endl;
+				std::cout << "РїРѕСЃР»РµРґРЅРµРµ РѕР±СЂР°Р±РѕС‚Р°РЅРЅРѕРµ СЃРѕРѕР±С‰РµРЅРёРµ" << hangarClients_.clients[i]->connection_.getLastMessageId() << std::endl;
 				deleteClient(hangarClients_.clients[i]);
 			}
 		}
@@ -204,30 +204,30 @@ void Server::handleRoomInput()
 	for (int i = 0; i < roomClients_.clients.size(); i++)
 	{
 		size_t handledMessages = 0;
-		//цикл выполняется до тех пор, пока клиент не будет  удален из комнатного списка, либо не кончатся сообщения
+		//С†РёРєР» РІС‹РїРѕР»РЅСЏРµС‚СЃСЏ РґРѕ С‚РµС… РїРѕСЂ, РїРѕРєР° РєР»РёРµРЅС‚ РЅРµ Р±СѓРґРµС‚  СѓРґР°Р»РµРЅ РёР· РєРѕРјРЅР°С‚РЅРѕРіРѕ СЃРїРёСЃРєР°, Р»РёР±Рѕ РЅРµ РєРѕРЅС‡Р°С‚СЃСЏ СЃРѕРѕР±С‰РµРЅРёСЏ
 		while (roomClients_.clients[i])
 		{
-			//пытаемся получить сообщение
+			//РїС‹С‚Р°РµРјСЃСЏ РїРѕР»СѓС‡РёС‚СЊ СЃРѕРѕР±С‰РµРЅРёРµ
 			try
 			{
 				if (!roomClients_.clients[i]->connection_.handleInput())
 				{
 					break;
 				}
-				//если сообщение получено, проверяем количество обработанных сообщений
+				//РµСЃР»Рё СЃРѕРѕР±С‰РµРЅРёРµ РїРѕР»СѓС‡РµРЅРѕ, РїСЂРѕРІРµСЂСЏРµРј РєРѕР»РёС‡РµСЃС‚РІРѕ РѕР±СЂР°Р±РѕС‚Р°РЅРЅС‹С… СЃРѕРѕР±С‰РµРЅРёР№
 				handledMessages++;
 				if (handledMessages > configuration().server.roomMessagesPerFrame)
 				{
 					std::cout << handledMessages << std::endl;
-					throw eReadError("Клиент привысил допустимое число сообщений за кадр. ");
+					throw eReadError("РљР»РёРµРЅС‚ РїСЂРёРІС‹СЃРёР» РґРѕРїСѓСЃС‚РёРјРѕРµ С‡РёСЃР»Рѕ СЃРѕРѕР±С‰РµРЅРёР№ Р·Р° РєР°РґСЂ. ");
 				}
 			}
-			//возникла ошибка, обрываем связь и помещаяем клиент в очередь удаления
+			//РІРѕР·РЅРёРєР»Р° РѕС€РёР±РєР°, РѕР±СЂС‹РІР°РµРј СЃРІСЏР·СЊ Рё РїРѕРјРµС‰Р°СЏРµРј РєР»РёРµРЅС‚ РІ РѕС‡РµСЂРµРґСЊ СѓРґР°Р»РµРЅРёСЏ
 			catch (planesException & e)
 			{
 				std::cout << typeid(e).name() << std::endl;
-				std::cout << std::string() + "при попытке обработать сообщение возникла ошибка: " + e.what() << std::endl;
-				std::cout << "последнее обработанное сообщение" << roomClients_.clients[i]->connection_.getLastMessageId() << std::endl;
+				std::cout << std::string() + "РїСЂРё РїРѕРїС‹С‚РєРµ РѕР±СЂР°Р±РѕС‚Р°С‚СЊ СЃРѕРѕР±С‰РµРЅРёРµ РІРѕР·РЅРёРєР»Р° РѕС€РёР±РєР°: " + e.what() << std::endl;
+				std::cout << "РїРѕСЃР»РµРґРЅРµРµ РѕР±СЂР°Р±РѕС‚Р°РЅРЅРѕРµ СЃРѕРѕР±С‰РµРЅРёРµ" << roomClients_.clients[i]->connection_.getLastMessageId() << std::endl;
 				roomClients_.clients[i]->connection_.close();
 				deleteQueue_.join(roomClients_.clients[i]);
 			}
@@ -280,9 +280,9 @@ void Server::joinRoom(size_t clientID, std::string creatorName, size_t planeNumb
 	}
 	if (client->getStatus() != HANGAR)
 	{
-		throw eClientStatusError("Попытка присоединения к комнате не из ангара. ");
+		throw eClientStatusError("РџРѕРїС‹С‚РєР° РїСЂРёСЃРѕРµРґРёРЅРµРЅРёСЏ Рє РєРѕРјРЅР°С‚Рµ РЅРµ РёР· Р°РЅРіР°СЂР°. ");
 	}
-	//если клиент является создателем комнаты, он присоединится именно к своей комнате
+	//РµСЃР»Рё РєР»РёРµРЅС‚ СЏРІР»СЏРµС‚СЃСЏ СЃРѕР·РґР°С‚РµР»РµРј РєРѕРјРЅР°С‚С‹, РѕРЅ РїСЂРёСЃРѕРµРґРёРЅРёС‚СЃСЏ РёРјРµРЅРЅРѕ Рє СЃРІРѕРµР№ РєРѕРјРЅР°С‚Рµ
 	auto room = rooms_.find(client->profile_.login);
 	if (room == rooms_.end())
 	{
@@ -291,13 +291,13 @@ void Server::joinRoom(size_t clientID, std::string creatorName, size_t planeNumb
 
 	if (room == rooms_.end())
 	{
-		throw eRoomError("Такой комнаты не существует. ");
+		throw eRoomError("РўР°РєРѕР№ РєРѕРјРЅР°С‚С‹ РЅРµ СЃСѓС‰РµСЃС‚РІСѓРµС‚. ");
 	}
 
 	if (std::find(room->second.banlist.begin(), room->second.banlist.end(), client->profile_.login)
 		!= room->second.banlist.end())
 	{
-		throw eRoomError("Игрок забанен. ");
+		throw eRoomError("РРіСЂРѕРє Р·Р°Р±Р°РЅРµРЅ. ");
 	}
 
 
@@ -310,7 +310,7 @@ void Server::joinRoom(size_t clientID, std::string creatorName, size_t planeNumb
 	}
 
 	std::cout << client->profile_.login
-		<< " подключился к комнате " << room->first << std::endl;
+		<< " РїРѕРґРєР»СЋС‡РёР»СЃСЏ Рє РєРѕРјРЅР°С‚Рµ " << room->first << std::endl;
 	client.reset();
 }
 
@@ -319,11 +319,11 @@ void Server::createRoom(size_t clientID, std::string description, std::string ma
 	auto & client = getClient(clientID);
 	if (client.getStatus() != HANGAR)
 	{
-		throw eClientStatusError("Попытка создания комнаты не из ангара. ");
+		throw eClientStatusError("РџРѕРїС‹С‚РєР° СЃРѕР·РґР°РЅРёСЏ РєРѕРјРЅР°С‚С‹ РЅРµ РёР· Р°РЅРіР°СЂР°. ");
 	}
 	if (rooms_.count(client.profile().login) != 0)
 	{
-		throw rplanes::eRoomError("Перед созданием комнаты необходимо удалить старую. ");
+		throw rplanes::eRoomError("РџРµСЂРµРґ СЃРѕР·РґР°РЅРёРµРј РєРѕРјРЅР°С‚С‹ РЅРµРѕР±С…РѕРґРёРјРѕ СѓРґР°Р»РёС‚СЊ СЃС‚Р°СЂСѓСЋ. ");
 	}
 
 	Room room(mapName);
@@ -331,12 +331,12 @@ void Server::createRoom(size_t clientID, std::string description, std::string ma
 	room.description = description;
 	room.banlist = client.profile_.banlist;
 
-	MutexLocker ml(roomClients_.mutex);//блокируем мьютекс комнатной петли
+	MutexLocker ml(roomClients_.mutex);//Р±Р»РѕРєРёСЂСѓРµРј РјСЊСЋС‚РµРєСЃ РєРѕРјРЅР°С‚РЅРѕР№ РїРµС‚Р»Рё
 	{
 		rooms_[client.profile().login] = room;
 	}
 
-	std::cout << client.profile().login << " создал комнату. " << std::endl;
+	std::cout << client.profile().login << " СЃРѕР·РґР°Р» РєРѕРјРЅР°С‚Сѓ. " << std::endl;
 }
 
 
@@ -345,11 +345,11 @@ void Server::destroyRoom(size_t clientID)
 	auto & client = getClient(clientID);
 	if (client.getStatus() != HANGAR)
 	{
-		throw eRoomError("Необходимо находиться в ангаре, чтобы удалить комнату.");
+		throw eRoomError("РќРµРѕР±С…РѕРґРёРјРѕ РЅР°С…РѕРґРёС‚СЊСЃСЏ РІ Р°РЅРіР°СЂРµ, С‡С‚РѕР±С‹ СѓРґР°Р»РёС‚СЊ РєРѕРјРЅР°С‚Сѓ.");
 	}
 	if (rooms_.erase(client.profile_.login) == 0)
 	{
-		throw eRoomError("Чтобы удалить комнату ее нужно создать.");
+		throw eRoomError("Р§С‚РѕР±С‹ СѓРґР°Р»РёС‚СЊ РєРѕРјРЅР°С‚Сѓ РµРµ РЅСѓР¶РЅРѕ СЃРѕР·РґР°С‚СЊ.");
 	}
 }
 
@@ -367,23 +367,23 @@ void Server::hangarLoop()
 		iterationBegin = std::chrono::steady_clock::now();
 		{
 			MutexLocker ml(hangarClients_.mutex);
-			//подключаем новых клиентов
+			//РїРѕРґРєР»СЋС‡Р°РµРј РЅРѕРІС‹С… РєР»РёРµРЅС‚РѕРІ
 			listen();
-			//выполняем команды клиентов
+			//РІС‹РїРѕР»РЅСЏРµРј РєРѕРјР°РЅРґС‹ РєР»РёРµРЅС‚РѕРІ
 			handleHangarInput();
-			//удаляем неавторизованных клиентов
+			//СѓРґР°Р»СЏРµРј РЅРµР°РІС‚РѕСЂРёР·РѕРІР°РЅРЅС‹С… РєР»РёРµРЅС‚РѕРІ
 			deleteUnlogined(frameTime.count());
 
-			//обработать очередь выхода из комнаты
+			//РѕР±СЂР°Р±РѕС‚Р°С‚СЊ РѕС‡РµСЂРµРґСЊ РІС‹С…РѕРґР° РёР· РєРѕРјРЅР°С‚С‹
 			while (auto client = hangarQueue_.pop())
 			{
 				client->exitRoom();
 				size_t pos;
 				emptyClient(hangarClients_, pos) = client;
 				client->setID(convertPosToID(pos, false));
-				std::cout << "Клиент " << client->profile().login << " выброшен из комнаты" << std::endl;
+				std::cout << "РљР»РёРµРЅС‚ " << client->profile().login << " РІС‹Р±СЂРѕС€РµРЅ РёР· РєРѕРјРЅР°С‚С‹" << std::endl;
 			}
-			//обработать очередь удаления
+			//РѕР±СЂР°Р±РѕС‚Р°С‚СЊ РѕС‡РµСЂРµРґСЊ СѓРґР°Р»РµРЅРёСЏ
 			while (auto client = deleteQueue_.pop())
 			{
 				deleteClient(client);
@@ -401,18 +401,18 @@ void Server::hangarLoop()
 
 void Server::roomLoop()
 {
-	//время начала итерации
+	//РІСЂРµРјСЏ РЅР°С‡Р°Р»Р° РёС‚РµСЂР°С†РёРё
 	std::chrono::steady_clock::time_point iterationBegin;
 
-	//время кадра, указанное в конфигурации
+	//РІСЂРµРјСЏ РєР°РґСЂР°, СѓРєР°Р·Р°РЅРЅРѕРµ РІ РєРѕРЅС„РёРіСѓСЂР°С†РёРё
 	std::chrono::microseconds configFrameTime(
 		static_cast<long long>(
 		configuration().server.roomFrameTime * 1000000));
 
-	//полное время кадра. складывается из времени итерации и времени сна
+	//РїРѕР»РЅРѕРµ РІСЂРµРјСЏ РєР°РґСЂР°. СЃРєР»Р°РґС‹РІР°РµС‚СЃСЏ РёР· РІСЂРµРјРµРЅРё РёС‚РµСЂР°С†РёРё Рё РІСЂРµРјРµРЅРё СЃРЅР°
 	std::chrono::duration<float> frameTime;
 
-	//время выполнения итерации
+	//РІСЂРµРјСЏ РІС‹РїРѕР»РЅРµРЅРёСЏ РёС‚РµСЂР°С†РёРё
 	std::chrono::microseconds iterationTime;
 	std::shared_ptr< MutexLocker > locker;
 	{
@@ -422,16 +422,16 @@ void Server::roomLoop()
 
 			locker = std::shared_ptr<MutexLocker>(new MutexLocker(roomClients_.mutex));
 
-			//выполняем команды клиентов
+			//РІС‹РїРѕР»РЅСЏРµРј РєРѕРјР°РЅРґС‹ РєР»РёРµРЅС‚РѕРІ
 			handleRoomInput();
 
-			//обрабатываем каждую комнату
+			//РѕР±СЂР°Р±Р°С‚С‹РІР°РµРј РєР°Р¶РґСѓСЋ РєРѕРјРЅР°С‚Сѓ
 			for (auto & room : rooms_)
 			{
 				room.second.iterate(frameTime.count(), getTime());
 			}
 
-			//отправляем сообщения игрокам
+			//РѕС‚РїСЂР°РІР»СЏРµРј СЃРѕРѕР±С‰РµРЅРёСЏ РёРіСЂРѕРєР°Рј
 			for (int i = 0; i < roomClients_.clients.size(); i++)
 			{
 				if (!roomClients_.clients[i])continue;
@@ -442,13 +442,13 @@ void Server::roomLoop()
 				}
 				catch (planesException & e)
 				{
-					std::cout << std::string() + "при попытке передать сообщение возникла ошибка: " + e.what() << std::endl;
+					std::cout << std::string() + "РїСЂРё РїРѕРїС‹С‚РєРµ РїРµСЂРµРґР°С‚СЊ СЃРѕРѕР±С‰РµРЅРёРµ РІРѕР·РЅРёРєР»Р° РѕС€РёР±РєР°: " + e.what() << std::endl;
 					client.connection_.close();
 					deleteQueue_.join(roomClients_.clients[i]);
 				}
 			}
 
-			//выбрасываем в ангар отключенных клиентов
+			//РІС‹Р±СЂР°СЃС‹РІР°РµРј РІ Р°РЅРіР°СЂ РѕС‚РєР»СЋС‡РµРЅРЅС‹С… РєР»РёРµРЅС‚РѕРІ
 			for (auto & client : roomClients_.clients)
 			{
 				if (!client)
@@ -489,12 +489,12 @@ void Server::administerRoom(size_t clientID, rplanes::network::clientmessages::r
 	auto & client = getClient(clientID);
 	if (client.getStatus() != ROOM)
 	{
-		throw eClientStatusError("Управлять комнатой можно только находясь в ней.");
+		throw eClientStatusError("РЈРїСЂР°РІР»СЏС‚СЊ РєРѕРјРЅР°С‚РѕР№ РјРѕР¶РЅРѕ С‚РѕР»СЊРєРѕ РЅР°С…РѕРґСЏСЃСЊ РІ РЅРµР№.");
 	}
 
 	if (rooms_.count(client.profile_.login) == 0)
 	{
-		throw eRoomError("Игрок не создал комнату.");
+		throw eRoomError("РРіСЂРѕРє РЅРµ СЃРѕР·РґР°Р» РєРѕРјРЅР°С‚Сѓ.");
 	}
 	auto & room = rooms_[client.profile_.login];
 
@@ -506,7 +506,7 @@ void Server::administerRoom(size_t clientID, rplanes::network::clientmessages::r
 	case rplanes::network::clientmessages::room::AdministerRoom::BAN_PLAYERS:
 		if ( client.profile_.banlist.size() > rplanes::configuration().profile.maxBanlistSize )
 		{
-			throw eRoomError("Достигнут максимальный размер черного списка. ");
+			throw eRoomError("Р”РѕСЃС‚РёРіРЅСѓС‚ РјР°РєСЃРёРјР°Р»СЊРЅС‹Р№ СЂР°Р·РјРµСЂ С‡РµСЂРЅРѕРіРѕ СЃРїРёСЃРєР°. ");
 		}
 		client.profile_.banlist.insert(options.begin(), options.end());
 		room.banlist.insert(options.begin(), options.end());
@@ -521,7 +521,7 @@ void Server::administerRoom(size_t clientID, rplanes::network::clientmessages::r
 	case rplanes::network::clientmessages::room::AdministerRoom::CHANGE_MAP:
 		if (options.size() != 1)
 		{
-			throw eRoomError("Неверное количество аргументов.");
+			throw eRoomError("РќРµРІРµСЂРЅРѕРµ РєРѕР»РёС‡РµСЃС‚РІРѕ Р°СЂРіСѓРјРµРЅС‚РѕРІ.");
 		}
 		room.changeMap(options[0]);
 		break;

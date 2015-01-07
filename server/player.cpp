@@ -109,7 +109,7 @@ std::vector< IntersectionInfo > getIntersections(rplanes::serverdata::Bullet & b
 		auto & module = target.modules[moduleNo];
 		auto & points = module->hitZone.shape.points;
 
-		//исключаем из обработки выпущенные ракеты
+		//РёСЃРєР»СЋС‡Р°РµРј РёР· РѕР±СЂР°Р±РѕС‚РєРё РІС‹РїСѓС‰РµРЅРЅС‹Рµ СЂР°РєРµС‚С‹
 		if (auto *missile = dynamic_cast<rplanes::planedata::Missile *>(module))
 		{
 			if (missile->isEmpty)
@@ -145,7 +145,7 @@ std::vector< IntersectionInfo > getIntersections(rplanes::serverdata::Bullet & b
 		}
 	}
 
-	//сортируем пересечения по дальности от предыдущего значения пули
+	//СЃРѕСЂС‚РёСЂСѓРµРј РїРµСЂРµСЃРµС‡РµРЅРёСЏ РїРѕ РґР°Р»СЊРЅРѕСЃС‚Рё РѕС‚ РїСЂРµРґС‹РґСѓС‰РµРіРѕ Р·РЅР°С‡РµРЅРёСЏ РїСѓР»Рё
 	std::sort(intersections.begin(), intersections.end(), [](IntersectionInfo a, IntersectionInfo b)
 	{
 		return a.distance < b.distance;
@@ -155,23 +155,23 @@ std::vector< IntersectionInfo > getIntersections(rplanes::serverdata::Bullet & b
 
 rplanes::PointXY getDeflectedPoint(DestroyablePlane * target, rplanes::PointXY gunPosition, rplanes::planedata::Gun & gun, float shooterSpeed /*= 0.f*/)
 {
-	//приближенное решение
+	//РїСЂРёР±Р»РёР¶РµРЅРЅРѕРµ СЂРµС€РµРЅРёРµ
 
-	//текущее расстояние до цели
+	//С‚РµРєСѓС‰РµРµ СЂР°СЃСЃС‚РѕСЏРЅРёРµ РґРѕ С†РµР»Рё
 	float d = distance(gunPosition, target->position);
 
-	//расчитаем среднюю скорость пули, при полете в текущее положение цели
+	//СЂР°СЃС‡РёС‚Р°РµРј СЃСЂРµРґРЅСЋСЋ СЃРєРѕСЂРѕСЃС‚СЊ РїСѓР»Рё, РїСЂРё РїРѕР»РµС‚Рµ РІ С‚РµРєСѓС‰РµРµ РїРѕР»РѕР¶РµРЅРёРµ С†РµР»Рё
 
 	float vMean = (gun.speed * rplanes::configuration().shooting.speedFactor
 		+ shooterSpeed * rplanes::configuration().flight.speedFactor)
 		+ gun.acceleration * rplanes::configuration().shooting.accelerationFactor * gun.getHitTime(d, shooterSpeed) / 2.f;
 
 
-	//рассчитаем отношение скорости цели к скорости пули
+	//СЂР°СЃСЃС‡РёС‚Р°РµРј РѕС‚РЅРѕС€РµРЅРёРµ СЃРєРѕСЂРѕСЃС‚Рё С†РµР»Рё Рє СЃРєРѕСЂРѕСЃС‚Рё РїСѓР»Рё
 
 	float k = (target->target.V * rplanes::configuration().flight.speedFactor) / vMean;
 	
-	//сдвигаем упрежденную точку 
+	//СЃРґРІРёРіР°РµРј СѓРїСЂРµР¶РґРµРЅРЅСѓСЋ С‚РѕС‡РєСѓ 
 
 	rplanes::PointXY retval;
 	retval.x = target->position.x + k * d * std::cos(target->position.angle / 180.f * M_PI);
@@ -188,26 +188,26 @@ void correctAngle(float & x)
 
 void Player::checkCollisions()
 {
-	//для каждого самолета в радиусе выстрела
+	//РґР»СЏ РєР°Р¶РґРѕРіРѕ СЃР°РјРѕР»РµС‚Р° РІ СЂР°РґРёСѓСЃРµ РІС‹СЃС‚СЂРµР»Р°
 	for (auto & player : bulletPlayers_)
 	{
-		//застрелиться нельзя
+		//Р·Р°СЃС‚СЂРµР»РёС‚СЊСЃСЏ РЅРµР»СЊР·СЏ
 		if (player->getID() == getID())
 		{
 			continue;
 		}
 
 		auto & target = player->plane_;
-		//просмотрим все пули
+		//РїСЂРѕСЃРјРѕС‚СЂРёРј РІСЃРµ РїСѓР»Рё
 		for (size_t i = 0; i < bullets_.size(); i++)
 		{
 
-			//урон нанесенный пулей
+			//СѓСЂРѕРЅ РЅР°РЅРµСЃРµРЅРЅС‹Р№ РїСѓР»РµР№
 			int totalDamage = 0;
 
 			auto & bullet = bullets_[i];
 
-			//если пуля потеряла скорость, удаляем ее
+			//РµСЃР»Рё РїСѓР»СЏ РїРѕС‚РµСЂСЏР»Р° СЃРєРѕСЂРѕСЃС‚СЊ, СѓРґР°Р»СЏРµРј РµРµ
 			if (bullet.isSpent())
 			{
 				collisionsRegistrar_.deleteProjectile(bullet.ID);
@@ -217,24 +217,24 @@ void Player::checkCollisions()
 			}
 
 
-			//если пуля далеко от цели, переходим к следующей
+			//РµСЃР»Рё РїСѓР»СЏ РґР°Р»РµРєРѕ РѕС‚ С†РµР»Рё, РїРµСЂРµС…РѕРґРёРј Рє СЃР»РµРґСѓСЋС‰РµР№
 			auto dist = rplanes::distance(bullet, target.position);
 			if (dist > rplanes::configuration().collisions.rammingDistance)
 			{
 				continue;
 			}
-			//в случае попадания (любого типа) клиенту будет отправлено сообщение 
-			//удаления устаревшей пули
+			//РІ СЃР»СѓС‡Р°Рµ РїРѕРїР°РґР°РЅРёСЏ (Р»СЋР±РѕРіРѕ С‚РёРїР°) РєР»РёРµРЅС‚Сѓ Р±СѓРґРµС‚ РѕС‚РїСЂР°РІР»РµРЅРѕ СЃРѕРѕР±С‰РµРЅРёРµ 
+			//СѓРґР°Р»РµРЅРёСЏ СѓСЃС‚Р°СЂРµРІС€РµР№ РїСѓР»Рё
 			servermessages::room::DestroyBullets::BulletInfo bi;
 			bi.bulletID = bullet.ID;
-			//указывает было ли отправлено сообщение уничтожения пули
+			//СѓРєР°Р·С‹РІР°РµС‚ Р±С‹Р»Рѕ Р»Рё РѕС‚РїСЂР°РІР»РµРЅРѕ СЃРѕРѕР±С‰РµРЅРёРµ СѓРЅРёС‡С‚РѕР¶РµРЅРёСЏ РїСѓР»Рё
 			bool bulletDestroyed = false;
 
 
-			//проверяем каждый модуль на предмет пересечений
+			//РїСЂРѕРІРµСЂСЏРµРј РєР°Р¶РґС‹Р№ РјРѕРґСѓР»СЊ РЅР° РїСЂРµРґРјРµС‚ РїРµСЂРµСЃРµС‡РµРЅРёР№
 			std::vector< IntersectionInfo > intersections = getIntersections(bullet, target);
 
-			//обрабатываем пересечения по порядку
+			//РѕР±СЂР°Р±Р°С‚С‹РІР°РµРј РїРµСЂРµСЃРµС‡РµРЅРёСЏ РїРѕ РїРѕСЂСЏРґРєСѓ
 			for (size_t intersectionNo = 0; intersectionNo < intersections.size(); intersectionNo++)
 			{
 				auto & intersection = intersections[intersectionNo];
@@ -242,8 +242,8 @@ void Player::checkCollisions()
 				auto & shape = module->hitZone.shape;
 				auto & heightRange = shape.heightRange;
 
-				//если пересечение произошло выше или ниже модуля
-				//просто заносим его в регистратор коллизий
+				//РµСЃР»Рё РїРµСЂРµСЃРµС‡РµРЅРёРµ РїСЂРѕРёР·РѕС€Р»Рѕ РІС‹С€Рµ РёР»Рё РЅРёР¶Рµ РјРѕРґСѓР»СЏ
+				//РїСЂРѕСЃС‚Рѕ Р·Р°РЅРѕСЃРёРј РµРіРѕ РІ СЂРµРіРёСЃС‚СЂР°С‚РѕСЂ РєРѕР»Р»РёР·РёР№
 				if ((bullet.z < heightRange.a || bullet.z > heightRange.b))
 				{
 					collisionsRegistrar_.handleCollision(bullet.ID,
@@ -251,10 +251,10 @@ void Player::checkCollisions()
 					continue;
 				}
 
-				//иначе произошло попадание в границу модуля
+				//РёРЅР°С‡Рµ РїСЂРѕРёР·РѕС€Р»Рѕ РїРѕРїР°РґР°РЅРёРµ РІ РіСЂР°РЅРёС†Сѓ РјРѕРґСѓР»СЏ
 
 
-				//производим проверку пробития
+				//РїСЂРѕРёР·РІРѕРґРёРј РїСЂРѕРІРµСЂРєСѓ РїСЂРѕР±РёС‚РёСЏ
 				float theta = (angleFromPoints(bullet, intersection.intersectionPoint)
 					- angleFromPoints(intersection.a, intersection.b)) / 180 * M_PI;
 
@@ -265,31 +265,31 @@ void Player::checkCollisions()
 				if (penetriation > module->armor
 					&& rand() / static_cast<float>(RAND_MAX) > rplanes::configuration().collisions.randomRicochetChance)
 				{
-					//в случае пробития
+					//РІ СЃР»СѓС‡Р°Рµ РїСЂРѕР±РёС‚РёСЏ
 
-					//повреждаем модуль
+					//РїРѕРІСЂРµР¶РґР°РµРј РјРѕРґСѓР»СЊ
 					module->damage(bullet.getCurrentDamage(), getID(), rplanes::planedata::ModuleHP::HIT);
 					totalDamage += bullet.getCurrentDamage();
 
-					//обновляем статистику
+					//РѕР±РЅРѕРІР»СЏРµРј СЃС‚Р°С‚РёСЃС‚РёРєСѓ
 
-					//изменяем параметры пули
+					//РёР·РјРµРЅСЏРµРј РїР°СЂР°РјРµС‚СЂС‹ РїСѓР»Рё
 					bullet.speedXY -= bullet.speedXY * module->armor / penetriation;
 					boost::random::normal_distribution<float> dist(0.f, rplanes::configuration().collisions.bulletDeflectionSigma);
 					bullet.angleXY += dist(gen);
 
-					//указываем причину удаления пули
+					//СѓРєР°Р·С‹РІР°РµРј РїСЂРёС‡РёРЅСѓ СѓРґР°Р»РµРЅРёСЏ РїСѓР»Рё
 					bi.reason = servermessages::room::DestroyBullets::BulletInfo::HIT;
 
-					//заносим в регистратор коллизий
+					//Р·Р°РЅРѕСЃРёРј РІ СЂРµРіРёСЃС‚СЂР°С‚РѕСЂ РєРѕР»Р»РёР·РёР№
 					collisionsRegistrar_.handleCollision(bullet.ID,
 						CollisionsRegistrar::CollisionInfo(target.getId(), intersection.moduleNo));
 				}
 				else
 				{
-					//иначе пуля рикошетит
+					//РёРЅР°С‡Рµ РїСѓР»СЏ СЂРёРєРѕС€РµС‚РёС‚
 
-					//изменяем параметры пули
+					//РёР·РјРµРЅСЏРµРј РїР°СЂР°РјРµС‚СЂС‹ РїСѓР»Рё
 					bullet.angleXY -= theta * 360 / M_PI;
 					bullet.speedXY *= 1 - std::pow(std::abs(sin(theta)), 4.f);
 
@@ -297,7 +297,7 @@ void Player::checkCollisions()
 					bullet.prevX = intersection.intersectionPoint.x;
 					bullet.prevY = intersection.intersectionPoint.y;
 
-					//вращаем позицию пули относительно точки рикошета
+					//РІСЂР°С‰Р°РµРј РїРѕР·РёС†РёСЋ РїСѓР»Рё РѕС‚РЅРѕСЃРёС‚РµР»СЊРЅРѕ С‚РѕС‡РєРё СЂРёРєРѕС€РµС‚Р°
 					sf::Vector2f bulletPos(bullet.x, bullet.y);
 					bulletPos = sf::Transform()
 						.rotate(-theta * 360 / M_PI, sf::Vector2f(bullet.prevX, bullet.prevY))
@@ -306,33 +306,33 @@ void Player::checkCollisions()
 					bullet.x = bulletPos.x;
 					bullet.y = bulletPos.y;
 
-					//перерасчитываем пересечения
+					//РїРµСЂРµСЂР°СЃС‡РёС‚С‹РІР°РµРј РїРµСЂРµСЃРµС‡РµРЅРёСЏ
 					intersections = getIntersections(bullet, target);
 					intersectionNo = 0;
 
-					//указываем причину удаления пули
+					//СѓРєР°Р·С‹РІР°РµРј РїСЂРёС‡РёРЅСѓ СѓРґР°Р»РµРЅРёСЏ РїСѓР»Рё
 					bi.reason = servermessages::room::DestroyBullets::BulletInfo::RICOCHET;
 				}
-				//заносим сообщение уничтожения в очередь отправки
+				//Р·Р°РЅРѕСЃРёРј СЃРѕРѕР±С‰РµРЅРёРµ СѓРЅРёС‡С‚РѕР¶РµРЅРёСЏ РІ РѕС‡РµСЂРµРґСЊ РѕС‚РїСЂР°РІРєРё
 				if (!bulletDestroyed)
 				{
 					messagesInfo_.destroyedBullets.push_back(bi);
 					bulletDestroyed = true;
 				}
-			}//конец обработки пересечений
+			}//РєРѕРЅРµС† РѕР±СЂР°Р±РѕС‚РєРё РїРµСЂРµСЃРµС‡РµРЅРёР№
 
 			//////////////////////////////////////////////////////////////////////////
 
-			//обработка пуль, попадающих в дно и крышу модулей
+			//РѕР±СЂР°Р±РѕС‚РєР° РїСѓР»СЊ, РїРѕРїР°РґР°СЋС‰РёС… РІ РґРЅРѕ Рё РєСЂС‹С€Сѓ РјРѕРґСѓР»РµР№
 
-			//модули включающие пули
+			//РјРѕРґСѓР»Рё РІРєР»СЋС‡Р°СЋС‰РёРµ РїСѓР»Рё
 			auto includingModules = collisionsRegistrar_.getIncludingModules(bullet.ID, target.getId());
 
 			auto includingModulesLambda = [&totalDamage, &includingModules, &bulletDestroyed, &target, &bullet, &bi, this](bool bottom)
 			{
 				if (bottom)
 				{
-					//сортируем модули по возрастанию высоты днищь
+					//СЃРѕСЂС‚РёСЂСѓРµРј РјРѕРґСѓР»Рё РїРѕ РІРѕР·СЂР°СЃС‚Р°РЅРёСЋ РІС‹СЃРѕС‚С‹ РґРЅРёС‰СЊ
 					std::sort(includingModules.begin(), includingModules.end(), [target](size_t a, size_t b)
 					{
 						auto & moduleA = target.modules[a];
@@ -342,7 +342,7 @@ void Player::checkCollisions()
 				}
 				else
 				{
-					//сортируем модули по убыванию высоты крыш
+					//СЃРѕСЂС‚РёСЂСѓРµРј РјРѕРґСѓР»Рё РїРѕ СѓР±С‹РІР°РЅРёСЋ РІС‹СЃРѕС‚С‹ РєСЂС‹С€
 					std::sort(includingModules.begin(), includingModules.end(), [target](size_t a, size_t b)
 					{
 						auto & moduleA = target.modules[a];
@@ -361,36 +361,36 @@ void Player::checkCollisions()
 						level = module->hitZone.shape.heightRange.b;
 
 
-					//проверяем пересекала ли пуля крышу
+					//РїСЂРѕРІРµСЂСЏРµРј РїРµСЂРµСЃРµРєР°Р»Р° Р»Рё РїСѓР»СЏ РєСЂС‹С€Сѓ
 					if ((level - bullet.z) * (level - bullet.prevZ) > 0)
 					{
 						continue;
 					}
-					//проверяем пробитие
+					//РїСЂРѕРІРµСЂСЏРµРј РїСЂРѕР±РёС‚РёРµ
 					float penetration = std::abs(bullet.getCurrentPenetration() * bullet.speedZ / bullet.speedXY) * 2.f;
 					if (penetration > module->armor)
 					{
-						//повреждаем модуль
+						//РїРѕРІСЂРµР¶РґР°РµРј РјРѕРґСѓР»СЊ
 						{
 							module->damage(bullet.getCurrentDamage(), getID(), rplanes::planedata::ModuleHP::HIT);
 							totalDamage += bullet.getCurrentDamage();
 						}
-						//изменяем параметры пули
+						//РёР·РјРµРЅСЏРµРј РїР°СЂР°РјРµС‚СЂС‹ РїСѓР»Рё
 						bullet.speedXY -= bullet.speedXY * module->armor / penetration;
 						bullet.prevZ = level;
-						//указываем причину
+						//СѓРєР°Р·С‹РІР°РµРј РїСЂРёС‡РёРЅСѓ
 						bi.reason = servermessages::room::DestroyBullets::BulletInfo::HIT;
 					}
 					else
 					{
-						//изменяем параметры пули
+						//РёР·РјРµРЅСЏРµРј РїР°СЂР°РјРµС‚СЂС‹ РїСѓР»Рё
 						bullet.speedZ *= -1;
 						bullet.z = (bullet.prevZ + level) / 2.f;
-						//указываем причину
+						//СѓРєР°Р·С‹РІР°РµРј РїСЂРёС‡РёРЅСѓ
 						bi.reason = servermessages::room::DestroyBullets::BulletInfo::RICOCHET;
 					}
 
-					//заносим сообщение уничтожения в очередь отправки
+					//Р·Р°РЅРѕСЃРёРј СЃРѕРѕР±С‰РµРЅРёРµ СѓРЅРёС‡С‚РѕР¶РµРЅРёСЏ РІ РѕС‡РµСЂРµРґСЊ РѕС‚РїСЂР°РІРєРё
 					if (!bulletDestroyed)
 					{
 						messagesInfo_.destroyedBullets.push_back(bi);
@@ -400,19 +400,19 @@ void Player::checkCollisions()
 
 			};
 
-			//проверяем крыши модулей
+			//РїСЂРѕРІРµСЂСЏРµРј РєСЂС‹С€Рё РјРѕРґСѓР»РµР№
 			includingModulesLambda(false);
 
-			//проверяем днища модулей
+			//РїСЂРѕРІРµСЂСЏРµРј РґРЅРёС‰Р° РјРѕРґСѓР»РµР№
 			includingModulesLambda(true);
 
-			//формируем сообщение рикошета (конечное состояние пули после всех пересечений )
+			//С„РѕСЂРјРёСЂСѓРµРј СЃРѕРѕР±С‰РµРЅРёРµ СЂРёРєРѕС€РµС‚Р° (РєРѕРЅРµС‡РЅРѕРµ СЃРѕСЃС‚РѕСЏРЅРёРµ РїСѓР»Рё РїРѕСЃР»Рµ РІСЃРµС… РїРµСЂРµСЃРµС‡РµРЅРёР№ )
 			if (!bullet.isSpent() && bulletDestroyed)
 			{
 				messagesInfo_.newRicochetes.push_back(bullet);
 			}
 
-			//обновляем статистику
+			//РѕР±РЅРѕРІР»СЏРµРј СЃС‚Р°С‚РёСЃС‚РёРєСѓ
 			if (bulletDestroyed)
 			{
 				if (plane_.nation == target.nation)
@@ -468,7 +468,7 @@ void Player::updatePlayers()
 	for (auto player : visiblePlayers_)
 	{
 		auto & foreignPlane = player.second->plane_;
-		//пометить уничтоженные самолеты
+		//РїРѕРјРµС‚РёС‚СЊ СѓРЅРёС‡С‚РѕР¶РµРЅРЅС‹Рµ СЃР°РјРѕР»РµС‚С‹
 		if (foreignPlane.isDestroyed())
 		{
 			idsToDelete.push_back(player.first);
@@ -477,14 +477,14 @@ void Player::updatePlayers()
 		}
 
 		auto dist = rplanes::distance(foreignPlane.position, plane_.position);
-		//пометить удаленные самолеты
+		//РїРѕРјРµС‚РёС‚СЊ СѓРґР°Р»РµРЅРЅС‹Рµ СЃР°РјРѕР»РµС‚С‹
 		if (dist >
 			rplanes::configuration().collisions.visibilityDistance)
 		{
 			idsToDelete.push_back(player.first);
 			messages.destroyPlanes.planes.push_back(foreignPlane.getDestructionInfo());
 		}
-		//заполнить векторы
+		//Р·Р°РїРѕР»РЅРёС‚СЊ РІРµРєС‚РѕСЂС‹
 		if (dist < rplanes::configuration().shooting.maxDistance )
 		{
 			bulletPlayers_.push_back(player.second);
@@ -558,13 +558,13 @@ void Player::shoot(float frameTime, float serverTime, IdGetter & idGetter)
 	bullets_.insert(bullets_.end(), messagesInfo_.newBullets.begin(), messagesInfo_.newBullets.end());
 }
 
-void Player::move(float frameTime) /*сдвинуть самолеты и пули */
+void Player::move(float frameTime) /*СЃРґРІРёРЅСѓС‚СЊ СЃР°РјРѕР»РµС‚С‹ Рё РїСѓР»Рё */
 {
 	for (auto & Bullet : bullets_)
 	{
 		Bullet.move(frameTime);
 	}
-	//если самолет не уничтожен, сдвигаем его
+	//РµСЃР»Рё СЃР°РјРѕР»РµС‚ РЅРµ СѓРЅРёС‡С‚РѕР¶РµРЅ, СЃРґРІРёРіР°РµРј РµРіРѕ
 	if (!plane_.isDestroyed())
 	{
 		plane_.updateInterim();
@@ -597,7 +597,7 @@ bool Player::destroyIfNeed(float frameTime)
 
 		if (module->hp.checkConditionChange())
 		{
-			//обновляем информацию о модуле
+			//РѕР±РЅРѕРІР»СЏРµРј РёРЅС„РѕСЂРјР°С†РёСЋ Рѕ РјРѕРґСѓР»Рµ
 			servermessages::room::UpdateModules::Module m;
 			m.defect = module->hp.isDefected();
 			m.hp = module->hp;
@@ -605,7 +605,7 @@ bool Player::destroyIfNeed(float frameTime)
 			m.planeID = id_;
 			m.reason = module->hp.getReason();
 			messagesInfo_.updatedModules.push_back(m);
-			//если прочность модуля меньше нуля, уничтожаем самолет, и прерываем проверку
+			//РµСЃР»Рё РїСЂРѕС‡РЅРѕСЃС‚СЊ РјРѕРґСѓР»СЏ РјРµРЅСЊС€Рµ РЅСѓР»СЏ, СѓРЅРёС‡С‚РѕР¶Р°РµРј СЃР°РјРѕР»РµС‚, Рё РїСЂРµСЂС‹РІР°РµРј РїСЂРѕРІРµСЂРєСѓ
 			if (module->hp < 0
 				&& module->getType() != rplanes::GUN
 				&& module->getType() != rplanes::TURRET)
@@ -631,7 +631,7 @@ void Player::destroy(servermessages::room::DestroyPlanes::Reason reason, size_t 
 {
 	plane_.destroy(reason, moduleNo);
 
-	//обновляем статистику
+	//РѕР±РЅРѕРІР»СЏРµРј СЃС‚Р°С‚РёСЃС‚РёРєСѓ
 	auto module = plane_.modules.begin();
 
 	for (auto i = plane_.modules.begin(); i != plane_.modules.end(); i++)
@@ -650,7 +650,7 @@ void Player::destroy(servermessages::room::DestroyPlanes::Reason reason, size_t 
 
 		if (killer->second->plane_.nation == plane_.nation)
 		{
-			//наказываем предателя
+			//РЅР°РєР°Р·С‹РІР°РµРј РїСЂРµРґР°С‚РµР»СЏ
 			killerStat.friensDestroyed++;
 			killer->second->killingStatistics().friendsDestroyed = killerStat.friensDestroyed;
 			killerStat.money -= hp * rplanes::configuration().profile.damagePenalty;
@@ -673,7 +673,7 @@ void Player::setDestroyed(servermessages::room::DestroyPlanes::Reason reason, si
 }
 
 
-void Player::respawn(float x, float y, float angle) /*если игрок не отключился, возрождаем самолет */
+void Player::respawn(float x, float y, float angle) /*РµСЃР»Рё РёРіСЂРѕРє РЅРµ РѕС‚РєР»СЋС‡РёР»СЃСЏ, РІРѕР·СЂРѕР¶РґР°РµРј СЃР°РјРѕР»РµС‚ */
 {
 	if (!isJoined)
 	{
@@ -682,7 +682,7 @@ void Player::respawn(float x, float y, float angle) /*если игрок не отключился, 
 	plane_.respawn(x, y, angle);
 }
 
-/*Если параметры модулей были изменены, обновляем самолет. */
+/*Р•СЃР»Рё РїР°СЂР°РјРµС‚СЂС‹ РјРѕРґСѓР»РµР№ Р±С‹Р»Рё РёР·РјРµРЅРµРЅС‹, РѕР±РЅРѕРІР»СЏРµРј СЃР°РјРѕР»РµС‚. */
 void Player::updateStaticalIfNeed()
 {
 	bool need = false;
@@ -753,7 +753,7 @@ void Player::controlTurrets(float frameTime)
 
 		turret.isShooting = false;
 
-		//вычисляем позицию турели
+		//РІС‹С‡РёСЃР»СЏРµРј РїРѕР·РёС†РёСЋ С‚СѓСЂРµР»Рё
 		auto RotatedGunsPositions = turret.getRotatedGunsPositions(plane_.position.angle, plane_.position.roll);
 
 		auto centerGunPostion = RotatedGunsPositions[RotatedGunsPositions.size() / 2];
@@ -765,7 +765,7 @@ void Player::controlTurrets(float frameTime)
 		centerGunPostion.x += plane_.position.x;
 		centerGunPostion.y += plane_.position.y;
 
-		//ищем врагов находящихся в сексторе обстрела
+		//РёС‰РµРј РІСЂР°РіРѕРІ РЅР°С…РѕРґСЏС‰РёС…СЃСЏ РІ СЃРµРєСЃС‚РѕСЂРµ РѕР±СЃС‚СЂРµР»Р°
 		float gunMaxDistance = turret.gun.getMaxDistance(0);
 
 		auto enemies = lookAround().getEnemies(gunMaxDistance);
@@ -775,7 +775,7 @@ void Player::controlTurrets(float frameTime)
 			turret.aimAngle = turret.startAngle;
 			continue;
 		}
-		//выбираем самую ближнюю цель
+		//РІС‹Р±РёСЂР°РµРј СЃР°РјСѓСЋ Р±Р»РёР¶РЅСЋСЋ С†РµР»СЊ
 		DestroyablePlane * nearestTarget = targets.front();
 		for (auto & target : targets)
 		{
@@ -792,18 +792,18 @@ void Player::controlTurrets(float frameTime)
 		{
 			continue;
 		}
-		//обрабатываем таймер прицеливания
+		//РѕР±СЂР°Р±Р°С‚С‹РІР°РµРј С‚Р°Р№РјРµСЂ РїСЂРёС†РµР»РёРІР°РЅРёСЏ
 
 		if (turret.aimTimer < 0.f)
 		{
-			//сбрасываем таймер
+			//СЃР±СЂР°СЃС‹РІР°РµРј С‚Р°Р№РјРµСЂ
 			boost::normal_distribution<float>
 				timerDist(rplanes::configuration().turrets.aimTimerMean,
 				rplanes::configuration().turrets.aimTimerSigma);
 
 			turret.aimTimer = timerDist(gen);
 
-			//устанавливаем ошибку прицеливания
+			//СѓСЃС‚Р°РЅР°РІР»РёРІР°РµРј РѕС€РёР±РєСѓ РїСЂРёС†РµР»РёРІР°РЅРёСЏ
 			boost::normal_distribution<float>
 				errorDist(0.f, rplanes::configuration().turrets.aimErrorSigma);
 
@@ -811,34 +811,34 @@ void Player::controlTurrets(float frameTime)
 			turret.aimError.y = errorDist(gen);
 
 			rplanes::PointXY & aimError = turret.aimError;
-			//наиболее благоприятно прицеливание по преследующей с той же скоростью цели при нулевом крене и близком расстоянии
+			//РЅР°РёР±РѕР»РµРµ Р±Р»Р°РіРѕРїСЂРёСЏС‚РЅРѕ РїСЂРёС†РµР»РёРІР°РЅРёРµ РїРѕ РїСЂРµСЃР»РµРґСѓСЋС‰РµР№ СЃ С‚РѕР№ Р¶Рµ СЃРєРѕСЂРѕСЃС‚СЊСЋ С†РµР»Рё РїСЂРё РЅСѓР»РµРІРѕРј РєСЂРµРЅРµ Рё Р±Р»РёР·РєРѕРј СЂР°СЃСЃС‚РѕСЏРЅРёРё
 
-			//учитываем разность скоростей
+			//СѓС‡РёС‚С‹РІР°РµРј СЂР°Р·РЅРѕСЃС‚СЊ СЃРєРѕСЂРѕСЃС‚РµР№
 			aimError = aimError * (1.f + std::abs(plane_.target.V - nearestTarget->target.V) / plane_.target.V);
 
-			//учитываем разность направлений
+			//СѓС‡РёС‚С‹РІР°РµРј СЂР°Р·РЅРѕСЃС‚СЊ РЅР°РїСЂР°РІР»РµРЅРёР№
 			float angleResidual = std::abs(plane_.position.angle - targetPosition.angle);
 			if (angleResidual > 180.f)
 				angleResidual = 360.f - angleResidual;
 
 			aimError = aimError * (1.f + angleResidual / 180.f);
 
-			//учитваем крен самолета
+			//СѓС‡РёС‚РІР°РµРј РєСЂРµРЅ СЃР°РјРѕР»РµС‚Р°
 			aimError = aimError * (1.f + std::abs(plane_.position.roll) / 90.f);
-			//учитываем дальность до цели
+			//СѓС‡РёС‚С‹РІР°РµРј РґР°Р»СЊРЅРѕСЃС‚СЊ РґРѕ С†РµР»Рё
 			aimError = aimError * (1.f + distance(centerGunPostion, targetPosition) / 300.f);
 		}
 		else
 			turret.aimTimer -= frameTime;
 
-		//расчитываем упрежденную точку
+		//СЂР°СЃС‡РёС‚С‹РІР°РµРј СѓРїСЂРµР¶РґРµРЅРЅСѓСЋ С‚РѕС‡РєСѓ
 		//rplanes::PointXY deflectedPoint(targetPosition.x, targetPosition.y);
 
 		auto deflectedPoint = getDeflectedPoint(nearestTarget, rplanes::PointXY(centerGunPostion.x, centerGunPostion.y), turret.gun);
 
 		deflectedPoint = deflectedPoint + turret.aimError;
 
-		//поворачиваем турель на цель и производим стрельбу
+		//РїРѕРІРѕСЂР°С‡РёРІР°РµРј С‚СѓСЂРµР»СЊ РЅР° С†РµР»СЊ Рё РїСЂРѕРёР·РІРѕРґРёРј СЃС‚СЂРµР»СЊР±Сѓ
 		float targetDistance = distance(centerGunPostion, deflectedPoint);
 		if (targetDistance < gunMaxDistance)
 		{
@@ -860,7 +860,7 @@ void Player::controlTurrets(float frameTime)
 
 			turret.aimDistance += (targetDistance - turret.aimDistance) * frameTime * rplanes::configuration().turrets.aimIntense;
 
-			//производим стрельбу
+			//РїСЂРѕРёР·РІРѕРґРёРј СЃС‚СЂРµР»СЊР±Сѓ
 			if (angleResidual < rplanes::configuration().turrets.aimExp
 				|| angleResidual > 360.f - rplanes::configuration().turrets.aimExp)
 			{
@@ -892,7 +892,7 @@ void Player::controlTurrets(float frameTime)
 
 
 
-		//корректируем углы
+		//РєРѕСЂСЂРµРєС‚РёСЂСѓРµРј СѓРіР»С‹
 		float leftBorder = turret.startAngle - turret.sector / 2.f,
 			rightBorder = turret.startAngle + turret.sector / 2.f;
 
@@ -901,7 +901,7 @@ void Player::controlTurrets(float frameTime)
 		correctAngle(turret.aimAngle);
 		correctAngle(turret.startAngle);
 
-		//проверяем сектор обстрела
+		//РїСЂРѕРІРµСЂСЏРµРј СЃРµРєС‚РѕСЂ РѕР±СЃС‚СЂРµР»Р°
 		{
 			float angleResidual = std::abs(turret.aimAngle - turret.startAngle);
 			if (angleResidual > 180.f)
@@ -913,7 +913,7 @@ void Player::controlTurrets(float frameTime)
 			}
 		}
 
-		//исключаем стрельбу через корпус
+		//РёСЃРєР»СЋС‡Р°РµРј СЃС‚СЂРµР»СЊР±Сѓ С‡РµСЂРµР· РєРѕСЂРїСѓСЃ
 		if (plane_.position.roll > 15.f)
 		{
 			if (turret.gunsPosition.z < 0.f && turret.aimAngle < 180.f)
@@ -930,7 +930,7 @@ void Player::controlTurrets(float frameTime)
 		}
 
 
-		//проводим линию из турели в цель
+		//РїСЂРѕРІРѕРґРёРј Р»РёРЅРёСЋ РёР· С‚СѓСЂРµР»Рё РІ С†РµР»СЊ
 		if (!turret.isShooting)
 		{
 			continue;
@@ -946,7 +946,7 @@ void Player::controlTurrets(float frameTime)
 		b.y += turret.aimDistance * std::sin((turret.aimAngle + plane_.position.angle) / 180.0 * M_PI);
 		b.z = 0.f;
 
-		//проверяем не пересекает ли линия корпус, хвост, крыло, кабину или двигатель
+		//РїСЂРѕРІРµСЂСЏРµРј РЅРµ РїРµСЂРµСЃРµРєР°РµС‚ Р»Рё Р»РёРЅРёСЏ РєРѕСЂРїСѓСЃ, С…РІРѕСЃС‚, РєСЂС‹Р»Рѕ, РєР°Р±РёРЅСѓ РёР»Рё РґРІРёРіР°С‚РµР»СЊ
 		ContainersMerger< rplanes::planedata::Module  > cm;
 		cm.addContainer(plane_.wings);
 		cm.addContainer(plane_.engines);
@@ -986,7 +986,7 @@ void Player::controlTurrets(float frameTime)
 				}
 				return false;
 			};
-			//если пересечение найдено, запрещаем стрельбу
+			//РµСЃР»Рё РїРµСЂРµСЃРµС‡РµРЅРёРµ РЅР°Р№РґРµРЅРѕ, Р·Р°РїСЂРµС‰Р°РµРј СЃС‚СЂРµР»СЊР±Сѓ
 			if (checkCollisionsLambda(module))
 			{
 				turret.isShooting = false;

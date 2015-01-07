@@ -1,5 +1,5 @@
 #pragma once
-//данный файл содержит класс модели самолета
+//РґР°РЅРЅС‹Р№ С„Р°Р№Р» СЃРѕРґРµСЂР¶РёС‚ РєР»Р°СЃСЃ РјРѕРґРµР»Рё СЃР°РјРѕР»РµС‚Р°
 #include "stdafx.h"
 #include "modules.h"
 #include "profile.h"
@@ -9,27 +9,27 @@ namespace rplanes
 
 	namespace planedata
 	{
-		//модель самолета. Содержит список устанавливаемых модулей и количество модулей разных типов
+		//РјРѕРґРµР»СЊ СЃР°РјРѕР»РµС‚Р°. РЎРѕРґРµСЂР¶РёС‚ СЃРїРёСЃРѕРє СѓСЃС‚Р°РЅР°РІР»РёРІР°РµРјС‹С… РјРѕРґСѓР»РµР№ Рё РєРѕР»РёС‡РµСЃС‚РІРѕ РјРѕРґСѓР»РµР№ СЂР°Р·РЅС‹С… С‚РёРїРѕРІ 
 #pragma  db  object
 		class Model
 		{
 		public:
-			//загрузить из базы данных стоковую конфигурацию
+			//Р·Р°РіСЂСѓР·РёС‚СЊ РёР· Р±Р°Р·С‹ РґР°РЅРЅС‹С… СЃС‚РѕРєРѕРІСѓСЋ РєРѕРЅС„РёРіСѓСЂР°С†РёСЋ
 			playerdata::Plane loadBasicConfiguration( std::shared_ptr<odb::database> planesDB, int & price, std::string profileName );
 
-			//название модели самолета
+			//РЅР°Р·РІР°РЅРёРµ РјРѕРґРµР»Рё СЃР°РјРѕР»РµС‚Р°
 #pragma db id
 			std::string planeName;
 
 
-			//список названий устанавливаемых модулей
+			//СЃРїРёСЃРѕРє РЅР°Р·РІР°РЅРёР№ СѓСЃС‚Р°РЅР°РІР»РёРІР°РµРјС‹С… РјРѕРґСѓР»РµР№
 #pragma db unordered\
 	id_column("planeName")\
 	value_column("module")
 			std::vector<std::string> modules;
 
 
-			//список типов орудий. Определяет количество устанавливаемых пулеметов и пушек
+			//СЃРїРёСЃРѕРє С‚РёРїРѕРІ РѕСЂСѓРґРёР№. РћРїСЂРµРґРµР»СЏРµС‚ РєРѕР»РёС‡РµСЃС‚РІРѕ СѓСЃС‚Р°РЅР°РІР»РёРІР°РµРјС‹С… РїСѓР»РµРјРµС‚РѕРІ Рё РїСѓС€РµРє
 #pragma db unordered\
 	id_column("planeName")\
 	value_column("gun")
@@ -45,15 +45,15 @@ namespace rplanes
 			Nation nation;
 
 		private:
-			//найти самый дешевый модуль определенного типа
+			//РЅР°Р№С‚Рё СЃР°РјС‹Р№ РґРµС€РµРІС‹Р№ РјРѕРґСѓР»СЊ РѕРїСЂРµРґРµР»РµРЅРЅРѕРіРѕ С‚РёРїР°
 			std::string getCheapestModule( int &price, ModuleType MT, std::shared_ptr<odb::database> planesDB);
-			//найти самую дешевую пушку определенного типа
+			//РЅР°Р№С‚Рё СЃР°РјСѓСЋ РґРµС€РµРІСѓСЋ РїСѓС€РєСѓ РѕРїСЂРµРґРµР»РµРЅРЅРѕРіРѕ С‚РёРїР°
 			std::string getCheapestGun( int &price, GunType GT, std::shared_ptr<odb::database> planesDB );
 
 		};
-		//загрузить из базы данных модуль и проверить его тип
+		//Р·Р°РіСЂСѓР·РёС‚СЊ РёР· Р±Р°Р·С‹ РґР°РЅРЅС‹С… РјРѕРґСѓР»СЊ Рё РїСЂРѕРІРµСЂРёС‚СЊ РµРіРѕ С‚РёРї
 		std:: shared_ptr<Module> loadModule( std::string moduleName, ModuleType MT, std::shared_ptr<odb::database> db );
-		//загрузить из базы данных модуль
+		//Р·Р°РіСЂСѓР·РёС‚СЊ РёР· Р±Р°Р·С‹ РґР°РЅРЅС‹С… РјРѕРґСѓР»СЊ
 		std:: shared_ptr<Module> loadModule( std::string moduleName, std::shared_ptr<odb::database> db );
 	}
 }
