@@ -1,3 +1,5 @@
+#pragma once
+#pragma execution_character_set("utf-8")
 #include <configuration.h>
 #include <database.h>
 #include <modules.h>

@@ -6,57 +6,12 @@
 class BotTargetsStorage
 {
 public:
-	void selectTarget(size_t botId, size_t targetId)
-	{
-		size_t comparableValue;
-		auto compare = [&comparableValue](const std::pair<size_t, size_t> & i)->bool
-		{
-			return i.second == comparableValue && i.second != i.first;
-		};
-
-
-		//если бот имел цель, пересчитываем количество игроков, целящихся в нее
-		if ( targets.count(botId) != 0 )
-		{
-			comparableValue = targets[botId];
-			nAttackersMap[targets[botId]] = count_if(targets.begin(), targets.end(), compare);
-		}
-
-		//присваиваем новую цель
-		targets[botId] = targetId;
-
-		//пересчитываем количество игроков, целящихся в новую цель
-		comparableValue = targetId;
-		nAttackersMap[targetId] = count_if(targets.begin(), targets.end(), compare);
-	}
-	void deselect( size_t botId )
-	{
-		selectTarget(botId, botId);
-	}
-	size_t countAttackers(size_t botId)
-	{
-		auto i = nAttackersMap.find(botId);
-		if ( i != nAttackersMap.end() )
-		{
-			return i->second;
-		}
-		return 0;
-	}
+	void selectTarget(size_t botId, size_t targetId);
+	void deselect( size_t botId );
+	size_t countAttackers(size_t botId);
 	//если бот не имеет цели, вернет botId
-	size_t getTarget(size_t botId)
-	{
-		auto i = targets.find(botId);
-		if ( i != targets.end() )
-		{
-			return i->second;
-		}
-		return botId;
-	}
-	void clear()
-	{
-		targets.clear();
-		nAttackersMap.clear();
-	}
+	size_t getTarget(size_t botId);
+	void clear();
 private:
 	//список целей каждого бота
 	std::map< size_t, size_t > targets;
@@ -99,42 +54,6 @@ protected:
 		//точность следования направлению
 		float angleExp
 		);
-	
-	//std::vector< Player::DestroyablePlane * > getEnemies(Player & player, float radius = -1.f);
-	//std::vector< Player::DestroyablePlane * > getFriends(Player & player, float radius = -1.f);
-	//std::vector<Player::DestroyablePlane *> getPlanesInSector(Player & player, std::vector<Player::DestroyablePlane *> planes, float angle, float sector)
-	//{
-	//	std::vector<Player::DestroyablePlane *> retval;
-
-	//	for (auto & plane : planes)
-	//	{
-	//		float innerAngle = (rplanes::angleFromPoints(player.getPosition(), plane->position)
-	//			- rplanes::angleFromPoints(player.getPrevPosition(), player.getPosition()));
-	//		while (innerAngle < 0.f)
-	//		{
-	//			innerAngle += 360.f;
-	//		}
-	//		while (angle < 0.f)
-	//		{
-	//			angle += 360.f;
-	//		}
-	//		while (angle > 360.f)
-	//		{
-	//			angle -= 360.f;
-	//		}
-	//		float angleResidual = std::abs(innerAngle - angle);
-	//		if (angleResidual > 180.f)
-	//			angleResidual = 360.f - angleResidual;
-
-	//		if (angleResidual < sector / 2)
-	//		{
-	//			retval.push_back(plane);
-	//		}
-	//	}
-	//	return retval;
-	//}
-	//Player::DestroyablePlane & getThisPlane(Player & player);
-
 	rplanes::serverdata::Plane::ControllableParameters controllable_;
 	std::vector< std::pair < std::function< bool( Player & ) >, std::shared_ptr<BotCondition> > > conditionList_;
 };
@@ -210,29 +129,9 @@ public:
 		HARD,
 		PEACEFULL
 	};
-	void control(float frameTime, BotTargetsStorage & botTargetsStorage)
-	{
-		if ( !condition_ || !player_ )
-		{
-			throw rplanes::eRoomError("Ошибка бота. ");
-		}
-		condition_->control(*player_, frameTime, botTargetsStorage);
-		auto newCondition = condition_->handleConditionList(*player_);
-		if ( newCondition )
-		{
-			condition_ = newCondition;
-			condition_->initializeConditionList();
-		}
-	}
+	void control(float frameTime, BotTargetsStorage & botTargetsStorage);
 	Bot(std::shared_ptr<Player > player, Type type);
-	std::shared_ptr< Player > getPlayer()
-	{
-		if ( !player_ )
-		{
-			throw rplanes::eRoomError("Ошибка бота. ");
-		}
-		return player_;
-	}
+	std::shared_ptr< Player > getPlayer();
 
 private:
 	std::shared_ptr< BotCondition > condition_;

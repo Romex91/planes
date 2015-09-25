@@ -1,7 +1,7 @@
 #include "database.h"
 #include "model.h"
 #include "odb/model-odb.hxx"
-#include "exceptions.h"
+
 namespace rplanes
 {
 	using namespace playerdata;
@@ -29,16 +29,17 @@ namespace rplanes
 					price += minPrice;
 				}
 			}
-			//макрос для модулей, содержащихся в векторе
 #define VECTORED_MODULES(TYPE, COUNT, NAME)\
 	if(COUNT>0)\
 	moduleName = getCheapestModule( minPrice, TYPE, db);\
 	retVal.NAME = std::vector<std::string>( COUNT, moduleName);\
 	price += minPrice * COUNT;
-			//макрос для одиночных модулей
+
 #define SINGLE_MODULES( TYPE, NAME )\
 	retVal.NAME = getCheapestModule( minPrice, TYPE, db);\
 	price += minPrice;	
+
+
 			VECTORED_MODULES(MISSILE, nMissiles, missiles);
 			VECTORED_MODULES( AMMUNITION, nAmmunitions, ammunitions );
 			VECTORED_MODULES ( ENGINE, nEngines, engines );
@@ -48,6 +49,7 @@ namespace rplanes
 			SINGLE_MODULES(CABINE,cabine);
 			SINGLE_MODULES(FRAMEWORK,framework);
 			SINGLE_MODULES(TAIL,tail);
+
 #undef VECTORED_MODULES
 #undef SINGLE_MODULES	
 			return retVal;
@@ -63,9 +65,7 @@ namespace rplanes
 			{
 				float modulePrice;
 				{
-					//загрузка модуля с указанным именем из базы данных
 					auto Module = loadModule(moduleName, db);
-					//если модуль не подходит по типу, проверяем список дальше
 					if ( Module->getType() != MT )
 					{
 						continue;
@@ -87,7 +87,7 @@ namespace rplanes
 				}
 			}
 			if ( retval.size() == 0 )
-				throw(eModelTemplateNotFull("Название самолета " + planeName + ". "));
+				throw PlanesException(_str("Model template for {0} is not full.", planeName));
 			return retval;
 		}
 
@@ -128,7 +128,7 @@ namespace rplanes
 				}
 			}
 			if ( retval.size() == 0 )
-				throw(eModelTemplateNotFull("Название самолета " + planeName + "."));
+				throw PlanesException(_str("Model template for {0} is not full.", planeName));
 			return retval;
 		}
 
@@ -145,11 +145,11 @@ namespace rplanes
 			}
 			catch(odb::object_not_persistent)
 			{
-				throw (eModuleNotFound("Название модуля " + moduleName + ". "));
+				throw PlanesException(_str("Module {0} is not found.", moduleName));
 			}
 			if ( module->getType() != MT)
 			{
-				throw(eModulType("Название модуля " + moduleName + ". "));
+				throw PlanesException(_str("Module {0} has invalid type.", moduleName));
 			}
 			return module;
 		}
@@ -165,7 +165,7 @@ namespace rplanes
 			}
 			catch(odb::object_not_persistent)
 			{
-				throw (eModuleNotFound("Название модуля " + moduleName + ". "));
+				throw PlanesException(_str("Module {0} is not found.", moduleName));
 			}
 			return module;
 		}

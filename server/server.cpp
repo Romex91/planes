@@ -19,7 +19,7 @@ void Server::ClientsQueue::join(std::shared_ptr<Client> & client)
 	}
 	else
 	{
-		throw eClientNotConnected("В очередь поступил пустой указатель. ");
+		throw PlanesException(_str("Null ptr in clients queue."));
 	}
 }
 
@@ -73,21 +73,17 @@ std::shared_ptr<Client> & Server::getClientPtr(size_t clientID)
 			return hangarClients_.clients[pos];
 		}
 	}
-	throw eClientNotConnected();
+	throw PlanesException(_str("client is not connected"));
 }
 
 void Server::deleteClient(std::shared_ptr<Client> & client)
 {
-	if (!client)
-	{
-		throw eClientStatusError("Попытка удаления пустого клиента. ");
-	}
 	//пытаемся корректно завершить работу клиента
 	try
 	{
 		switch (client->getStatus())
 		{
-		case rplanes::network::UNLOGINED:
+		case rplanes::network::UNLOGGED:
 			break;
 		case rplanes::network::HANGAR:
 			client->logout();
@@ -98,13 +94,12 @@ void Server::deleteClient(std::shared_ptr<Client> & client)
 			break;
 		}
 	}
-	catch (planesException & e)
+	catch (std::exception & e)
 	{
-		std::cout << "При удалении клиента возникли проблемы:" << e.what() << std::endl;
+		std::cout << _str("Unexpected error deleting client. {0}", e.what()).str() << std::endl;
 	}
 	//выводим сообщение
-	std::cout << "подключение оборвано "
-		<< client->connection_.getIP() << std::endl;
+	std::cout << _str("Lost connection. {0}", client->connection_.getIP()).str() << std::endl;
 	//удаляем клиент
 	client.reset();
 }
@@ -131,7 +126,7 @@ void Server::listen()
 				}
 				newClient->connection_.non_blocking(true);
 			}
-			catch (eClientConnectionFail & e)
+			catch (std::exception & e)
 			{
 				std::cout << e.what() << std::endl;
 				return;
@@ -166,15 +161,13 @@ void Server::handleHangarInput()
 				if (handledMessages > configuration().server.hangarMessagesPerFrame)
 				{
 					std::cout << handledMessages << std::endl;
-					throw eReadError("Клиент привысил допустимое число сообщений за кадр. ");
+					throw PlanesException(_str("Client has sent {0} messages per one frame. Permitted {1} messages per frame.", handledMessages, configuration().server.hangarMessagesPerFrame));
 				}
 			}
-			catch (planesException & e)
+			catch (std::exception & e)
 			{
 				//возникла ошибка, удаляем клиент
-				std::cout << typeid(e).name() << std::endl;
-				std::cout << std::string() + "при попытке обработать сообщение возникла ошибка: " + e.what() << std::endl;
-				std::cout << "последнее обработанное сообщение" << hangarClients_.clients[i]->connection_.getLastMessageId() << std::endl;
+				std::cout << _str("Failed handling message {0}. {1}", hangarClients_.clients[i]->connection_.getLastMessageId(), e.what()).str() << std::endl;
 				deleteClient(hangarClients_.clients[i]);
 			}
 		}
@@ -187,7 +180,7 @@ void Server::deleteUnlogined(float frameTime)
 	{
 		if (client)
 		{
-			if (client->getStatus() == UNLOGINED)
+			if (client->getStatus() == UNLOGGED)
 			{
 				client->disconnectTimer_ -= frameTime;
 				if (client->disconnectTimer_ < 0)
@@ -219,15 +212,13 @@ void Server::handleRoomInput()
 				if (handledMessages > configuration().server.roomMessagesPerFrame)
 				{
 					std::cout << handledMessages << std::endl;
-					throw eReadError("Клиент привысил допустимое число сообщений за кадр. ");
+					throw PlanesException(_str("Client has sent {0} messages per one frame. Permitted {1} messages per frame.", handledMessages, configuration().server.roomMessagesPerFrame));
 				}
 			}
 			//возникла ошибка, обрываем связь и помещаяем клиент в очередь удаления
-			catch (planesException & e)
+			catch (std::exception & e)
 			{
-				std::cout << typeid(e).name() << std::endl;
-				std::cout << std::string() + "при попытке обработать сообщение возникла ошибка: " + e.what() << std::endl;
-				std::cout << "последнее обработанное сообщение" << roomClients_.clients[i]->connection_.getLastMessageId() << std::endl;
+				std::cout << _str("Failed handling message {0}. {1}", roomClients_.clients[i]->connection_.getLastMessageId(), e.what()).str() << std::endl;
 				roomClients_.clients[i]->connection_.close();
 				deleteQueue_.join(roomClients_.clients[i]);
 			}
@@ -264,23 +255,15 @@ Server::Server() :acceptor_(io_service_, tcp::endpoint(tcp::v4(), configuration(
 Client & Server::getClient(size_t clientID)
 {
 	auto client = getClientPtr(clientID);
-	if (!client)
-	{
-		throw eClientNotConnected();
-	}
 	return *client;
 }
 
 void Server::joinRoom(size_t clientID, std::string creatorName, size_t planeNumber)
 {
 	auto & client = getClientPtr(clientID);
-	if (!client)
-	{
-		throw eClientNotConnected();
-	}
 	if (client->getStatus() != HANGAR)
 	{
-		throw eClientStatusError("Попытка присоединения к комнате не из ангара. ");
+		throw PlanesException(_str("Cannot join room. Player is out of hangar."));
 	}
 	//если клиент является создателем комнаты, он присоединится именно к своей комнате
 	auto room = rooms_.find(client->profile_.login);
@@ -291,13 +274,13 @@ void Server::joinRoom(size_t clientID, std::string creatorName, size_t planeNumb
 
 	if (room == rooms_.end())
 	{
-		throw eRoomError("Такой комнаты не существует. ");
+		throw PlanesException(_str("Room is not found."));
 	}
 
 	if (std::find(room->second.banlist.begin(), room->second.banlist.end(), client->profile_.login)
 		!= room->second.banlist.end())
 	{
-		throw eRoomError("Игрок забанен. ");
+		throw PlanesException(_str("Player is in a room banlist."));
 	}
 
 
@@ -309,8 +292,7 @@ void Server::joinRoom(size_t clientID, std::string creatorName, size_t planeNumb
 		client->setID(convertPosToID(pos, true));
 	}
 
-	std::cout << client->profile_.login
-		<< " подключился к комнате " << room->first << std::endl;
+	std::cout << _str("{0} connected to room {1}", client->profile().login, room->first).str() << std::endl;
 	client.reset();
 }
 
@@ -319,11 +301,11 @@ void Server::createRoom(size_t clientID, std::string description, std::string ma
 	auto & client = getClient(clientID);
 	if (client.getStatus() != HANGAR)
 	{
-		throw eClientStatusError("Попытка создания комнаты не из ангара. ");
+		throw PlanesException(_str("Cannot create room. Player is out of hangar."));
 	}
 	if (rooms_.count(client.profile().login) != 0)
 	{
-		throw rplanes::eRoomError("Перед созданием комнаты необходимо удалить старую. ");
+		throw PlanesException(_str("Player has already created a room."));
 	}
 
 	Room room(mapName);
@@ -336,7 +318,7 @@ void Server::createRoom(size_t clientID, std::string description, std::string ma
 		rooms_[client.profile().login] = room;
 	}
 
-	std::cout << client.profile().login << " создал комнату. " << std::endl;
+	std::cout << _str("{0} created a room.", client.profile().login).str() << std::endl;
 }
 
 
@@ -345,11 +327,11 @@ void Server::destroyRoom(size_t clientID)
 	auto & client = getClient(clientID);
 	if (client.getStatus() != HANGAR)
 	{
-		throw eRoomError("Необходимо находиться в ангаре, чтобы удалить комнату.");
+		throw PlanesException(_str("Cannot destroy room. Player is out of hangar."));
 	}
 	if (rooms_.erase(client.profile_.login) == 0)
 	{
-		throw eRoomError("Чтобы удалить комнату ее нужно создать.");
+		throw PlanesException(_str("Player has no room to destroy."));
 	}
 }
 
@@ -440,9 +422,9 @@ void Server::roomLoop()
 				{
 					client.sendRoomMessages();
 				}
-				catch (planesException & e)
+				catch (std::exception & e)
 				{
-					std::cout << std::string() + "при попытке передать сообщение возникла ошибка: " + e.what() << std::endl;
+					std::cout << _str("Failed sending message: {0} ", e.what()).str() << std::endl;
 					client.connection_.close();
 					deleteQueue_.join(roomClients_.clients[i]);
 				}
@@ -489,12 +471,12 @@ void Server::administerRoom(size_t clientID, rplanes::network::clientmessages::r
 	auto & client = getClient(clientID);
 	if (client.getStatus() != ROOM)
 	{
-		throw eClientStatusError("Управлять комнатой можно только находясь в ней.");
+		throw PlanesException(_str("Join room first."));
 	}
 
 	if (rooms_.count(client.profile_.login) == 0)
 	{
-		throw eRoomError("Игрок не создал комнату.");
+		throw PlanesException(_str("Player has no room to administer."));
 	}
 	auto & room = rooms_[client.profile_.login];
 
@@ -506,7 +488,7 @@ void Server::administerRoom(size_t clientID, rplanes::network::clientmessages::r
 	case rplanes::network::clientmessages::room::AdministerRoom::BAN_PLAYERS:
 		if ( client.profile_.banlist.size() > rplanes::configuration().profile.maxBanlistSize )
 		{
-			throw eRoomError("Достигнут максимальный размер черного списка. ");
+			throw PlanesException(_str("Banlist overflowed."));
 		}
 		client.profile_.banlist.insert(options.begin(), options.end());
 		room.banlist.insert(options.begin(), options.end());
@@ -521,7 +503,7 @@ void Server::administerRoom(size_t clientID, rplanes::network::clientmessages::r
 	case rplanes::network::clientmessages::room::AdministerRoom::CHANGE_MAP:
 		if (options.size() != 1)
 		{
-			throw eRoomError("Неверное количество аргументов.");
+			throw PlanesException(_str("Cannot change map. Wrong argument."));
 		}
 		room.changeMap(options[0]);
 		break;

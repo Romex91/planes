@@ -1,6 +1,5 @@
-
 #include "room.h"
-
+using namespace rplanes;
 
 void Room::iterate( float frameTime, float serverTime )
 {
@@ -98,10 +97,6 @@ std::map< rplanes::Nation, rplanes::network::servermessages::hangar::RoomList::R
 
 void Room::addPlayer( std::shared_ptr< Player > player )
 {
-	if ( !player )
-	{
-		throw rplanes::eRoomError("В комнату передан пустой указатель. ");
-	}
 	bool added = false;
 	for ( auto & group: map_.humanGroups )
 	{
@@ -114,7 +109,7 @@ void Room::addPlayer( std::shared_ptr< Player > player )
 	}
 	if ( !added )
 	{
-		throw rplanes::eRoomError("В комнате нет места. ");
+		throw PlanesException(_str("Cannot add player. Room is filled."));
 	}
 	
 	player->setID( playerIDGetter.getID() );
@@ -217,7 +212,7 @@ void Room::executeScript(const std::vector<ScriptLine> & script, std::shared_ptr
 		{
 			if ( !thisPlayer )
 			{
-				throw rplanes::eRoomError("Скрипт пытается обратиться к несуществующему this. ");
+				throw PlanesException(_str("Script error. this does not exist."));
 			}
 			retval.push_back(thisPlayer);
 			groupFound = true;
@@ -237,10 +232,7 @@ void Room::executeScript(const std::vector<ScriptLine> & script, std::shared_ptr
 		});
 		if ( !groupFound )
 		{
-			throw rplanes::eRoomError(std::string()
-				+ "Встречена неизвестная группа "
-				+ groupName
-				+ " при обработке скрипта.");
+			throw PlanesException(_str("Script error. Group {0} is not found.", groupName));
 		}
 		return retval;
 	};
@@ -254,10 +246,7 @@ void Room::executeScript(const std::vector<ScriptLine> & script, std::shared_ptr
 		{
 			if (options.size() < minSize)
 			{
-				throw rplanes::eRoomError(std::string()
-					+ "Не достаточно агрументов  "
-					+ command
-					+ ".");
+				throw PlanesException(_str("Script error. Wrong arguments {0}.", command));
 			}
 		};
 
@@ -274,9 +263,7 @@ void Room::executeScript(const std::vector<ScriptLine> & script, std::shared_ptr
 			auto left = map_.variables.find(options[0]);
 			if (left == map_.variables.end())
 			{
-				throw rplanes::eRoomError(std::string("При  выполнении скипрта не найдена переменная ")
-					+ options[0]
-					+ ".");
+				throw PlanesException(_str("Script error. Variable {0} is not found.", options[0]));
 			}
 
 			//определяем правое значение
@@ -442,7 +429,7 @@ void Room::executeScript(const std::vector<ScriptLine> & script, std::shared_ptr
 			auto players = getGroupPlayers(options[0]);
 			if ( map_.goals.count(options[1]) == 0 )
 			{
-				throw rplanes::eRoomError("Обращение к несуществующей группе " + options[1] + ".");
+				throw PlanesException(_str("{0} is not found.", options[1]));
 			}
 			for (auto & player : players)
 			{
@@ -465,7 +452,7 @@ void Room::executeScript(const std::vector<ScriptLine> & script, std::shared_ptr
 					{
 						if ( !thisPlayer )
 						{
-							throw rplanes::eRoomError("При обработке скрипта вызван несуществующий this.");
+							throw PlanesException(_str("this does not exist."));
 						}
 						s = thisPlayer->name;
 					}
@@ -529,7 +516,7 @@ void Room::executeScript(const std::vector<ScriptLine> & script, std::shared_ptr
 				}
 				else
 				{
-					rplanes::eRoomError( std::string() + "Неверная причина " + reasonString);
+					throw PlanesException(_str("Script error. Unknown argument. {0}", reasonString));
 				}
 				if ( command == "kill" )
 				{
@@ -546,10 +533,7 @@ void Room::executeScript(const std::vector<ScriptLine> & script, std::shared_ptr
 		{
 			if ( command[0] != '/' )
 			{
-				throw rplanes::eRoomError(std::string()
-					+ "В скрипте неизвестная команда "
-					+ command
-					+ ".");
+				throw PlanesException(_str("Script error. Unknown command. {0}", command));
 			}
 		}
 
@@ -590,15 +574,11 @@ void Room::spawn(std::shared_ptr<Player> player, float timeDelay)
 	});
 	if (groupsFound == 0)
 	{
-		throw rplanes::eRoomError(std::string() + "Игрок принадлежит неизвестной группе "
-			+ player->getGroupName()
-			+ ".");
+		throw PlanesException(_str("{0} is unknown group.", player->getGroupName()));
 	}
 	else if ( groupsFound > 1 )
 	{
-		throw rplanes::eRoomError(std::string() + "Существует несколько групп с именем "
-			+ player->getGroupName()
-			+ ".");
+		throw PlanesException(_str("{0} is ambiguous.", player->getGroupName()));
 	}
 }
 
@@ -609,7 +589,7 @@ void Room::handleTriggers()
 		//ищем триггер
 		if ( map_.triggers.count(script.trigger) == 0 )
 		{
-			throw rplanes::eRoomError("Триггер " + script.trigger + " не найден.");
+			throw PlanesException(_str("{0} is not found.", script.trigger));
 		}
 
 		auto & trigger = map_.triggers[script.trigger];
@@ -632,10 +612,7 @@ void Room::handleTriggers()
 		});
 		if ( !groupFound )
 		{
-			throw rplanes::eRoomError(std::string()
-				+ "Обращение к неизвестной группе "
-				+ script.group
-				+ ".");
+			throw PlanesException(_str("{0} is unknown group.", script.group));
 		}
 
 		for (auto & player : players)
@@ -703,9 +680,8 @@ void Room::regroup()
 		}
 		if (!added)
 		{
-			rplanes::network::bidirectionalmessages::TextMessage tm;
-			tm.text = "В комнате нет места. ";
-			player->messages.textMessages.push_back(tm);
+			rplanes::network::bidirectionalmessages::PlanesStringMessage tm;
+			tm.string = _str("Room is full.");
 			player->isJoined = false;
 		}
 	}
@@ -728,8 +704,8 @@ void Room::kickPlayers(std::vector< std::string > & names)
 		{
 			if (name == players_[i]->name)
 			{
-				rplanes::network::bidirectionalmessages::TextMessage tm;
-				tm.text = std::string() + "Вы забанены игроком " + creator + ".";
+				rplanes::network::bidirectionalmessages::PlanesStringMessage tm;
+				tm.string = _str("You are banned by {0}", creator);
 
 				players_[i]->messages.textMessages.push_back(tm);
 				players_[i]->destroy(rplanes::network::servermessages::room::DestroyPlanes::FIRE, 0);

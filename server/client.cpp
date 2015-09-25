@@ -1,5 +1,5 @@
 #include "client.h"
-
+using namespace rplanes;
 extern std::shared_ptr<odb::database> planesDB;
 extern std::shared_ptr<odb::database> profilesDB;
 
@@ -7,14 +7,14 @@ Client::ProfilesInfo Client::profilesInfo_;
 
 bool clientIsInRoom( size_t clientID ) /*определить статус по id */
 {
-	return clientID >= rplanes::configuration().server.maxClientsNumber;
+	return clientID >= configuration().server.maxClientsNumber;
 }
 
 size_t convertIDToPos( size_t clienID ) /*получить положение в векторе из id */
 {
 	if ( clientIsInRoom(clienID) )
 	{
-		return clienID - rplanes::configuration().server.maxClientsNumber;
+		return clienID - configuration().server.maxClientsNumber;
 	}
 	return clienID;
 }
@@ -23,7 +23,7 @@ size_t convertPosToID( size_t posInVector, bool inRoom )
 {
 	if ( inRoom )
 	{
-		return posInVector + rplanes::configuration().server.maxClientsNumber;
+		return posInVector + configuration().server.maxClientsNumber;
 	}
 	return posInVector;
 }
@@ -32,14 +32,10 @@ void Client::exitRoom()
 {
 	if ( status_ != ROOM )
 	{
-		throw rplanes::eClientStatusError( "Клиент не состоит в комнате. " );
+		throw PlanesException( _str("Client is out of any room."));
 	}
 	status_ = HANGAR;
 	
-	if ( !player_ )
-	{
-		throw rplanes::eClientStatusError( "Указатель игрока пуст. ");
-	}
 
 	//сохраняем прогресс
 	profile_.statistics[player_->getPlaneName()]+= player_->statistics;
@@ -50,8 +46,7 @@ void Client::exitRoom()
 	profile_.openedMaps.insert(player_->openedMaps.begin(), player_->openedMaps.end());
 	profile_.openedPlanes.insert(player_->openedPlanes.begin(), player_->openedPlanes.end());
 	//выводим сообщение
-	std::cout << profile_.login 
-		<< " вышел в ангар " << std::endl;
+	std::cout <<  _str("{0} leaved room.", profile_.login).str() << std::endl;
 
 	//сообщаем комнате, что клиент вышел
 	player_->isJoined = false;
@@ -59,7 +54,7 @@ void Client::exitRoom()
 	//пытаемся сообщить клиенту
 	try
 	{
-		sendMessage(rplanes::network::bidirectionalmessages::ExitRoom());
+		sendMessage(network::bidirectionalmessages::ExitRoom());
 	}
 	catch (...)
 	{}
@@ -69,27 +64,20 @@ void Client::joinRoom( Room & room, size_t planeNo)
 {
 	if ( status_ != HANGAR )
 	{
-		throw rplanes::eClientStatusError( "Для входа в комнату необходима авторизация. " );
+		throw PlanesException( _str( "Cannot join room. Client is out of hangar." ));
 	}
 	if ( planeNo >= profile_.planes.size()  )
 	{
-		throw rplanes::eProfileError("Переданы неверные параметры. ");
+		throw PlanesException(_str("Cannot join room. Wrong parameters."));
 	}
 
 	if (!profile_.planes[planeNo].isReadyForJoinRoom())
 	{
-		throw rplanes::eRoomError(" Конфигурация самолета не отвечает требованиям. Крылья, двигатели, ракеты и пушки должны быть установлены симметрично. ");
+		throw PlanesException(_str("Cannot join room. Ensure that wings engines missiles and guns are mounted symmetrically"));
 	}
 
-	rplanes::serverdata::Plane plane;
-	try
-	{
-		plane = profile_.planes[planeNo].buildPlane(profile_.pilot, planesDB);
-	}
-	catch (std::exception & e)
-	{
-		throw rplanes::eRoomError(e.what());
-	}
+	serverdata::Plane plane;
+	plane = profile_.planes[planeNo].buildPlane(profile_.pilot, planesDB);
 
 	player_ = std::shared_ptr<Player>( new Player( plane, profile_.login ) );
 	player_->openedMaps = profile_.openedMaps;
@@ -100,57 +88,50 @@ void Client::joinRoom( Room & room, size_t planeNo)
 	status_ = ROOM;
 }
 
-rplanes::playerdata::Profile & Client::profile()
+playerdata::Profile & Client::profile()
 {
 	if ( status_!=HANGAR )
 	{
-		throw rplanes::eClientStatusError("Попытка получить профиль вне ангара.");
+		throw PlanesException(_str("Cannot get profile. Client is out of hangar."));
 	}
 	return profile_;
 }
 
-rplanes::network::ClientStatus Client::getStatus()
+network::ClientStatus Client::getStatus()
 {
 	return status_;
 }
 
 void Client::logout()
 {
-	if ( status_ == UNLOGINED )
+	if ( status_ == UNLOGGED )
 	{
-		throw rplanes::eClientStatusError("Запрос выхода от неавторизованного клиента.");
+		throw PlanesException (_str("Client is not logged in."));
 	}
-	status_ = UNLOGINED;
+	status_ = UNLOGGED;
 	{
 		MutexLocker locker( profilesInfo_.Mutex );
-		if( profilesInfo_.loginedProfiles.erase(profile_.login) != 1 )
+		if( profilesInfo_.loggedInProfiles.erase(profile_.login) != 1 )
 		{
-			throw rplanes::eProfileError("Ошибка множества авторизованных пользователей.");
+			throw PlanesException(_str("Logged in profiles set does not contain {0}", profile_.login));
 		}
 	}
-	try 
-	{
-		profile_.save(profilesDB);
-	}
-	catch(odb::exception & e)
-	{
-		throw rplanes::eProfileError( std::string() + "Ошибка базы данных. " + e.what() );
-	}
-	std::cout << profile_.login<<" вышел из игры" << std::endl;
+	profile_.save(profilesDB);
+	std::cout << _str("{0} logged out.", profile_.login).str() << std::endl;
 }
 
 void Client::login( std::string name, std::string password )
 {
-	if ( status_ != UNLOGINED )
+	if ( status_ != UNLOGGED )
 	{
-		throw rplanes::eLoginFail("Попытка повторной авторизации. ");
+		throw PlanesException(_str("Client has already logged in."));
 	}
 	//заблокируем множество авторизованных пользователей
 	MutexLocker locker( profilesInfo_.Mutex );
 	//проверим занятость профиля
-	if ( profilesInfo_.loginedProfiles.count(name) > 0 )
+	if ( profilesInfo_.loggedInProfiles.count(name) > 0 )
 	{
-		throw rplanes::eLoginFail("Профиль занят. ");
+		throw PlanesException(_str("{0} is locked by other player."));
 	}
 	//попробуем загрузить профиль с таким именем
 	try
@@ -161,25 +142,18 @@ void Client::login( std::string name, std::string password )
 	}
 	catch(...)
 	{
-		throw rplanes::eLoginFail("Имя пользователя или пароль указаны неверно. ");
+		throw PlanesException(_str("Wrong name or password."));
 	}
 	//проверим пароль
 	if ( profile_.password != password )
 	{
-		throw rplanes::eLoginFail("Имя пользователя или пароль указаны неверно. ");
+		throw PlanesException(_str("Wrong name or password."));
 	}
 	//если все предыдущие операции удались, значит авторизация легальна
 	//загружаем самолеты профиля
-	try
-	{
-		profile_.loadPlanes(profilesDB);
-	}
-	catch(...)
-	{
-		throw rplanes::eLoginFail("Ошибка базы данных. ");
-	}
+	profile_.loadPlanes(profilesDB);
 	//регистрируем имя
-	profilesInfo_.loginedProfiles.insert(name);
+	profilesInfo_.loggedInProfiles.insert(name);
 	//изменяем статус
 	status_ = HANGAR;
 	//выводим сообщение
@@ -188,11 +162,11 @@ void Client::login( std::string name, std::string password )
 		<< std::endl;
 }
 
-void Client::setControllable( rplanes::serverdata::Plane::ControllableParameters controllable )
+void Client::setControllable( serverdata::Plane::ControllableParameters controllable )
 {
 	if ( status_ != ROOM  || !player_)
 	{
-		throw rplanes::eClientStatusError("Отправка данных управления не из комнаты. ");
+		throw PlanesException(_str("Cannot set controllable parameters. Client is out of room."));
 	}
 	player_->setControllable(controllable);
 }
@@ -216,14 +190,14 @@ Client::~Client()
 
 Client::Client( boost::asio::io_service& io_service , size_t clientID /*= 0 */ ) :
 	connection_(io_service),
-	disconnectTimer_( rplanes::configuration().server.unloginedDisconnectTime ),
-	status_(UNLOGINED)
+	disconnectTimer_( configuration().server.unloginedDisconnectTime ),
+	status_(UNLOGGED)
 {
 	setID(clientID);
 	MutexLocker( profilesInfo_.Mutex );
-	if ( profilesInfo_.clientsCount >= rplanes::configuration().server.maxClientsNumber )
+	if ( profilesInfo_.clientsCount >= configuration().server.maxClientsNumber )
 	{
-		throw rplanes::eClientConnectionFail("Достигнуто максимальное количество клиентов. ");
+		throw PlanesException(_str("Server is overloaded."));
 	}
 	profilesInfo_.clientsCount++;
 }
@@ -232,7 +206,7 @@ void Client::sendRoomMessages()
 {
 	if (status_ != ROOM)
 	{
-		throw rplanes::eClientStatusError("Попытка отправить комнантные данные не из комнаты. ");
+		throw PlanesException(_str("Failed sanding room messages. Client is out of room."));
 	}
 	if (player_->messages.createPlanes.Planes.size() > 0)
 		sendMessage(player_->messages.createPlanes);
@@ -275,7 +249,7 @@ void Client::prepareRoomExit()
 {
 	if (status_ != ROOM)
 	{
-		throw rplanes::eClientStatusError("Клиент пытается выйти не находясь в комнате. ");
+		throw PlanesException(_str("Cannot exit room. Client is out of room."));
 	}
 	player_->isJoined = false;
 }

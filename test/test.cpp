@@ -1,3 +1,5 @@
+#pragma execution_character_set("utf-8")
+
 #include <geometry.h>
 #include <database.h>
 #include <configuration.h>
@@ -314,7 +316,7 @@ int main5()
 
 
 // inner angle
-int main()
+int main6()
 {
 
 	sf::RenderWindow window(sf::VideoMode(300, 300), "SFML window");
@@ -470,3 +472,9 @@ int main4()
 	}
 }
 
+//resource string
+
+int main()
+{
+	system("Pause");
+}

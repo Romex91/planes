@@ -10,7 +10,7 @@
 #include "plane.h"
 #include "configuration.h"
 #include "helpers.h"
-#include "exceptions.h"
+#include "planesException.h"
 
 using std::cout;
 using std::endl;
@@ -375,7 +375,7 @@ namespace rplanes
 			std::fstream in;
 			in.open( std::string("../Resources/hitZones/") + name + ".txt", std::ios_base::in );
 			if ( !in.is_open() )
-				throw( planesException( "Не удалось загрузить зоны повреждения: файл ../Resources/hitZones/" + name + " не найден. " ) );
+				throw PlanesException( _str( "Failed loading hitzones. File ../Resources/hitZones/{0} is not found.", name ));
 			std::stringstream ss;
 			std::string moduleName, empty, line;
 			HitZone hitZone;
@@ -451,7 +451,7 @@ namespace rplanes
 				}
 				else
 				{
-					throw( planesException( "Не удалось загрузить зоны повреждения: ошибка формата зон повреждения. " ) );
+					throw PlanesException(_str("Wrong hitzones format. {0}", name));
 				}
 				std::getline(in, moduleName);
 			}

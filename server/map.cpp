@@ -12,7 +12,7 @@ void Map::load(std::string filename)
 	fs.open(std::string("../Resources/maps/") + filename, std::ios_base::in);
 	if (!fs)
 	{
-		throw eRoomError("Файл с указанной комнатой не найден. ");
+		throw PlanesException(_str("{0} is not found", filename));
 	}
 
 	humanGroups.clear();
@@ -38,11 +38,11 @@ void Map::load(std::string filename)
 		}
 		auto & options = scriptLine.options;
 
-		auto checkOptionsSize = [&options, &command]( size_t size )
+		auto checkOptionsSize = [&options, &command](size_t size)
 		{
-			if ( options.size() < size )
+			if (options.size() < size)
 			{
-				throw eRoomError("Ошибка загрузки комнаты. Команде " + command + " не достаточно аргументов. ");
+				throw PlanesException(_str("Script error. Wrong arguments count. {0}", command ));
 			}
 		};
 
@@ -56,7 +56,7 @@ void Map::load(std::string filename)
 		{
 			checkOptionsSize(4);
 
-			spawnPoints[options[0]].reset( 
+			spawnPoints[options[0]].reset(
 				new SpawnPoint(
 				atof(options[1].c_str()),
 				atof(options[2].c_str()),
@@ -78,15 +78,11 @@ void Map::load(std::string filename)
 				nation = ALLIES;
 			}
 
-			auto spawnPoint = spawnPoints.find( options[2] );
+			auto spawnPoint = spawnPoints.find(options[2]);
 
-			if ( spawnPoint == spawnPoints.end() )
+			if (spawnPoint == spawnPoints.end())
 			{
-				throw eRoomError( std::string() 
-					+ "Не найден спаунер " 
-					+ options[2]
-					+ " во время загрузки сценария."
-					);
+				throw PlanesException(_str("Script error. {0} is not found", options[2]));
 			}
 
 			HumanGroup newGroup(
@@ -102,11 +98,11 @@ void Map::load(std::string filename)
 
 			Bot::Type botType;
 
-			if ( options[1] == "peacefull" )
+			if (options[1] == "peacefull")
 			{
 				botType = Bot::PEACEFULL;
 			}
-			else if ( options[1] == "easy" )
+			else if (options[1] == "easy")
 			{
 				botType = Bot::EASY;
 			}
@@ -118,12 +114,9 @@ void Map::load(std::string filename)
 			auto spawnPoint = spawnPoints.find(options[3]);
 			if (spawnPoint == spawnPoints.end())
 			{
-				throw eRoomError(std::string()
-					+ "Не найден спаунер "
-					+ options[3]
-					+ " во время загрузки сценария.");
+				throw PlanesException(_str("Script error. {0} is not found", options[3]));
 			}
-			BotGroup newGroup(options[0], spawnPoint->second, atoi(options[4].c_str()  ), options[2], botType );
+			BotGroup newGroup(options[0], spawnPoint->second, atoi(options[4].c_str()), options[2], botType);
 			botGroups.push_back(newGroup);
 		}
 		else if (command == "var")
@@ -154,7 +147,7 @@ void Map::load(std::string filename)
 				}
 				newScript.push_back(scriptSubLine);
 			}
-			startScripts.push_back( newScript );
+			startScripts.push_back(newScript);
 		}
 		else if (command == "join")
 		{
@@ -204,7 +197,7 @@ void Map::load(std::string filename)
 			checkOptionsSize(1);
 
 
-			TimerScript newScript( atof( options[0].c_str() ) );
+			TimerScript newScript(atof(options[0].c_str()));
 			std::string subline;
 			while (std::getline(fs, subline))
 			{
@@ -262,7 +255,7 @@ SpawnPoint::SpawnPoint(float x, float y, float angle) : x_(x), y_(y), angle_(ang
 
 void SpawnPoint::decrementSpawnTimer(float frameTime)
 {
-	if ( coolDown >= 0 )
+	if (coolDown >= 0)
 	{
 		coolDown -= frameTime;
 	}
@@ -283,7 +276,7 @@ void SpawnPoint::spawn(std::shared_ptr<Player> player, float timeDelay)
 {
 	if (!player)
 	{
-		throw rplanes::eRoomError("Спаунеру передан пустой указатель.");
+		throw PlanesException(_str("Empty pointer in SpawnPoint::spawn."));
 	}
 	spawnQueue.push_back(SpawnPair(player, timeDelay));
 }
@@ -324,38 +317,145 @@ void Map::TimerScript::restart()
 
 BotGroup::BotGroup(std::string name, std::shared_ptr<SpawnPoint> spawnPoint, size_t nBots, std::string planeName, Bot::Type botType) : PlayerGroup(name, spawnPoint, rplanes::AXIS)
 {
-	try
+	rplanes::playerdata::Profile profile;
+	profile.money = std::numeric_limits<int>::max();
+	if (botType == Bot::HARD)
 	{
-		rplanes::playerdata::Profile profile;
-		profile.money = std::numeric_limits<int>::max();
-		if (botType == Bot::HARD)
-		{
-			auto exp = rplanes::configuration().bots.hardStartExpiriance;
-			profile.pilot.addExp(exp);
-			profile.pilot.up_endurance(exp / 4);
-			profile.pilot.up_engine(exp / 4);
-			profile.pilot.up_flight(exp / 4);
-			profile.pilot.up_shooting(exp / 4);
-		}
-		profile.openedPlanes.insert(planeName);
-		std::string errorMessage = profile.buyPlane(planeName, planesDB);
-		if (profile.planes.size() == 0)
-		{
-			throw rplanes::planesException(errorMessage);
-		}
-
-		auto plane = profile.planes.front().buildPlane(profile.pilot, planesDB);
-
-		nation_ = plane.nation;
-		for (size_t i = 0; i != nBots; i++)
-		{
-			bots_.push_back(Bot(std::shared_ptr<Player>(new Player(plane, "bot")), botType));
-			bots_.back().getPlayer()->groupName_ = name_;
-		}
-		initialized = false;
+		auto exp = rplanes::configuration().bots.hardStartExpiriance;
+		profile.pilot.addExp(exp);
+		profile.pilot.up_endurance(exp / 4);
+		profile.pilot.up_engine(exp / 4);
+		profile.pilot.up_flight(exp / 4);
+		profile.pilot.up_shooting(exp / 4);
 	}
-	catch (std::exception & e)
+	profile.openedPlanes.insert(planeName);
+	PlanesString errorMessage = profile.buyPlane(planeName, planesDB);
+	if (profile.planes.size() == 0)
 	{
-		throw rplanes::eRoomError(e.what());
+		throw PlanesException(errorMessage);
 	}
+
+	auto plane = profile.planes.front().buildPlane(profile.pilot, planesDB);
+
+	nation_ = plane.nation;
+	for (size_t i = 0; i != nBots; i++)
+	{
+		bots_.push_back(Bot(std::shared_ptr<Player>(new Player(plane, "bot")), botType));
+		bots_.back().getPlayer()->groupName_ = name_;
+	}
+	initialized = false;
+}
+
+void BotGroup::control(float frameTime, BotTargetsStorage & bts)
+{
+	for (auto & bot : bots_)
+	{
+		bot.control(frameTime, bts);
+		bot.getPlayer()->clearTemporaryData();
+	}
+}
+
+void BotGroup::initialize(IdGetter & idGetter)
+{
+	for (auto & bot : bots_)
+	{
+		size_t id = idGetter.getID();
+		bot.getPlayer()->setID(id);
+		std::stringstream ss;
+		ss << "bot" << id;
+		bot.getPlayer()->name = ss.str();
+	}
+	initialized = true;
+}
+
+std::vector< std::shared_ptr<Player> > BotGroup::getPlayers()
+{
+	if (initialized == false)
+	{
+		throw PlanesException(_str("Bot group should be initialized first."));
+	}
+	std::vector< std::shared_ptr<Player> > retval;
+	for (auto & bot : bots_)
+	{
+		retval.push_back(bot.getPlayer());
+	}
+	return retval;
+}
+
+size_t BotGroup::getAlivePlayerNumber()
+{
+	if (initialized == false)
+	{
+		throw PlanesException(_str("Bot group should be initialized first."));
+	}
+	size_t retval = 0;
+	for (auto & bot : bots_)
+	{
+		if (!bot.getPlayer()->isDestroyed())
+		{
+			retval++;
+		}
+	}
+	return retval;
+}
+
+void HumanGroup::deleteEmptyPlayers()
+{
+	for (size_t i = 0; i < players_.size(); i++)
+	{
+		if (!players_[i].lock())
+		{
+			players_.erase(players_.begin() + i);
+			i--;
+		}
+	}
+}
+
+HumanGroup::HumanGroup(std::string name, std::shared_ptr<SpawnPoint> spawnPoint, rplanes::Nation nation, size_t maxPlayerNumber) :
+PlayerGroup(name, spawnPoint, nation),
+maxPlayerNumber_(maxPlayerNumber)
+{
+
+}
+
+void HumanGroup::addPlayer(std::shared_ptr<Player> player)
+{
+	player->groupName_ = name_;
+	players_.push_back(player);
+}
+
+std::vector< std::shared_ptr<Player> > HumanGroup::getPlayers()
+{
+	std::vector< std::shared_ptr<Player> > retval;
+	deleteEmptyPlayers();
+	for (auto & player : players_)
+	{
+		retval.push_back(player.lock());
+	}
+	return retval;
+}
+
+std::pair<size_t, size_t> HumanGroup::getPlayerNumber()
+{
+	deleteEmptyPlayers();
+	return std::pair< size_t, size_t >(players_.size(), maxPlayerNumber_);
+}
+
+size_t HumanGroup::getAlivePlayerNumber()
+{
+	size_t retval = 0;
+	deleteEmptyPlayers();
+	for (auto &player : players_)
+	{
+		if (!player.lock()->isDestroyed())
+		{
+			retval++;
+		}
+	}
+	return retval;
+}
+
+void HumanGroup::clear()
+{
+	players_.clear();
 }

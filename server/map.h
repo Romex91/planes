@@ -3,6 +3,7 @@
 #include "player.h"
 #include "bot.h"
 
+
 class ScriptLine
 {
 public:
@@ -39,10 +40,6 @@ class PlayerGroup
 public:
 	SpawnPoint & spawnPoint()
 	{
-		if (!spawnPoint_)
-		{
-			throw rplanes::eRoomError(" Указатель на спаунер группы пуст. ");
-		}
 		return *spawnPoint_;
 	}
 
@@ -76,70 +73,21 @@ class HumanGroup : public PlayerGroup
 {
 public:
 
-	void clear()
-	{
-		players_.clear();
-	}
+	void clear();
 
-	size_t getAlivePlayerNumber()
-	{
-		size_t retval = 0;
-		deleteEmptyPlayers();
-		for (auto &player : players_)
-		{
-			if (!player.lock()->isDestroyed())
-			{
-				retval++;
-			}
-		}
-		return retval;
-	}
+	size_t getAlivePlayerNumber();
 
-	std::pair<size_t, size_t> getPlayerNumber()
-	{
-		deleteEmptyPlayers();
-		return std::pair< size_t, size_t >(players_.size(), maxPlayerNumber_);
-	}
+	std::pair<size_t, size_t> getPlayerNumber();
 
-	std::vector< std::shared_ptr<Player> > getPlayers()
-	{
-		std::vector< std::shared_ptr<Player> > retval;
-		deleteEmptyPlayers();
-		for (auto & player : players_)
-		{
-			retval.push_back(player.lock());
-		}
-		return retval;
-	}
+	std::vector< std::shared_ptr<Player> > getPlayers();
 
-	void addPlayer(std::shared_ptr<Player> player)
-	{
-		if (!player)
-		{
-			throw rplanes::eRoomError("В группу передан пустой указатель. ");
-		}
-		players_.push_back(player);
-		player->groupName_ = name_;
-	}
+	void addPlayer(std::shared_ptr<Player> player);
 
-	HumanGroup(std::string name, std::shared_ptr<SpawnPoint> spawnPoint, rplanes::Nation nation, size_t maxPlayerNumber) :
-		PlayerGroup(name, spawnPoint, nation),
-		maxPlayerNumber_(maxPlayerNumber)
-	{}
+	HumanGroup(std::string name, std::shared_ptr<SpawnPoint> spawnPoint, rplanes::Nation nation, size_t maxPlayerNumber);
 
 private:
 
-	void deleteEmptyPlayers()
-	{
-		for (size_t i = 0; i < players_.size(); i++)
-		{
-			if (!players_[i].lock())
-			{
-				players_.erase(players_.begin() + i);
-				i--;
-			}
-		}
-	}
+	void deleteEmptyPlayers();
 	std::vector< std::weak_ptr<Player> > players_;
 	size_t			maxPlayerNumber_;
 
@@ -154,57 +102,12 @@ public:
 	std::string planeName,
 	Bot::Type botType);
 
-	virtual size_t getAlivePlayerNumber()
-	{
-		if ( initialized == false )
-		{
-			throw rplanes::eRoomError("Необходима инициализация группы ботов.");
-		}
-		size_t retval = 0;
-		for ( auto & bot : bots_ )
-		{
-			if (!bot.getPlayer()->isDestroyed())
-			{
-				retval++;
-			}
-		}
-		return retval;
-	};
+	virtual size_t getAlivePlayerNumber();;
 
-	virtual std::vector< std::shared_ptr<Player> > getPlayers()
-	{
-		if (initialized == false)
-		{
-			throw rplanes::eRoomError("Необходима инициализация группы ботов.");
-		}
-		std::vector< std::shared_ptr<Player> > retval;
-		for (auto & bot : bots_)
-		{
-			retval.push_back(bot.getPlayer());
-		}
-		return retval;
-	}
-	void initialize( IdGetter & idGetter )
-	{
-		for ( auto & bot: bots_ )
-		{
-			size_t id = idGetter.getID();
-			bot.getPlayer()->setID(id);
-			std::stringstream ss;
-			ss << "bot" << id;
-			bot.getPlayer()->name = ss.str();
-		}
-		initialized = true;
-	}
+	virtual std::vector< std::shared_ptr<Player> > getPlayers();
+	void initialize( IdGetter & idGetter );
 
-	void control(float frameTime, BotTargetsStorage & bts)
-	{
-		for ( auto & bot : bots_ )
-		{
-			bot.control( frameTime, bts );
-			bot.getPlayer()->clearTemporaryData();
-		}
-	}
+	void control(float frameTime, BotTargetsStorage & bts);
 private:
 	bool initialized;
 	std::vector< Bot > bots_;

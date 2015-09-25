@@ -1,4 +1,5 @@
 #pragma once
+#pragma execution_character_set("utf-8")
 #include <boost/asio.hpp>
 #include <boost/archive/text_iarchive.hpp>
 #include <boost/archive/text_oarchive.hpp>
@@ -8,15 +9,20 @@
 #include <boost/archive/binary_iarchive.hpp>
 #include <boost/archive/xml_iarchive.hpp>
 #include <boost/archive/xml_oarchive.hpp>
+#include <boost/filesystem.hpp>
+#include <boost/container/flat_map.hpp>
+#include <boost/algorithm/string.hpp>
 
 #include <string>
 #include <vector>
 #include <math.h>
 #include <memory>
 #include <map>
+#include <unordered_map>
 #include <set>
 #include <iostream>
 #include <fstream>
+#include <algorithm>
 
 #include <odb/core.hxx>
 #include <odb/database.hxx>
@@ -25,3 +31,6 @@
 #include <odb/schema-catalog.hxx>
 #include <sstream>
 #include <odb/core.hxx>
+
+#include "planesException.h"
+#include "planesString.h"

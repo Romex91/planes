@@ -42,10 +42,10 @@ namespace rplanes
 					{
 						server.administerRoom(clientID, operation, options);
 					}
-					catch (eRoomError & e)
+					catch (PlanesException & e)
 					{
-						network::bidirectionalmessages::TextMessage mess;
-						mess.text = e.what();
+						network::bidirectionalmessages::PlanesStringMessage mess;
+						mess.string = e.getString();
 						auto & Client = server.getClient(clientID);
 						Client.sendMessage(mess);
 					}
@@ -75,8 +75,8 @@ namespace rplanes
 					}
 					catch (...)
 					{
-						network::bidirectionalmessages::TextMessage txt;
-						txt.text = playerName + " не найден в базе данных.";
+						network::bidirectionalmessages::PlanesStringMessage txt;
+						txt.string = _str("Profile {0} is not found in database.", playerName);
 						Client.sendMessage(txt);
 						return;
 					}
@@ -86,16 +86,16 @@ namespace rplanes
 				void SellModuleRequest::handle()
 				{
 					auto & Client = server.getClient(clientID);
-					network::bidirectionalmessages::TextMessage mess;
-					mess.text = Client.profile().sellModule(moduleName, nModulesToSell, planesDB);
+					network::bidirectionalmessages::PlanesStringMessage mess;
+					mess.string = Client.profile().sellModule(moduleName, nModulesToSell, planesDB);
 					Client.sendMessage(mess);
 				}
 
 				void SellPlaneRequest::handle()
 				{
 					auto & Client = server.getClient(clientID);
-					network::bidirectionalmessages::TextMessage mess;
-					mess.text = Client.profile().sellPlane(planeName, planesDB);
+					network::bidirectionalmessages::PlanesStringMessage mess;
+					mess.string = Client.profile().sellPlane(planeName, planesDB);
 					Client.sendMessage(mess);
 				}
 
@@ -104,14 +104,14 @@ namespace rplanes
 					auto & Client = server.getClient(clientID);
 					if(setToAllSlots)
 					{
-						network::bidirectionalmessages::TextMessage mess;
-						mess.text = Client.profile().buyModules(planeName, moduleName,planesDB);
+						network::bidirectionalmessages::PlanesStringMessage mess;
+						mess.string = Client.profile().buyModules(planeName, moduleName,planesDB);
 						Client.sendMessage(mess);						
 					}
 					else
 					{
-						network::bidirectionalmessages::TextMessage mess;
-						mess.text = Client.profile().buyModule(planeName, moduleNo, moduleName,planesDB);
+						network::bidirectionalmessages::PlanesStringMessage mess;
+						mess.string = Client.profile().buyModule(planeName, moduleNo, moduleName,planesDB);
 						Client.sendMessage(mess);
 					}
 				}
@@ -119,8 +119,8 @@ namespace rplanes
 				void BuyPlaneRequest::handle()
 				{
 					auto & Client = server.getClient(clientID);
-					network::bidirectionalmessages::TextMessage mess;
-					mess.text = Client.profile().buyPlane(planeName,planesDB);
+					network::bidirectionalmessages::PlanesStringMessage mess;
+					mess.string = Client.profile().buyPlane(planeName,planesDB);
 					Client.sendMessage(mess);
 				};
 
@@ -151,10 +151,10 @@ namespace rplanes
 					{
 						server.joinRoom(clientID, playerName, planeNo);
 					}
-					catch(eRoomError & e)
+					catch(PlanesException & e)
 					{
-						network::bidirectionalmessages::TextMessage mess;
-						mess.text = e.what();
+						network::bidirectionalmessages::PlanesStringMessage mess;
+						mess.string = e.getString();
 						auto & Client = server.getClient(clientID);
 						Client.sendMessage(mess);
 					}
@@ -166,10 +166,10 @@ namespace rplanes
 					{
 						server.createRoom(clientID, description, mapName);
 					}
-					catch (eRoomError & e)
+					catch (PlanesException & e)
 					{
-						network::bidirectionalmessages::TextMessage mess;
-						mess.text = e.what();
+						network::bidirectionalmessages::PlanesStringMessage mess;
+						mess.string = e.getString();
 						auto & Client = server.getClient(clientID);
 						Client.sendMessage(mess);
 					}
@@ -181,10 +181,10 @@ namespace rplanes
 					{
 						server.destroyRoom(clientID);
 					}
-					catch (eRoomError & e)
+					catch (PlanesException & e)
 					{
-						network::bidirectionalmessages::TextMessage mess;
-						mess.text = e.what();
+						network::bidirectionalmessages::PlanesStringMessage mess;
+						mess.string = e.getString();
 						auto & Client = server.getClient(clientID);
 						Client.sendMessage(mess);
 					}
@@ -216,11 +216,10 @@ namespace rplanes
 						confMessage.conf = configuration();
 						Client.sendMessage(confMessage);
 					}
-					catch( eLoginFail & e )
+					catch( PlanesException & e )
 					{
-						network::bidirectionalmessages::TextMessage mess;
-						mess.text = e.what();
-
+						network::bidirectionalmessages::PlanesStringMessage mess;
+						mess.string = e.getString();
 						Client.sendMessage(mess);
 						throw e;
 					}
@@ -229,25 +228,13 @@ namespace rplanes
 				void Registry::handle()
 				{
 					auto & Client = server.getClient(clientID);
-					if ( Client.getStatus() != UNLOGINED )
-					{
-						throw eClientStatusError("Попытка создания нового профиля из ангара или комнаты.");
-					}
-					try
-					{
-						playerdata::Profile Profile;
-						Profile.login = name;
-						Profile.password = password;
-						odb::transaction t(profilesDB->begin());
-						profilesDB->persist(Profile);
-						t.commit();
-					}
-					catch(...)
-					{
-						throw eLoginFail("Не удалось создать профиль. ");
-					}
+					playerdata::Profile Profile;
+					Profile.login = name;
+					Profile.password = password;
+					odb::transaction t(profilesDB->begin());
+					profilesDB->persist(Profile);
+					t.commit();
 				}
-
 			}
 		}
 

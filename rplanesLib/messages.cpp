@@ -600,3 +600,9 @@ rplanes::network::servermessages::hangar::RoomList::RoomInfo::SlotInfo::SlotInfo
 {
 
 }
+
+template <typename Archive>
+void rplanes::network::bidirectionalmessages::PlanesStringMessage::serialize(Archive& ar, const unsigned int version)
+{
+	ar & string;
+}

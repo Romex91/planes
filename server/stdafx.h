@@ -1,3 +1,5 @@
+#pragma once
+#pragma execution_character_set("utf-8")
 #define  _USE_MATH_DEFINES
 #include <math.h>
 #include <boost/random.hpp>
@@ -17,7 +19,8 @@
 #include <parallel.h>
 #include <profile.h>
 #include <configuration.h>
-#include <exceptions.h>
+#include <planesException.h>
+#include <planesString.h>
 #include <database.h>
 #include <plane.h>
 

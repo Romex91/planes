@@ -320,7 +320,7 @@ namespace rplanes
 
 #undef  MESSAGE_HANDLER
 #ifdef PLANES_SERVER
-#define MESSAGE_HANDLER void handle(){ std::cout << "Получено недопустимое сообщение"<<std::endl; };
+#define MESSAGE_HANDLER void handle(){ std::cout << _str("Unexpected message").str()<<std::endl; };
 #else
 #define MESSAGE_HANDLER void handle();
 #endif 
@@ -332,7 +332,7 @@ namespace rplanes
 		enum  ClientStatus
 		{
 			//клиент не авторизован. Будет отключен если не авторизуется
-			UNLOGINED,
+			UNLOGGED,
 			//клиент авторизован.
 			HANGAR,
 			//клиент в комнате.
@@ -862,6 +862,17 @@ namespace rplanes
 				MESSAGE_BODY(ExitRoom, 35);
 			};
 			MESSAGE_REG(ExitRoom);
+
+			class PlanesStringMessage : public Message
+			{
+				template <typename Archive>
+				void serialize(Archive& ar, const unsigned int version);
+			public:
+				PlanesString string;
+				MESSAGE_BODY(PlanesStringMessage, 36);
+			};
+			MESSAGE_REG(PlanesStringMessage);
+
 		}
 	}
 }

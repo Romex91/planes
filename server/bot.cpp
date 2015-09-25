@@ -27,6 +27,22 @@ Bot::Bot(std::shared_ptr<Player> player, Bot::Type type)
 
 }
 
+std::shared_ptr< Player > Bot::getPlayer()
+{
+	return player_;
+}
+
+void Bot::control(float frameTime, BotTargetsStorage & botTargetsStorage)
+{
+	condition_->control(*player_, frameTime, botTargetsStorage);
+	auto newCondition = condition_->handleConditionList(*player_);
+	if (newCondition)
+	{
+		condition_ = newCondition;
+		condition_->initializeConditionList();
+	}
+}
+
 std::shared_ptr<BotCondition> BotCondition::handleConditionList(Player & player)
 {
 	for (auto & condition : conditionList_)
@@ -493,3 +509,58 @@ void botconditions::Peacefull::initializeConditionList()
 	conditionList_.clear();
 }
 
+
+void BotTargetsStorage::clear()
+{
+	targets.clear();
+	nAttackersMap.clear();
+}
+
+size_t BotTargetsStorage::getTarget(size_t botId)
+{
+	auto i = targets.find(botId);
+	if (i != targets.end())
+	{
+		return i->second;
+	}
+	return botId;
+}
+
+size_t BotTargetsStorage::countAttackers(size_t botId)
+{
+	auto i = nAttackersMap.find(botId);
+	if (i != nAttackersMap.end())
+	{
+		return i->second;
+	}
+	return 0;
+}
+
+void BotTargetsStorage::deselect(size_t botId)
+{
+	selectTarget(botId, botId);
+}
+
+void BotTargetsStorage::selectTarget(size_t botId, size_t targetId)
+{
+	size_t comparableValue;
+	auto compare = [&comparableValue](const std::pair<size_t, size_t> & i)->bool
+	{
+		return i.second == comparableValue && i.second != i.first;
+	};
+
+
+	//если бот имел цель, пересчитываем количество игроков, целящихся в нее
+	if (targets.count(botId) != 0)
+	{
+		comparableValue = targets[botId];
+		nAttackersMap[targets[botId]] = count_if(targets.begin(), targets.end(), compare);
+	}
+
+	//присваиваем новую цель
+	targets[botId] = targetId;
+
+	//пересчитываем количество игроков, целящихся в новую цель
+	comparableValue = targetId;
+	nAttackersMap[targetId] = count_if(targets.begin(), targets.end(), compare);
+}

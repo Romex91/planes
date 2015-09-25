@@ -51,7 +51,7 @@ private:
 
 	struct ProfilesInfo
 	{
-		std::set<std::string> loginedProfiles;
+		std::set<std::string> loggedInProfiles;
 		Mutex Mutex;
 		size_t clientsCount;
 		ProfilesInfo()
