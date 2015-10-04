@@ -1,5 +1,4 @@
 #pragma once
-#pragma execution_character_set("utf-8")
 #define _USE_MATH_DEFINES
 #include < math.h >
 #define PLANES_CLIENT
@@ -14,3 +13,4 @@
 #include <SFML/System.hpp>
 #include <SFML/window.hpp>
 #include <SFML/Graphics.hpp>	
+#include <rstring.h>

@@ -59,9 +59,6 @@
     <ClCompile Include="stdafx.cpp">
       <Filter>Source Files</Filter>
     </ClCompile>
-    <ClCompile Include="planesString.cpp">
-      <Filter>Source Files</Filter>
-    </ClCompile>
     <ClCompile Include="planesException.cpp">
       <Filter>Source Files</Filter>
     </ClCompile>
@@ -113,9 +110,6 @@
       <Filter>Header Files</Filter>
     </ClInclude>
     <ClInclude Include="configuration.h">
-      <Filter>Header Files</Filter>
-    </ClInclude>
-    <ClInclude Include="planesString.h">
       <Filter>Header Files</Filter>
     </ClInclude>
     <ClInclude Include="planesException.h">

@@ -12,7 +12,7 @@ void Map::load(std::string filename)
 	fs.open(std::string("../Resources/maps/") + filename, std::ios_base::in);
 	if (!fs)
 	{
-		throw PlanesException(_str("{0} is not found", filename));
+		throw PlanesException(_rstrw("{0} is not found", filename));
 	}
 
 	humanGroups.clear();
@@ -42,7 +42,7 @@ void Map::load(std::string filename)
 		{
 			if (options.size() < size)
 			{
-				throw PlanesException(_str("Script error. Wrong arguments count. {0}", command ));
+				throw PlanesException(_rstrw("Script error. Wrong arguments count. {0}", command ));
 			}
 		};
 
@@ -82,7 +82,7 @@ void Map::load(std::string filename)
 
 			if (spawnPoint == spawnPoints.end())
 			{
-				throw PlanesException(_str("Script error. {0} is not found", options[2]));
+				throw PlanesException(_rstrw("Script error. {0} is not found", options[2]));
 			}
 
 			HumanGroup newGroup(
@@ -114,7 +114,7 @@ void Map::load(std::string filename)
 			auto spawnPoint = spawnPoints.find(options[3]);
 			if (spawnPoint == spawnPoints.end())
 			{
-				throw PlanesException(_str("Script error. {0} is not found", options[3]));
+				throw PlanesException(_rstrw("Script error. {0} is not found", options[3]));
 			}
 			BotGroup newGroup(options[0], spawnPoint->second, atoi(options[4].c_str()), options[2], botType);
 			botGroups.push_back(newGroup);
@@ -276,7 +276,7 @@ void SpawnPoint::spawn(std::shared_ptr<Player> player, float timeDelay)
 {
 	if (!player)
 	{
-		throw PlanesException(_str("Empty pointer in SpawnPoint::spawn."));
+		throw PlanesException(_rstrw("Empty pointer in SpawnPoint::spawn."));
 	}
 	spawnQueue.push_back(SpawnPair(player, timeDelay));
 }
@@ -329,7 +329,7 @@ BotGroup::BotGroup(std::string name, std::shared_ptr<SpawnPoint> spawnPoint, siz
 		profile.pilot.up_shooting(exp / 4);
 	}
 	profile.openedPlanes.insert(planeName);
-	PlanesString errorMessage = profile.buyPlane(planeName, planesDB);
+	rstring::_rstrw_t errorMessage = profile.buyPlane(planeName, planesDB);
 	if (profile.planes.size() == 0)
 	{
 		throw PlanesException(errorMessage);
@@ -372,7 +372,7 @@ std::vector< std::shared_ptr<Player> > BotGroup::getPlayers()
 {
 	if (initialized == false)
 	{
-		throw PlanesException(_str("Bot group should be initialized first."));
+		throw PlanesException(_rstrw("Bot group should be initialized first."));
 	}
 	std::vector< std::shared_ptr<Player> > retval;
 	for (auto & bot : bots_)
@@ -386,7 +386,7 @@ size_t BotGroup::getAlivePlayerNumber()
 {
 	if (initialized == false)
 	{
-		throw PlanesException(_str("Bot group should be initialized first."));
+		throw PlanesException(_rstrw("Bot group should be initialized first."));
 	}
 	size_t retval = 0;
 	for (auto & bot : bots_)

@@ -44,7 +44,7 @@ namespace rplanes
 					}
 					catch (PlanesException & e)
 					{
-						network::bidirectionalmessages::PlanesStringMessage mess;
+						network::bidirectionalmessages::ResourceStringMessage mess;
 						mess.string = e.getString();
 						auto & Client = server.getClient(clientID);
 						Client.sendMessage(mess);
@@ -75,8 +75,8 @@ namespace rplanes
 					}
 					catch (...)
 					{
-						network::bidirectionalmessages::PlanesStringMessage txt;
-						txt.string = _str("Profile {0} is not found in database.", playerName);
+						network::bidirectionalmessages::ResourceStringMessage txt;
+						txt.string = _rstrw("Profile {0} is not found in database.", playerName);
 						Client.sendMessage(txt);
 						return;
 					}
@@ -86,7 +86,7 @@ namespace rplanes
 				void SellModuleRequest::handle()
 				{
 					auto & Client = server.getClient(clientID);
-					network::bidirectionalmessages::PlanesStringMessage mess;
+					network::bidirectionalmessages::ResourceStringMessage mess;
 					mess.string = Client.profile().sellModule(moduleName, nModulesToSell, planesDB);
 					Client.sendMessage(mess);
 				}
@@ -94,7 +94,7 @@ namespace rplanes
 				void SellPlaneRequest::handle()
 				{
 					auto & Client = server.getClient(clientID);
-					network::bidirectionalmessages::PlanesStringMessage mess;
+					network::bidirectionalmessages::ResourceStringMessage mess;
 					mess.string = Client.profile().sellPlane(planeName, planesDB);
 					Client.sendMessage(mess);
 				}
@@ -104,13 +104,13 @@ namespace rplanes
 					auto & Client = server.getClient(clientID);
 					if(setToAllSlots)
 					{
-						network::bidirectionalmessages::PlanesStringMessage mess;
+						network::bidirectionalmessages::ResourceStringMessage mess;
 						mess.string = Client.profile().buyModules(planeName, moduleName,planesDB);
 						Client.sendMessage(mess);						
 					}
 					else
 					{
-						network::bidirectionalmessages::PlanesStringMessage mess;
+						network::bidirectionalmessages::ResourceStringMessage mess;
 						mess.string = Client.profile().buyModule(planeName, moduleNo, moduleName,planesDB);
 						Client.sendMessage(mess);
 					}
@@ -119,7 +119,7 @@ namespace rplanes
 				void BuyPlaneRequest::handle()
 				{
 					auto & Client = server.getClient(clientID);
-					network::bidirectionalmessages::PlanesStringMessage mess;
+					network::bidirectionalmessages::ResourceStringMessage mess;
 					mess.string = Client.profile().buyPlane(planeName,planesDB);
 					Client.sendMessage(mess);
 				};
@@ -153,7 +153,7 @@ namespace rplanes
 					}
 					catch(PlanesException & e)
 					{
-						network::bidirectionalmessages::PlanesStringMessage mess;
+						network::bidirectionalmessages::ResourceStringMessage mess;
 						mess.string = e.getString();
 						auto & Client = server.getClient(clientID);
 						Client.sendMessage(mess);
@@ -168,7 +168,7 @@ namespace rplanes
 					}
 					catch (PlanesException & e)
 					{
-						network::bidirectionalmessages::PlanesStringMessage mess;
+						network::bidirectionalmessages::ResourceStringMessage mess;
 						mess.string = e.getString();
 						auto & Client = server.getClient(clientID);
 						Client.sendMessage(mess);
@@ -183,7 +183,7 @@ namespace rplanes
 					}
 					catch (PlanesException & e)
 					{
-						network::bidirectionalmessages::PlanesStringMessage mess;
+						network::bidirectionalmessages::ResourceStringMessage mess;
 						mess.string = e.getString();
 						auto & Client = server.getClient(clientID);
 						Client.sendMessage(mess);
@@ -218,7 +218,7 @@ namespace rplanes
 					}
 					catch( PlanesException & e )
 					{
-						network::bidirectionalmessages::PlanesStringMessage mess;
+						network::bidirectionalmessages::ResourceStringMessage mess;
 						mess.string = e.getString();
 						Client.sendMessage(mess);
 						throw e;
@@ -244,6 +244,11 @@ namespace rplanes
 			void TextMessage::handle()
 			{
 				std::cout << "Клиент " << clientID << " пишет: " << text << std::endl; 
+			}
+
+			void ResourceStringMessage::handle()
+			{
+				std::wcout << _rstrw(":client{0}: {1}", clientID, string).str() << std::endl;
 			}
 
 			void ExitRoom::handle()

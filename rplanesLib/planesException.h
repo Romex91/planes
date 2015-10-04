@@ -1,17 +1,16 @@
 #pragma once
-#include "planesString.h"
-
+#include "stdafx.h"
 namespace rplanes
 {
 	class PlanesException : public std::exception
 	{
 	public:
-		PlanesException(const PlanesString & string);
+		PlanesException(const rstring::_rstrw_t & string);
 		virtual ~PlanesException() throw();
 		virtual const char * what() const throw() override;
-		const PlanesString & getString();
+		const rstring::_rstrw_t & getString();
 	private:
-		const PlanesString & string_;
+		const rstring::_rstrw_t & _string;
 	};
 
 }

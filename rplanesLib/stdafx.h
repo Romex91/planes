@@ -1,5 +1,4 @@
 #pragma once
-#pragma execution_character_set("utf-8")
 #include <boost/asio.hpp>
 #include <boost/archive/text_iarchive.hpp>
 #include <boost/archive/text_oarchive.hpp>
@@ -32,5 +31,6 @@
 #include <sstream>
 #include <odb/core.hxx>
 
+#include <rstring.h>
 #include "planesException.h"
-#include "planesString.h"
+

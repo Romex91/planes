@@ -9,6 +9,7 @@
       C:\projects\boost_1_57_0\;
       C:\projects\odb\;
       C:\projects\SFML-2.1\include\;
+      C:\projects\ResourceString\ResourceString\;
     </vendersInclude>
     <vendersLibDir>
       C:\projects\SFML-2.1\lib\;

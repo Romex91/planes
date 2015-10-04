@@ -87,7 +87,7 @@ namespace rplanes
 				}
 			}
 			if ( retval.size() == 0 )
-				throw PlanesException(_str("Model template for {0} is not full.", planeName));
+				throw PlanesException(_rstrw("Model template for {0} is not full.", planeName));
 			return retval;
 		}
 
@@ -128,7 +128,7 @@ namespace rplanes
 				}
 			}
 			if ( retval.size() == 0 )
-				throw PlanesException(_str("Model template for {0} is not full.", planeName));
+				throw PlanesException(_rstrw("Model template for {0} is not full.", planeName));
 			return retval;
 		}
 
@@ -145,11 +145,11 @@ namespace rplanes
 			}
 			catch(odb::object_not_persistent)
 			{
-				throw PlanesException(_str("Module {0} is not found.", moduleName));
+				throw PlanesException(_rstrw("Module {0} is not found.", moduleName));
 			}
 			if ( module->getType() != MT)
 			{
-				throw PlanesException(_str("Module {0} has invalid type.", moduleName));
+				throw PlanesException(_rstrw("Module {0} has invalid type.", moduleName));
 			}
 			return module;
 		}
@@ -165,7 +165,7 @@ namespace rplanes
 			}
 			catch(odb::object_not_persistent)
 			{
-				throw PlanesException(_str("Module {0} is not found.", moduleName));
+				throw PlanesException(_rstrw("Module {0} is not found.", moduleName));
 			}
 			return module;
 		}

@@ -531,7 +531,7 @@ void Player::clearTemporaryData()
 	messages.destroyPlanes.planes.clear();
 	messages.roomInfos.clear();
 	messages.setPlanesPositions.positions.clear();
-	messages.textMessages.clear();
+	messages.stringMessages.clear();
 	messages.updateModules.modules.clear();
 }
 

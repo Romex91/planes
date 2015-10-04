@@ -79,7 +79,6 @@
     <ClCompile Include="pilot.cpp" />
     <ClCompile Include="plane.cpp" />
     <ClCompile Include="planesException.cpp" />
-    <ClCompile Include="planesString.cpp" />
     <ClCompile Include="profile.cpp" />
     <ClCompile Include="projectile.cpp" />
     <ClCompile Include="stdafx.cpp">
@@ -141,7 +140,6 @@
       <Outputs Condition="'$(Configuration)|$(Platform)'=='Release|x64'">odb/profile-odb.cxx;odb/profile-odb.hxx;odb/profile-odb.ixx;(%Outputs)</Outputs>
     </CustomBuild>
     <ClInclude Include="planesException.h" />
-    <ClInclude Include="planesString.h" />
     <ClInclude Include="projectile.h" />
     <ClInclude Include="stdafx.h" />
   </ItemGroup>

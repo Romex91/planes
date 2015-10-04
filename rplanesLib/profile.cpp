@@ -187,7 +187,7 @@ namespace rplanes
 
 		}
 
-		PlanesString Profile::buyPlane(std::string planeName, std::shared_ptr<odb::database> planesDB)
+		rstring::_rstrw_t Profile::buyPlane(std::string planeName, std::shared_ptr<odb::database> planesDB)
 		{
 			int price;
 			std::shared_ptr <planedata::Model> model;
@@ -200,7 +200,7 @@ namespace rplanes
 			}
 			catch (odb::object_not_persistent)
 			{
-				return _str("Plane {0} does not exist.", planeName);
+				return _rstrw("Plane {0} does not exist.", planeName);
 			}
 			try
 			{
@@ -212,20 +212,20 @@ namespace rplanes
 			}
 			if ( openedPlanes.count( planeName ) == 0 )
 			{
-				return _str("{0} is closed. Play campaigns to open new planes.", planeName);
+				return _rstrw("{0} is closed. Play campaigns to open new planes.", planeName);
 			}
 
 			if( price > money )
-				return _str("Not enough money.");
+				return _rstrw("Not enough money.");
 
 			for(auto i = planes.begin(); i != planes.end(); i++ )
 			{
 				if( i->id.planeName == planeName )
-					return _str("You already have {0}.", planeName);
+					return _rstrw("You already have {0}.", planeName);
 			}
 			money -= price;
 			planes.push_back( newPlane );
-			return _str("{0} is successfully bought.", planeName);
+			return _rstrw("{0} is successfully bought.", planeName);
 		}
 
 		Profile::BuyModuleResult Profile::buyModuleInternal(std::string planeName, size_t moduleNo, std::string moduleName, std::shared_ptr<odb::database > planesDB)
@@ -344,26 +344,26 @@ namespace rplanes
 			return BuyModuleResult::MOUNTED;
 		}
 
-		PlanesString Profile::buyModule(std::string planeName, size_t moduleNo, std::string moduleName, std::shared_ptr<odb::database > planesDB)
+		rstring::_rstrw_t Profile::buyModule(std::string planeName, size_t moduleNo, std::string moduleName, std::shared_ptr<odb::database > planesDB)
 		{	
 			try {
 				BuyModuleResult result = buyModuleInternal(planeName, moduleNo, moduleName, planesDB);
 				switch (result)
 				{
 					case rplanes::playerdata::Profile::BuyModuleResult::MOUNTED:
-						return _str("Module {0} is bought and mounted.", moduleName);
+						return _rstrw("Module {0} is bought and mounted.", moduleName);
 					case rplanes::playerdata::Profile::BuyModuleResult::MOUNTED_FROM_STORE:
-						return _str("Module {0} is mounted.", moduleName);
+						return _rstrw("Module {0} is mounted.", moduleName);
 					case rplanes::playerdata::Profile::BuyModuleResult::NOT_ENOUGH_MONEY:
-						return _str("Not enough money.");
+						return _rstrw("Not enough money.");
 					case rplanes::playerdata::Profile::BuyModuleResult::ALLREADY_MOUNTED:
-						return _str("Module is already mounted.");
+						return _rstrw("Module is already mounted.");
 					case rplanes::playerdata::Profile::BuyModuleResult::NOT_FOUND:
-						return _str("Module {0} is not found in database", moduleName);
+						return _rstrw("Module {0} is not found in database", moduleName);
 					case rplanes::playerdata::Profile::BuyModuleResult::NOT_SUITABLE:
-						return _str("Cannot mount module {0} to plane {1}.", moduleName, planeName);
+						return _rstrw("Cannot mount module {0} to plane {1}.", moduleName, planeName);
 					default:
-						return _str("Unexpected error.");
+						return _rstrw("Unexpected error.");
 				}
 			} 
 			catch (PlanesException & ex) 
@@ -372,7 +372,7 @@ namespace rplanes
 			}
 		}
 
-		PlanesString Profile::buyModules(std::string planeName, std::string moduleName, std::shared_ptr<odb::database > planesDB)
+		rstring::_rstrw_t Profile::buyModules(std::string planeName, std::string moduleName, std::shared_ptr<odb::database > planesDB)
 		{
 			//поиск самолета в профиле
 			auto Plane = planes.begin();
@@ -382,7 +382,7 @@ namespace rplanes
 					break;
 			}
 			if (Plane == planes.end())
-				return _str("{0} is not found.", planeName);
+				return _rstrw("{0} is not found.", planeName);
 			//поиск модуля в базе данных
 			std::shared_ptr<planedata::Module> Module;
 			try
@@ -393,7 +393,7 @@ namespace rplanes
 			}
 			catch( odb::object_not_persistent )
 			{
-				return _str("{0} is not found.", moduleName);
+				return _rstrw("{0} is not found.", moduleName);
 			}
 
 			auto moduleType = Module->getType();
@@ -440,7 +440,7 @@ namespace rplanes
 				return buyModule(planeName, 0, moduleName, planesDB);
 				break;
 			}
-			return _str("{0} modules bought, {1} modules mounted from store.", nModulesBought, nModulesMountedFromStore);
+			return _rstrw("{0} modules bought, {1} modules mounted from store.", nModulesBought, nModulesMountedFromStore);
 #undef VECTORED_MODULES
 		}
 
@@ -508,7 +508,7 @@ namespace rplanes
 			}
 			catch( odb::object_not_persistent )
 			{
-				throw PlanesException(_str("Model {0} is not found.", planeName));
+				throw PlanesException(_rstrw("Model {0} is not found.", planeName));
 			}
 			//загрузка устанавливаемых на самолет модулей данного типа
 			try
@@ -522,7 +522,7 @@ namespace rplanes
 			}
 			catch( odb::object_not_persistent )
 			{
-				throw PlanesException(_str("Model {0} is invalid.", planeName));
+				throw PlanesException(_rstrw("Model {0} is invalid.", planeName));
 			}
 
 			//пометить имеющиеся в ангаре
@@ -560,7 +560,7 @@ namespace rplanes
 			}
 			catch( odb::object_not_persistent )
 			{
-				throw PlanesException(_str("Model {0} is invalid.", planeName));
+				throw PlanesException(_rstrw("Model {0} is invalid.", planeName));
 			}
 
 			//убрать уже установленные модули
@@ -641,7 +641,7 @@ namespace rplanes
 			return retval;
 		}
 
-		PlanesString Profile::sellPlane(std::string planeName, std::shared_ptr<odb::database> planesDB)
+		rstring::_rstrw_t Profile::sellPlane(std::string planeName, std::shared_ptr<odb::database> planesDB)
 		{
 			try {
 				auto Plane = planes.begin();
@@ -654,11 +654,11 @@ namespace rplanes
 				}
 				if (Plane == planes.end())
 				{
-					return _str("{0} is not found.", planeName);
+					return _rstrw("{0} is not found.", planeName);
 				}
 				money -= Plane->getPrice(planesDB);
 				planes.erase(Plane);
-				return _str("Successfully sold {0}.", planeName);
+				return _rstrw("Successfully sold {0}.", planeName);
 			}
 			catch (PlanesException& e)
 			{
@@ -666,7 +666,7 @@ namespace rplanes
 			}
 		}
 
-		PlanesString Profile::sellModule(std::string moduleName, size_t nModules, std::shared_ptr<odb::database> planesDB)
+		rstring::_rstrw_t Profile::sellModule(std::string moduleName, size_t nModules, std::shared_ptr<odb::database> planesDB)
 		{
 			try {
 				//загружаем указанный модуль из базы данных
@@ -693,7 +693,7 @@ namespace rplanes
 
 					nSoldModules++;
 				}
-				return _str("Sold {0} modules {1}", nSoldModules, moduleName);
+				return _rstrw("Sold {0} modules {1}", nSoldModules, moduleName);
 			}
 			catch (PlanesException & e)
 			{

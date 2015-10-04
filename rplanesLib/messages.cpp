@@ -602,7 +602,7 @@ rplanes::network::servermessages::hangar::RoomList::RoomInfo::SlotInfo::SlotInfo
 }
 
 template <typename Archive>
-void rplanes::network::bidirectionalmessages::PlanesStringMessage::serialize(Archive& ar, const unsigned int version)
+void rplanes::network::bidirectionalmessages::ResourceStringMessage::serialize(Archive& ar, const unsigned int version)
 {
 	ar & string;
 }

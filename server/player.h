@@ -159,7 +159,7 @@ public:
 
 		servermessages::room::InterfaceData interfaceData;
 
-		std::vector< bidirectionalmessages::TextMessage > textMessages;
+		std::vector< bidirectionalmessages::ResourceStringMessage > stringMessages;
 
 		std::vector< servermessages::room::ChangeMap > changeMapMessages;
 

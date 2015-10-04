@@ -78,19 +78,6 @@ namespace rplanes
 #pragma db value
 		struct  Statistics
 		{
-			//Statistics() :
-			//	friendlyDamage(0),
-			//	damage(0),
-			//	damageReceived(0),
-			//	friensDestroyed(0),
-			//	enemyDestroyed(0),
-			//	shots(0),
-			//	hits(0),
-			//	hitsReceived(0),
-			//	crashes(0),
-			//	exp(0),
-			//	money(0)
-			//{}
 			int
 				friendlyDamage = 0,
 				damage = 0,
@@ -167,19 +154,19 @@ namespace rplanes
 			void save(std::shared_ptr< odb::database > profilesDB);
 
 			//возвращает строки типа "самолет куплен" и т.п.
-			PlanesString buyPlane(
+			rstring::_rstrw_t buyPlane(
 				std::string planeName, std::shared_ptr<odb::database> planesDB);
 
 			// Покупка и установка модуля в позицию moduleNo. возвращает строки типа "модуль куплен" и т.п. 
 			//если модуль есть на складе,  деньги потрачены не будут. Если moduleNo не корректно, будет возвращено сообщение ошибке.
-			PlanesString buyModule(
+			rstring::_rstrw_t buyModule(
 				std::string planeName,
 				size_t moduleNo,
 				std::string moduleName,
 				std::shared_ptr<odb::database > planesDB);
 
 			//покупка и установка модулей во все подходящие слоты
-			PlanesString buyModules(
+			rstring::_rstrw_t buyModules(
 				std::string planeName,
 				std::string moduleName,
 				std::shared_ptr<odb::database > planesDB
@@ -198,11 +185,11 @@ namespace rplanes
 			// Список модулей, содержащихся на складе.
 			std::vector<std::pair<std::string, int> > moduleStorePriceList(std::shared_ptr<odb::database> planesDB);
 			// возвращает строки типа "самолет продан"
-			PlanesString sellPlane(
+			rstring::_rstrw_t sellPlane(
 				std::string planeName,
 				std::shared_ptr<odb::database> planesDB);
 			// Продавать можно только модули, хранящиеся на складе. Возвращает строки типа "модуль продан"
-			PlanesString sellModule(
+			rstring::_rstrw_t sellModule(
 				std::string moduleName,
 				size_t nModules,
 				std::shared_ptr<odb::database> planesDB);

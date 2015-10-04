@@ -12,7 +12,7 @@ void rplanes::network::MessageStorage::registryMessage( Message & mess )
 {
 	if (baseMap().count(mess.getId())!= 0)
 	{
-		throw PlanesException(_str("Failed register message {0}. The message is already registered.", mess.getId()));
+		throw PlanesException(_rstrw("Failed registering message {0}. The message is already registered.", mess.getId()));
 	}
 	baseMap()[ mess.getId() ] = mess.copy();
 }
@@ -32,7 +32,7 @@ Message & rplanes::network::MessageStorage::getMessage( unsigned short id )
 	{
 		std::stringstream ss;
 		ss << id;
-		throw PlanesException(_str("Message with id {0] is not found.", ss.str()));
+		throw PlanesException(_rstrw("Message with id {0] is not found.", ss.str()));
 	}
 	lastMessageId_ = id;
 	return *mess->second;
@@ -71,14 +71,14 @@ bool rplanes::network::Connection::handleInput()
 		{
 			return false;
 		}
-		throw PlanesException(_str("Failed getting message. {0}" , error.message() ));
+		throw PlanesException(_rstrw("Failed getting message. {0}" , error.message()));
 	}
 	unsigned short messageId = 0;
 	{
 		std::istringstream is(std::string(id_buffer, sizeof(unsigned short)));
 		if (!(is >> std::hex >> messageId))
 		{
-			throw PlanesException(_str("Failed getting message."));
+			throw PlanesException(_rstrw("Failed getting message."));
 		}
 	}
 	//loading message
@@ -89,13 +89,13 @@ bool rplanes::network::Connection::handleInput()
 	blockingRead(boost::asio::buffer(data_header), error);
 	if ( error )
 	{
-		throw PlanesException(_str("Failed getting message. {0}", error.message()));
+		throw PlanesException(_rstrw("Failed getting message. {0}", error.message()));
 	}
 	std::istringstream is(std::string(data_header, header_length));
 	std::size_t data_size = 0;
 	if (!(is >> std::hex >> data_size))
 	{
-		throw PlanesException(_str("Failed getting message."));
+		throw PlanesException(_rstrw("Failed getting message."));
 	}
 
 	//getting serialized data
@@ -106,7 +106,7 @@ bool rplanes::network::Connection::handleInput()
 	//socket.read_some( boost::asio::buffer(data), error );
 	if ( error )
 	{
-		throw PlanesException(_str("Failed getting message. {0}", error.message()));
+		throw PlanesException(_rstrw("Failed getting message. {0}", error.message()));
 	}
 	std::string archive_data(&data[0], data.size());
 
@@ -131,7 +131,7 @@ void rplanes::network::Connection::sendMessage( Message & message )
 		<< std::hex << message.getId();
 	if (!id_stream || id_stream.str().size() != sizeof(unsigned short))
 	{
-		throw PlanesException(_str("Failed sending message."));
+		throw PlanesException(_rstrw("Failed sending message."));
 	}
 	std::string id_header = id_stream.str();
 
@@ -149,7 +149,7 @@ void rplanes::network::Connection::sendMessage( Message & message )
 		<< std::hex << data.size();
 	if (!data_header_stream || data_header_stream.str().size() != header_length)
 	{
-		throw PlanesException(_str("Failed sending message."));
+		throw PlanesException(_rstrw("Failed sending message."));
 	}
 	std::string data_header = data_header_stream.str();
 
@@ -165,7 +165,7 @@ void rplanes::network::Connection::sendMessage( Message & message )
 	}
 	if ( error )
 	{
-		throw PlanesException(_str("Failed sending message. {0}", error.message()));
+		throw PlanesException(_rstrw("Failed sending message. {0}", error.message()));
 	}
 }
 

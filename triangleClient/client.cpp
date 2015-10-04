@@ -383,6 +383,10 @@ namespace rplanes
 			{
 				std::cout << " клиент выброшен из комнаты " << std::endl;
 			}
+			void ResourceStringMessage::handle()
+			{
+				std::wcout << _rstrw("server message : {0}", string).str();
+			}
 		}
 	}
 }

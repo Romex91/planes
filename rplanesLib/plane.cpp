@@ -375,7 +375,7 @@ namespace rplanes
 			std::fstream in;
 			in.open( std::string("../Resources/hitZones/") + name + ".txt", std::ios_base::in );
 			if ( !in.is_open() )
-				throw PlanesException( _str( "Failed loading hitzones. File ../Resources/hitZones/{0} is not found.", name ));
+				throw PlanesException( _rstrw( "Failed loading hitzones. File ../Resources/hitZones/{0} is not found.", name ));
 			std::stringstream ss;
 			std::string moduleName, empty, line;
 			HitZone hitZone;
@@ -451,7 +451,7 @@ namespace rplanes
 				}
 				else
 				{
-					throw PlanesException(_str("Wrong hitzones format. {0}", name));
+					throw PlanesException(_rstrw("Wrong hitzones format. {0}", name));
 				}
 				std::getline(in, moduleName);
 			}

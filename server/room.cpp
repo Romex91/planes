@@ -109,7 +109,7 @@ void Room::addPlayer( std::shared_ptr< Player > player )
 	}
 	if ( !added )
 	{
-		throw PlanesException(_str("Cannot add player. Room is filled."));
+		throw PlanesException(_rstrw("Cannot add player. Room is filled."));
 	}
 	
 	player->setID( playerIDGetter.getID() );
@@ -212,7 +212,7 @@ void Room::executeScript(const std::vector<ScriptLine> & script, std::shared_ptr
 		{
 			if ( !thisPlayer )
 			{
-				throw PlanesException(_str("Script error. this does not exist."));
+				throw PlanesException(_rstrw("Script error. this does not exist."));
 			}
 			retval.push_back(thisPlayer);
 			groupFound = true;
@@ -232,7 +232,7 @@ void Room::executeScript(const std::vector<ScriptLine> & script, std::shared_ptr
 		});
 		if ( !groupFound )
 		{
-			throw PlanesException(_str("Script error. Group {0} is not found.", groupName));
+			throw PlanesException(_rstrw("Script error. Group {0} is not found.", groupName));
 		}
 		return retval;
 	};
@@ -246,7 +246,7 @@ void Room::executeScript(const std::vector<ScriptLine> & script, std::shared_ptr
 		{
 			if (options.size() < minSize)
 			{
-				throw PlanesException(_str("Script error. Wrong arguments {0}.", command));
+				throw PlanesException(_rstrw("Script error. Wrong arguments {0}.", command));
 			}
 		};
 
@@ -263,7 +263,7 @@ void Room::executeScript(const std::vector<ScriptLine> & script, std::shared_ptr
 			auto left = map_.variables.find(options[0]);
 			if (left == map_.variables.end())
 			{
-				throw PlanesException(_str("Script error. Variable {0} is not found.", options[0]));
+				throw PlanesException(_rstrw("Script error. Variable {0} is not found.", options[0]));
 			}
 
 			//определяем правое значение
@@ -350,9 +350,9 @@ void Room::executeScript(const std::vector<ScriptLine> & script, std::shared_ptr
 				{
 					if ( player->openedMaps.count( options[2] ) == 0 )
 					{
-						rplanes::network::bidirectionalmessages::TextMessage message;
-						message.text = "Открыта новая карта " + options[2] + ".";
-						player->messages.textMessages.push_back(message);
+						rplanes::network::bidirectionalmessages::ResourceStringMessage message;
+						message.string =  _rstrw("Map {0} is unlocked.", options[2]);
+						player->messages.stringMessages.push_back(message);
 						player->openedMaps.insert(options[2]);
 					}
 				}
@@ -363,9 +363,9 @@ void Room::executeScript(const std::vector<ScriptLine> & script, std::shared_ptr
 				{
 					if (player->openedPlanes.count(options[2]) == 0)
 					{
-						rplanes::network::bidirectionalmessages::TextMessage message;
-						message.text = "Открыт новый самолет " + options[2] + ".";
-						player->messages.textMessages.push_back(message);
+						rplanes::network::bidirectionalmessages::ResourceStringMessage message;
+						message.string = _rstrw("Plane {0} is unlocked.", options[2]);
+						player->messages.stringMessages.push_back(message);
 						player->openedPlanes.insert(options[2]);
 					}
 				}
@@ -429,7 +429,7 @@ void Room::executeScript(const std::vector<ScriptLine> & script, std::shared_ptr
 			auto players = getGroupPlayers(options[0]);
 			if ( map_.goals.count(options[1]) == 0 )
 			{
-				throw PlanesException(_str("{0} is not found.", options[1]));
+				throw PlanesException(_rstrw("{0} is not found.", options[1]));
 			}
 			for (auto & player : players)
 			{
@@ -452,7 +452,7 @@ void Room::executeScript(const std::vector<ScriptLine> & script, std::shared_ptr
 					{
 						if ( !thisPlayer )
 						{
-							throw PlanesException(_str("this does not exist."));
+							throw PlanesException(_rstrw("this does not exist."));
 						}
 						s = thisPlayer->name;
 					}
@@ -473,8 +473,9 @@ void Room::executeScript(const std::vector<ScriptLine> & script, std::shared_ptr
 			auto players = getGroupPlayers(options[0]);
 			for ( auto & player : players )
 			{
-				player->messages.textMessages.push_back(rplanes::network::bidirectionalmessages::TextMessage());
-				player->messages.textMessages.back().text = messageText;
+				rplanes::network::bidirectionalmessages::ResourceStringMessage message;
+				message.string = _rstrw("{0}", messageText);
+				player->messages.stringMessages.push_back(message);
 			}
 		}
 		else if (command == "kill" || command == "setDestroyed")
@@ -516,7 +517,7 @@ void Room::executeScript(const std::vector<ScriptLine> & script, std::shared_ptr
 				}
 				else
 				{
-					throw PlanesException(_str("Script error. Unknown argument. {0}", reasonString));
+					throw PlanesException(_rstrw("Script error. Unknown argument. {0}", reasonString));
 				}
 				if ( command == "kill" )
 				{
@@ -533,7 +534,7 @@ void Room::executeScript(const std::vector<ScriptLine> & script, std::shared_ptr
 		{
 			if ( command[0] != '/' )
 			{
-				throw PlanesException(_str("Script error. Unknown command. {0}", command));
+				throw PlanesException(_rstrw("Script error. Unknown command. {0}", command));
 			}
 		}
 
@@ -574,11 +575,11 @@ void Room::spawn(std::shared_ptr<Player> player, float timeDelay)
 	});
 	if (groupsFound == 0)
 	{
-		throw PlanesException(_str("{0} is unknown group.", player->getGroupName()));
+		throw PlanesException(_rstrw("{0} is unknown group.", player->getGroupName()));
 	}
 	else if ( groupsFound > 1 )
 	{
-		throw PlanesException(_str("{0} is ambiguous.", player->getGroupName()));
+		throw PlanesException(_rstrw("{0} is ambiguous.", player->getGroupName()));
 	}
 }
 
@@ -589,7 +590,7 @@ void Room::handleTriggers()
 		//ищем триггер
 		if ( map_.triggers.count(script.trigger) == 0 )
 		{
-			throw PlanesException(_str("{0} is not found.", script.trigger));
+			throw PlanesException(_rstrw("{0} is not found.", script.trigger));
 		}
 
 		auto & trigger = map_.triggers[script.trigger];
@@ -612,7 +613,7 @@ void Room::handleTriggers()
 		});
 		if ( !groupFound )
 		{
-			throw PlanesException(_str("{0} is unknown group.", script.group));
+			throw PlanesException(_rstrw("{0} is unknown group.", script.group));
 		}
 
 		for (auto & player : players)
@@ -680,8 +681,9 @@ void Room::regroup()
 		}
 		if (!added)
 		{
-			rplanes::network::bidirectionalmessages::PlanesStringMessage tm;
-			tm.string = _str("Room is full.");
+			rplanes::network::bidirectionalmessages::ResourceStringMessage tm;
+			tm.string = _rstrw("Room is full.");
+			player->messages.stringMessages.push_back(tm);
 			player->isJoined = false;
 		}
 	}
@@ -704,10 +706,11 @@ void Room::kickPlayers(std::vector< std::string > & names)
 		{
 			if (name == players_[i]->name)
 			{
-				rplanes::network::bidirectionalmessages::PlanesStringMessage tm;
-				tm.string = _str("You are banned by {0}", creator);
+				rplanes::network::bidirectionalmessages::ResourceStringMessage tm;
+				
+				tm.string = _rstrw("You are banned by {0}", creator);
 
-				players_[i]->messages.textMessages.push_back(tm);
+				players_[i]->messages.stringMessages.push_back(tm);
 				players_[i]->destroy(rplanes::network::servermessages::room::DestroyPlanes::FIRE, 0);
 				players_[i]->isJoined = false;
 				break;
@@ -819,9 +822,10 @@ void Room::checkPlayersOpenedMaps()
 	{
 		if ( player->openedMaps.count( map_.name ) == 0 )
 		{
-			rplanes::network::bidirectionalmessages::TextMessage message;
-			message.text = "Карта " + map_.name + " не открыта. Клиент должен сверяться со списком открытых карт в профиле.";
-			player->messages.textMessages.push_back(message);
+			rplanes::network::bidirectionalmessages::ResourceStringMessage message;
+
+			message.string = _rstrw("Map {0} is closed. A client application should check opened maps in a user profile.", map_.name) ;
+			player->messages.stringMessages.push_back(message);
 			player->isJoined = false;
 		}
 	}
