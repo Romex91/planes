@@ -32,9 +32,9 @@ namespace rplanes
 			{
 				conf.load(path);
 			}
-			catch (std::exception)
+			catch ( std::exception & e)
 			{
-				std::cout << "cannot open configuration " + path << std::endl
+				std::cout << "cannot open configuration "  << path << " : " << e.what() <<  std::endl
 					<< "creating file with default values..." << std::endl;
 				conf.save(path);
 			}

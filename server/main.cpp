@@ -357,7 +357,18 @@ public:
 
 int main()
 {
-	setlocale(LC_ALL, "rus");
+#ifdef _MSC_VER
+	system("chcp 65001");
+#endif
+	boost::locale::generator gen;
+	std::locale::global(gen.generate(std::locale(), ""));
+	std::wcout.imbue(std::locale());
+
+	std::wifstream xmlFs(rplanes::configuration().server.languageXml);
+	boost::archive::xml_wiarchive archive(xmlFs, boost::archive::no_header);
+	archive >> boost::serialization::make_nvp("strings", rstring::_rstrw_t::resource());
+
+
 	planesDB = rplanes::loadDatabase("../Resources/planes.db");
 	profilesDB = rplanes::loadDatabase("../Resources/profiles.db");
 	omp_set_num_threads(3);

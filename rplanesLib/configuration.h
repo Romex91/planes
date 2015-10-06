@@ -252,6 +252,7 @@ namespace rplanes
 				ar & BOOST_SERIALIZATION_NVP(hangarFrameTime);
 				ar & BOOST_SERIALIZATION_NVP(unloginedDisconnectTime);
 				ar & BOOST_SERIALIZATION_NVP(maxClientsNumber);
+				ar & BOOST_SERIALIZATION_NVP(languageXml);
 			}
 
 			float spawnCooldownTime = 1.5f;
@@ -267,6 +268,9 @@ namespace rplanes
 
 			float unloginedDisconnectTime = 2.f;
 			size_t maxClientsNumber = 1000;
+
+			std::string languageXml = "../Resources/strings/english.xml";
+
 		};
 
 

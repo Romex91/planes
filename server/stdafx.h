@@ -2,6 +2,7 @@
 #define  _USE_MATH_DEFINES
 #include <math.h>
 #include <boost/random.hpp>
+#include <boost/archive/xml_wiarchive.hpp>
 #include <map>
 #include <vector>
 #include <fstream>

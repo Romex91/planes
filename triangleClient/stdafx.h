@@ -14,3 +14,4 @@
 #include <SFML/window.hpp>
 #include <SFML/Graphics.hpp>	
 #include <rstring.h>
+#include <boost/archive/xml_wiarchive.hpp>

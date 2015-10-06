@@ -45,7 +45,7 @@
       <RuntimeLibrary>MultiThreadedDebugDLL</RuntimeLibrary>
       <ForcedIncludeFiles>"stdafx.h";%(ForcedIncludeFiles)</ForcedIncludeFiles>
       <AdditionalIncludeDirectories>$(vendersInclude);$(projectDir);%(AdditionalIncludeDirectories)</AdditionalIncludeDirectories>
-      <PreprocessorDefinitions>_WIN32_WINNT=0x0501;</PreprocessorDefinitions>
+      <PreprocessorDefinitions>$(commonDefenitions)</PreprocessorDefinitions>
     </ClCompile>
     <PostBuildEvent>
       <Command>
@@ -58,7 +58,7 @@
       <ForcedIncludeFiles>"stdafx.h";%(ForcedIncludeFiles)</ForcedIncludeFiles>
       <PrecompiledHeader>Use</PrecompiledHeader>
       <AdditionalIncludeDirectories>$(vendersInclude);$(projectDir);%(AdditionalIncludeDirectories)</AdditionalIncludeDirectories>
-      <PreprocessorDefinitions>_WIN32_WINNT=0x0501;</PreprocessorDefinitions>
+      <PreprocessorDefinitions>$(commonDefenitions)</PreprocessorDefinitions>
     </ClCompile>
     <PostBuildEvent>
       <Command>

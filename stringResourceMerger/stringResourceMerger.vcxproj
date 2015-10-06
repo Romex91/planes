@@ -11,8 +11,8 @@
     </ProjectConfiguration>
   </ItemGroup>
   <PropertyGroup Label="Globals">
-    <ProjectGuid>{CBCB4E41-85D6-4507-8DD0-85345FE4F7AC}</ProjectGuid>
-    <RootNamespace>schemaCreator</RootNamespace>
+    <ProjectGuid>{49881CF2-9131-4994-9113-EC3C63788F14}</ProjectGuid>
+    <RootNamespace>stringResourceMerger</RootNamespace>
   </PropertyGroup>
   <Import Project="$(VCTargetsPath)\Microsoft.Cpp.Default.props" />
   <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Debug|x64'" Label="Configuration">
@@ -50,16 +50,13 @@
       <WarningLevel>Level3</WarningLevel>
       <Optimization>Disabled</Optimization>
       <SDLCheck>true</SDLCheck>
-      <AdditionalIncludeDirectories>$(rplanesLibInclude);$(vendersInclude);%(AdditionalIncludeDirectories)</AdditionalIncludeDirectories>
-      <DisableSpecificWarnings>4068;4244</DisableSpecificWarnings>
-      <PrecompiledHeader>Use</PrecompiledHeader>
-      <ForcedIncludeFiles>"stdafx.h"</ForcedIncludeFiles>
+      <AdditionalIncludeDirectories>$(vendersInclude);</AdditionalIncludeDirectories>
       <PreprocessorDefinitions>$(commonDefenitions);_MBCS;%(PreprocessorDefinitions)</PreprocessorDefinitions>
     </ClCompile>
     <Link>
       <GenerateDebugInformation>true</GenerateDebugInformation>
       <AdditionalLibraryDirectories>$(rplanesLibDir);$(vendersLibDir)%(AdditionalLibraryDirectories)</AdditionalLibraryDirectories>
-      <AdditionalDependencies>$(rplanesLib);$(vendersLib);%(AdditionalDependencies)</AdditionalDependencies>
+      <AdditionalDependencies>$(vendersLib);%(AdditionalDependencies)</AdditionalDependencies>
     </Link>
     <BuildLog>
       <Path>$(TargetDir)$(MSBuildProjectName).log</Path>
@@ -72,10 +69,7 @@
       <FunctionLevelLinking>true</FunctionLevelLinking>
       <IntrinsicFunctions>true</IntrinsicFunctions>
       <SDLCheck>true</SDLCheck>
-      <AdditionalIncludeDirectories>$(rplanesLibInclude);$(vendersInclude);%(AdditionalIncludeDirectories)</AdditionalIncludeDirectories>
-      <DisableSpecificWarnings>4068;4244</DisableSpecificWarnings>
-      <PrecompiledHeader>Use</PrecompiledHeader>
-      <ForcedIncludeFiles>"stdafx.h"</ForcedIncludeFiles>
+      <AdditionalIncludeDirectories>$(vendersInclude);</AdditionalIncludeDirectories>
       <PreprocessorDefinitions>$(commonDefenitions);_MBCS;%(PreprocessorDefinitions)</PreprocessorDefinitions>
     </ClCompile>
     <Link>
@@ -83,21 +77,14 @@
       <EnableCOMDATFolding>true</EnableCOMDATFolding>
       <OptimizeReferences>true</OptimizeReferences>
       <AdditionalLibraryDirectories>$(rplanesLibDir);$(vendersLibDir)%(AdditionalLibraryDirectories)</AdditionalLibraryDirectories>
-      <AdditionalDependencies>$(rplanesLib);$(vendersLib);%(AdditionalDependencies)</AdditionalDependencies>
+      <AdditionalDependencies>$(vendersLib);%(AdditionalDependencies)</AdditionalDependencies>
     </Link>
     <BuildLog>
       <Path>$(TargetDir)$(MSBuildProjectName).log</Path>
     </BuildLog>
   </ItemDefinitionGroup>
   <ItemGroup>
-    <ClCompile Include="main.cpp" />
-    <ClCompile Include="stdafx.cpp">
-      <PrecompiledHeader Condition="'$(Configuration)|$(Platform)'=='Debug|x64'">Create</PrecompiledHeader>
-      <PrecompiledHeader Condition="'$(Configuration)|$(Platform)'=='Release|x64'">Create</PrecompiledHeader>
-    </ClCompile>
-  </ItemGroup>
-  <ItemGroup>
-    <ClInclude Include="stdafx.h" />
+    <ClCompile Include="Source.cpp" />
   </ItemGroup>
   <Import Project="$(VCTargetsPath)\Microsoft.Cpp.targets" />
   <ImportGroup Label="ExtensionTargets">

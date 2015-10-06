@@ -225,6 +225,7 @@ int main3()
 		std::cout << "!" << std::endl;
 	}
 	system("pause");
+	return 0;
 }
 
 // reflections

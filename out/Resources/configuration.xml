@@ -85,6 +85,7 @@
 		<hangarFrameTime>1.000000015e-001</hangarFrameTime>
 		<unloginedDisconnectTime>2.000000000e+000</unloginedDisconnectTime>
 		<maxClientsNumber>1000</maxClientsNumber>
+		<languageXml>../Resources/strings/english.xml</languageXml>
 	</server>
 	<collisions class_id="10" tracking_level="0" version="0">
 		<bulletDeflectionSigma>1.000000000e+001</bulletDeflectionSigma>

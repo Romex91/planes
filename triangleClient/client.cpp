@@ -170,7 +170,7 @@ namespace rplanes
 				//после успешной авторизации сервер отсылает конфигурацию, необходимую для корректной работы interpolate и т.п.
 				void ServerConfiguration::handle()
 				{
-					std::cout << "Получена конфигурация сервера " << std::endl;
+					std::wcout << _rstrw("reading server configuration...").str() << std::endl;
 					rplanes::configuration() = conf;
 				}
 				void SendProfile::handle()
@@ -190,7 +190,7 @@ namespace rplanes
 
 				void ChangeMap::handle()
 				{
-					std::cout << "Карта сменена на " << mapName << std::endl;
+					std::wcout << _rstrw("changing map to {0}...", mapName).str() << std::endl;
 				}
 
 				//сообщение приходит после запроса серверного времени
@@ -229,12 +229,10 @@ namespace rplanes
 
 						if (client.planes.count(plane.id) != 0)
 						{
-							std::cout << "повторное создание самолета" << std::endl;
+							std::wcout << _rstrw("duplicate plane creation").str() << std::endl;
 						}
-						std::cout << " Появился новый самолет " << " "
-							<< plane.planeName << " "
-							<< plane.playerName << " "
-							<< plane.id << std::endl;
+						std::wcout << _rstrw("creating new plane '{0}' player '{1}' id '{2}'",
+							plane.planeName, plane.playerName, plane.id).str() << std::endl;
 						client.planes[plane.id] = plane;
 					}
 
@@ -274,20 +272,21 @@ namespace rplanes
 						switch (destroyedPlane.reason)
 						{
 						case rplanes::network::servermessages::room::DestroyPlanes::MODULE_DESTROYED:
-							std::cout << "Самолет" << destroyedPlane.planeID << " уничтожен по милости модуля " << destroyedPlane.moduleNo 
-								<< " " << rplanes::moduleTypesNames[ client.planes[destroyedPlane.planeID].modules[destroyedPlane.moduleNo].type ] << std::endl;
+							std::wcout << _rstrw("plane {0} is downing because of {2} {1} destruction",
+								destroyedPlane.planeID, destroyedPlane.moduleNo,
+								rplanes::moduleTypesNames[ client.planes[destroyedPlane.planeID].modules[destroyedPlane.moduleNo].type ]).str() << std::endl;
 							break;
 						case rplanes::network::servermessages::room::DestroyPlanes::FUEL:
-							std::cout << "Самолет" << destroyedPlane.planeID << " уничтожен, закончилось топливо " << std::endl;
+							std::wcout << _rstrw("plane {0} is out of fuel", destroyedPlane.planeID).str() << std::endl;
 							break;
 						case rplanes::network::servermessages::room::DestroyPlanes::VANISH:
-							std::cout << "Самолет " << destroyedPlane.planeID << " исчез!" << std::endl;
+							std::wcout << _rstrw("plane {0} vanished", destroyedPlane.planeID).str() << std::endl;
 							break;
 						case  rplanes::network::servermessages::room::DestroyPlanes::RAMMED:
-							std::cout << "Самолет уничтожен тараном " << destroyedPlane.planeID << std::endl;
+							std::wcout << _rstrw("plane {0} rammed with another plane", destroyedPlane.planeID).str() << std::endl;
 							break;
 						case rplanes::network::servermessages::room::DestroyPlanes::FIRE:
-							std::cout << "Самолет уничтожен пожаром " << destroyedPlane.planeID << std::endl;
+							std::wcout << _rstrw("plane {0} is burning down", destroyedPlane.planeID).str() << std::endl;
 							break;
 						}
 						client.planes.erase(destroyedPlane.planeID);
@@ -377,11 +376,11 @@ namespace rplanes
 		{
 			void TextMessage::handle()
 			{
-				std::cout << "Сервер  пишет " << text << std::endl;
+				std::wcout << _rstrw("server message : {0}", text).str();
 			}
 			void ExitRoom::handle()
 			{
-				std::cout << " клиент выброшен из комнаты " << std::endl;
+				std::wcout << _rstrw("exited from room").str();
 			}
 			void ResourceStringMessage::handle()
 			{
@@ -408,8 +407,9 @@ void loginAndJoinRoom(std::string profileName, size_t planeNo, bool bot = false)
 	client.connection.non_blocking(true);
 
 	//отправляем сообщение авторизации
+	std::wcout << _rstrw("sending auhtentication request...").str() << std::endl;
 	client.connection.sendMessage(loginMessage);
-	std::cout << "Отправлен запрос авторизации" << std::endl;
+
 
 	//ждем, чтобы не привысить квоту
 	std::this_thread::sleep_for(hangarFrameTime);
@@ -434,7 +434,7 @@ void loginAndJoinRoom(std::string profileName, size_t planeNo, bool bot = false)
 	}
 	if (tries == 10)
 	{
-		std::cout << "хуйня хэппенд" << std::endl;
+		std::wcout << _rstrw("something went wrong").str() << std::endl;
 		return;
 	}
 
@@ -447,7 +447,7 @@ void loginAndJoinRoom(std::string profileName, size_t planeNo, bool bot = false)
 	if (client.rooms.size() == 0)
 	{
 		rplanes::network::clientmessages::hangar::CreateRoomRequest crr;
-		crr.description = "ракам не входить, маму выебу!";
+		crr.description = "the best map on the server";
 		crr.mapName = "bot.map";
 		client.connection.sendMessage(crr);
 		std::this_thread::sleep_for(hangarFrameTime);
@@ -562,7 +562,7 @@ void loginAndJoinRoom(std::string profileName, size_t planeNo, bool bot = false)
 				rplanes::network::clientmessages::room::AdministerRoom ar;
 				ar.operation = rplanes::network::clientmessages::room::AdministerRoom::RESTART;
 				client.connection.sendMessage(ar);
-				std::cout << " Серверу отправлена команда рестарта." << std::endl;
+				std::wcout << _rstrw("sending restart command to the server").str() << std::endl;
 			}
 			if (!bot)
 			{
@@ -775,8 +775,8 @@ void loginAndBuyPlane(std::string profileName, std::string planeName)
 
 
 	//отправляем сообщение авторизации
+	std::wcout << _rstrw("sending authentication request..").str() << std::endl;
 	client.connection.sendMessage(loginMessage);
-	std::cout << "Отправлен запрос авторизации" << std::endl;
 	//ждем секунду, чтобы не привысить квоту
 	std::this_thread::sleep_for(std::chrono::seconds(1));
 
@@ -795,7 +795,7 @@ void loginAndBuyPlane(std::string profileName, std::string planeName)
 		{
 			if (rplanes::network::servermessages::hangar::SendProfile().getId() == client.connection.getLastMessageId())
 			{
-				std::cout << "Авторизация прошла успешно" << std::endl;
+				std::wcout << _rstrw("authentication succeeded").str() << std::endl;
 				break;
 			}
 		}
@@ -803,15 +803,15 @@ void loginAndBuyPlane(std::string profileName, std::string planeName)
 	}
 	if (tries == 10)
 	{
-		std::cout << "правал" << std::endl;
+		std::wcout << _rstrw("authentication failed").str() << std::endl;
 		return;
 	}
 
 	std::this_thread::sleep_for(std::chrono::seconds(1));
 	rplanes::network::clientmessages::hangar::BuyPlaneRequest bpr;
 	bpr.planeName = planeName;
+	std::wcout << _rstrw("sending buying request").str() << std::endl;
 	client.connection.sendMessage(bpr);
-	std::cout << "отправлен запрос покупки самолета " << std::endl;
 	//обрабатываем вывод сервера
 	while (true)
 	{
@@ -823,11 +823,20 @@ void loginAndBuyPlane(std::string profileName, std::string planeName)
 
 int main(int argc, char* argv[])
 {
-	setlocale(LC_ALL, "rus");
+#ifdef _MSC_VER
+	system("chcp 65001");
+#endif
+	boost::locale::generator gen;
+	std::locale::global(gen.generate(std::locale(), ""));
+	std::wcout.imbue(std::locale());
+
+	std::wifstream xmlFs(rplanes::configuration().server.languageXml);
+	boost::archive::xml_wiarchive archive(xmlFs, boost::archive::no_header);
+	archive >> boost::serialization::make_nvp("strings", rstring::_rstrw_t::resource());
 
 	if (argc < 2)
 	{
-		std::cout << "данные введены неверно " << std::endl;
+		std::wcout << _rstrw("wrong input data").str() << std::endl;
 		return 0;
 	}
 
@@ -839,7 +848,7 @@ int main(int argc, char* argv[])
 		{
 			if (argc != 4 && argc != 5)
 			{
-				std::cout << "данные введены неверно " << std::endl;
+				std::wcout << _rstrw("wrong input data").str() << std::endl;
 				return 0;
 			}
 			if (argc == 5)
@@ -856,7 +865,7 @@ int main(int argc, char* argv[])
 		{
 			if (argc != 4 && argc != 5)
 			{
-				std::cout << "данные введены неверно " << std::endl;
+				std::wcout << _rstrw("wrong input data").str() << std::endl;
 				return 0;
 			}
 			if (argc == 5)
@@ -873,7 +882,7 @@ int main(int argc, char* argv[])
 		{
 			if (argc != 3 && argc != 4)
 			{
-				std::cout << "данные введены неверно " << std::endl;
+				std::wcout << _rstrw("wrong input data").str() << std::endl;
 				return 0;
 			}
 			if (argc == 4)
@@ -886,7 +895,7 @@ int main(int argc, char* argv[])
 		{
 			if (argc != 4 && argc != 5)
 			{
-				std::cout << "данные введены неверно " << std::endl;
+				std::wcout << _rstrw("wrong input data").str() << std::endl;
 				return 0;
 			}
 			if (argc == 5)
@@ -897,7 +906,7 @@ int main(int argc, char* argv[])
 		}
 		else
 		{
-			std::cout << "данные введены неверно " << std::endl;
+			std::wcout << _rstrw("wrong input data").str() << std::endl;
 		}
 	}
 	catch (std::exception & e)

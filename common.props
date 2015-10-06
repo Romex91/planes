@@ -2,17 +2,18 @@
   <PropertyGroup Condition="'$(Configuration)'=='Debug'">
     <dSuffix>-d</dSuffix>
     <dSuffixBoost>-gd</dSuffixBoost>
+    <commonDefenitions>PRINT_RESOURCE_STRINGS;$(commonDefenitions)</commonDefenitions>
   </PropertyGroup>
   <PropertyGroup>
     <baseDir>C:\projects\</baseDir>
     <vendersInclude>
       C:\projects\boost_1_57_0\;
       C:\projects\odb\;
-      C:\projects\SFML-2.1\include\;
+      C:\projects\SFML-2.3\include\;
       C:\projects\ResourceString\ResourceString\;
     </vendersInclude>
     <vendersLibDir>
-      C:\projects\SFML-2.1\lib\;
+      C:\projects\SFML-2.3\lib\;
       C:\projects\boost_1_57_0\stage\lib\;
       C:\projects\odb\lib64\;
     </vendersLibDir>
@@ -32,5 +33,6 @@
     <rplanesLibDir>$(planesOutDir)rplanesLib\</rplanesLibDir>
     <rplanesLib>rplanesLib$(dSuffix).lib</rplanesLib>
     <planesBin>$(planesOutDir)$(configuration)\</planesBin>
+    <commonDefenitions>_WIN32_WINNT=0x0501;_SCL_SECURE_NO_WARNINGS;$(commonDefenitions)</commonDefenitions>
   </PropertyGroup>
 </Project>
