@@ -11,28 +11,19 @@ namespace rplanes
 		public:
 			Projectile():distance(0){}
 			size_t ID;
-			//id стрелка
 			size_t planeID;
 			float
-				//текущая скорость в горизонтальной плоскости
 				speedXY,	
-				//начальная скорость пули
 				startSpeed,	
-				//текущая скорость по вертикали
 				speedZ,	
-				//ускорение
 				acceleration,	
 				x,				
 				y,
 				z,
 				angleXY,
-				//предыдущая позиция пули по x
 				prevX,
-				//предыдущая позиция пули по y
 				prevY,
-				//предыдущая позиция пули по z
 				prevZ,
-				//расстояние, пройденное снарядом
 				distance;		
 			virtual void move( float frameTime );
 		};
@@ -50,18 +41,19 @@ namespace rplanes
 		class Bullet: public Projectile
 		{
 		public:
-			//номер орудия
+			//I have no idea why I added this member. 
+			//May be to provide a client ability to draw a shot from a specific gun when creating new bullet
 			size_t gunNo;
-			//начальный урон
 			int damage;			
-			//начальное бронепробитие
 			float penetration;	
 			unsigned short caliber;
 			int getCurrentDamage()const;
 			float getCurrentPenetration()const;
 			bool isSpent()const;
 			Bullet();
-			//попадала ли пуля в самолет. Серверный метод
+			
+			//check if the bullet ever hitted any plane
+			//a joke from the past. haha
 			bool isVirgin()const;
 
 			void rape()
@@ -72,5 +64,4 @@ namespace rplanes
 			bool virgin;
 		};
 	}
-
 }

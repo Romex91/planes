@@ -28,6 +28,7 @@
 #include <odb/connection.hxx>
 #include <odb/transaction.hxx>
 #include <odb/schema-catalog.hxx>
+
 #include <sstream>
 #include <odb/core.hxx>
 

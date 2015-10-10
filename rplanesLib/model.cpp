@@ -99,14 +99,12 @@ namespace rplanes
 			{
 				float modulePrice;
 				{
-					//загрузка модуля с указанным именем из базы данных
 					auto Module = loadModule( moduleName, db);
-					//если модуль не подходит по типу, проверяем список дальше
 					if ( Module->getType() != GUN )
 					{
 						continue;
 					}
-					//если пушка не соответствует подвеске, проверяем список дальше
+					//check if the gun is suitable to the pod
 					if ( !dynamic_cast<Gun*> (Module.get())->isSuitable(GT) )
 					{
 						continue;

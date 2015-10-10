@@ -46,7 +46,7 @@ public:
 	updatable() : needUpdate_(true)
 	{
 	}
-	const T & getValue()
+	const T & getValue() const
 	{
 		return value_;
 	}
@@ -55,8 +55,8 @@ public:
 		needUpdate_ = true;
 		return value_;
 	}
-	//проверить было ли изменено значение со времени последнего вызова confirmUpdate
-	bool isUpdated()
+	//check if the value was changed after the last call of the method confirmUpdate
+	bool isUpdated() const
 	{
 		return needUpdate_;
 	}
@@ -105,7 +105,7 @@ public:
 	rplanes::serverdata::Plane::PlanePosition previousPosition;
 private:
 	bool destroyed_;
-	//используется в updatePlayers
+	//using in the updatePlayers method
 	servermessages::room::DestroyPlanes::DestroyedPlane destructionInfo_;
 	size_t id_;
 };
@@ -195,28 +195,25 @@ public:
 	rplanes::serverdata::Plane::PlanePosition getPrevPosition();
 	rplanes::Nation getNation();
 
-	//прямой доступ. Следующие методы используют только собственные данные
+	//the next methods does not use data of the other players
 
-	//Если параметры модулей были изменены, обновляем самолет
 	void updateStaticalIfNeed();
 
-	//если игрок не отключился, возрождаем самолет
 	void respawn(float x, float y, float angle);
 	void reload();
 
-	//если состояние модуля было изменено, формируем сообщение обновления модуля. 
-	//если прочность модуля < 0, уничтожаем самолет и обновляем статистику
-	//здесь же проверяем наличие топлива
+	//if the module has changed the state send the update message
+	//if hp of some module < 0 or the plane is out of gas  then destroy the plane and update statistics
 	bool destroyIfNeed(float frameTime);
 
-	//уничтожить самолет, занеся уничтожение в статистику
+	//destroy the plane updating statistics
 	void destroy(servermessages::room::DestroyPlanes::Reason reason, size_t moduleNo);
 
-	//уничтожить самолет, не занося уничтожение в статистику
+	//destroy the plane without updating statistics
 	void setDestroyed(servermessages::room::DestroyPlanes::Reason reason, size_t moduleNo);
 
 
-	//сдвинуть самолеты и пули;
+	//move the plane and the bullets
 	void move(float frameTime);
 
 	void shoot(float frameTime, float serverTime, IdGetter & idGetter);
@@ -227,7 +224,7 @@ public:
 
 	bool isDestroyed()const;
 
-	//перекрестный доступ.
+	//the next methods use data of other players
 
 	void controlTurrets( float frameTime);
 
@@ -249,7 +246,7 @@ public:
 
 
 private:
-	//данный класс необходим для учета снарядов попадающих в крышу и дно модуля
+	//this class is using to handle projectiles hitting top and bottom of modules
 	class CollisionsRegistrar
 	{
 	public:
@@ -271,7 +268,7 @@ private:
 		void handleCollision(ProjectileId projectileId, CollisionInfo collisionInfo)
 		{
 			auto & thisProjectileCollisions = collisions_[projectileId];
-			//если снаряд пересекает границу модуля повторно, удаляем коллизию
+			//delete the collision if the projectile intersects the hitzone border the second time
 			for (auto i = thisProjectileCollisions.begin();
 				i != thisProjectileCollisions.end();
 				i++)
@@ -282,7 +279,8 @@ private:
 					return;
 				}
 			}
-			//иначе наоборот заносим
+			//ohterwise this intersection is the first for this module
+			//so add the collision
 			thisProjectileCollisions.push_back(collisionInfo);
 		}
 
@@ -320,7 +318,7 @@ private:
 	{
 	public:
 		std::vector< servermessages::room::UpdateModules::Module> updatedModules;
-		//обновляется в move используется в addPlayers
+		//updating in the method 'move' using in the method 'addPlayers'
 		servermessages::room::Plane clientPlane;
 		std::vector< rplanes::serverdata::Bullet > newBullets;
 		std::vector< rplanes::serverdata::Bullet> newRicochetes;

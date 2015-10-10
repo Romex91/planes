@@ -5,16 +5,14 @@
 using namespace rplanes::network;
 
 
-//определить статус по id
+//TODO: remove this insanity
 bool clientIsInRoom(size_t clientID );
-//получить положение в векторе из id
 size_t convertIDToPos( size_t clienID );
 size_t convertPosToID( size_t posInVector, bool inRoom  );
 
-//класс клиента.
-//ограничения:
-//Клиенты не могут иметь доступ к другим клиентам. Состояние клиента не должно влиять на состояние других клиентов
-//Обращения к клиенту могут быть осуществлены только последовательно
+//limitations:
+//clients cannot access other clients. Client condition cannot affect other clients
+//this class is singlethreaded
 class Client
 {
 public:
@@ -40,13 +38,12 @@ public:
 
 private:
 
-	//отправить комнатные данные (позиции самолетов и т.п.)
 	void sendRoomMessages();
 
-	//запускается из ангарной петли перед занесением клиента в очередь комнаты
+	//call this method from the hungar loop before moving the client to the room queue
 	void joinRoom( Room& room, size_t planeNo );
 
-	//запускается из петли комнат при выходе из них
+	//call this method when leaving the room
 	void exitRoom();
 
 	struct ProfilesInfo

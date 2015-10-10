@@ -30,12 +30,12 @@ public:
 
 	void destroyRoom( size_t clientID );
 
-	//для клиентов, находящихся в ангаре и новых подключений
-	//выполняется последовательно
+	//handling hangar clients and new connections
+	//single-threaded
 	void hangarLoop();
 
-	//для клиентов, находящихся в комнате
-	//выполняется параллельно по комнатам
+	//handling in-room clients
+	//multi-threaded
 	void roomLoop();
 
 	void administerRoom( size_t clientID , rplanes::network::clientmessages::room::AdministerRoom::Operation operation,
@@ -45,7 +45,6 @@ public:
 private:
 	friend class consoleHandler;
 
-	//вектор клиентов с мьютексом. Мьютекс введен для возможности остановить итерацию
 	class ClientsList
 	{
 	public:
@@ -60,20 +59,20 @@ private:
 	public:
 		void join( std::shared_ptr<Client> & client );
 		
-		//если очередь пуста, вернет пустой указатель
+		//returns null if the queue is empty
 		std::shared_ptr<Client> pop();
 	};
 
 	boost::asio::io_service io_service_;
 	boost::asio::ip::tcp::acceptor acceptor_;
 	
-	//список клиентов, присоединенных к комнатам. Блокируется на время каждой итерации
+	//in-room clients
 	ClientsList roomClients_;
 	
-	//список клиентов, находящихся в ангаре. Блокируется на время каждой итерации
+	//in-hangar clients
 	ClientsList hangarClients_;
 	
-	//"мосты", по которым клиенты переходят из ангара в комнаты и обратно, блокируются на время обращения
+	//queues for clients to move from the hangar to rooms and back
 	ClientsQueue hangarQueue_, deleteQueue_;
 
 
@@ -87,11 +86,8 @@ private:
 
 	//hangarLoopMethods
 
-
-	//выбросить из комнаты, лишить гражданства и расстрелять
 	void deleteClient( std::shared_ptr<Client> & client );
 
-	//обработка подключений nonblocking выполняется в последовательной петле ангара
 	void listen();
 
 	void handleHangarInput();

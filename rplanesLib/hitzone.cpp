@@ -61,9 +61,9 @@ namespace rplanes
 			if( Roll > 90.f && Roll < 270 )
 				Roll -=180.f;
 			shape = base_;
-			sf::Vector2f center(0.f, 0.f); //  в плоскости xz
+			sf::Vector2f center(0.f, 0.f); // xz
 			sf::Vector2f newCenter( 0.f, 0.f);
-			//определение ширины модуля
+
 			PointXY widthRange( std::numeric_limits<float>::max() , -std::numeric_limits<float>::max());
 			for( auto & i: shape.points )
 			{

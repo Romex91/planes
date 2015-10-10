@@ -185,11 +185,11 @@ void rplanes::network::servermessages::room::Plane::serialize( Archive& ar, cons
 
 void rplanes::network::servermessages::room::Plane::extrapolate( float frameTime )
 {
-	//поступательное движение
+	//Translational motion
 	extrapolationData.speed += extrapolationData.acceleration * frameTime;
 	pos.x += extrapolationData.speed * std::cos( pos.angle / 180.0 * M_PI) * frameTime * configuration().flight.speedFactor;
 	pos.y += extrapolationData.speed * std::sin( pos.angle / 180.0 * M_PI ) * frameTime * configuration().flight.speedFactor;
-	//вращательное движение
+	//rotation
 	pos.angle += extrapolationData.angleVelocity 
 		* frameTime * configuration().flight.angleVelocityFactor;
 }

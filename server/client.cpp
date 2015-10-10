@@ -5,12 +5,12 @@ extern std::shared_ptr<odb::database> profilesDB;
 
 Client::ProfilesInfo Client::profilesInfo_;
 
-bool clientIsInRoom( size_t clientID ) /*определить статус по id */
+bool clientIsInRoom( size_t clientID )
 {
 	return clientID >= configuration().server.maxClientsNumber;
 }
 
-size_t convertIDToPos( size_t clienID ) /*получить положение в векторе из id */
+size_t convertIDToPos( size_t clienID )
 {
 	if ( clientIsInRoom(clienID) )
 	{
@@ -37,7 +37,7 @@ void Client::exitRoom()
 	status_ = HANGAR;
 	
 
-	//сохраняем прогресс
+	//saving the progress
 	profile_.statistics[player_->getPlaneName()]+= player_->statistics;
 	profile_.statistics["total"]+=player_->statistics;
 	profile_.money+= player_->statistics.money;
@@ -45,13 +45,13 @@ void Client::exitRoom()
 	
 	profile_.openedMaps.insert(player_->openedMaps.begin(), player_->openedMaps.end());
 	profile_.openedPlanes.insert(player_->openedPlanes.begin(), player_->openedPlanes.end());
-	//выводим сообщение
+	//logging the message
 	std::wcout <<  _rstrw("{0} leaved room.", profile_.login).str() << std::endl;
 
-	//сообщаем комнате, что клиент вышел
+	//reporting to the room that client logged out
 	player_->isJoined = false;
 	player_.reset();
-	//пытаемся сообщить клиенту
+	//trying to send a message to a client
 	try
 	{
 		sendMessage(network::bidirectionalmessages::ExitRoom());
@@ -113,7 +113,7 @@ void Client::logout()
 		MutexLocker locker( profilesInfo_.Mutex );
 		if( profilesInfo_.loggedInProfiles.erase(profile_.login) != 1 )
 		{
-			throw PlanesException(_rstrw("Logged in profiles set does not contain {0}", profile_.login));
+			throw PlanesException(_rstrw("the profiles set does not contain {0}", profile_.login));
 		}
 	}
 	profile_.save(profilesDB);
@@ -126,14 +126,14 @@ void Client::login( std::string name, std::string password )
 	{
 		throw PlanesException(_rstrw("Client has already logged in."));
 	}
-	//заблокируем множество авторизованных пользователей
+
+	//check if the profile is already locked
 	MutexLocker locker( profilesInfo_.Mutex );
-	//проверим занятость профиля
 	if ( profilesInfo_.loggedInProfiles.count(name) > 0 )
 	{
 		throw PlanesException(_rstrw("{0} is locked by other player."));
 	}
-	//попробуем загрузить профиль с таким именем
+	//trying to load the profile from database
 	try
 	{
 		odb::transaction t(profilesDB->begin());
@@ -144,22 +144,19 @@ void Client::login( std::string name, std::string password )
 	{
 		throw PlanesException(_rstrw("Wrong name or password."));
 	}
-	//проверим пароль
+	//verifying the password
 	if ( profile_.password != password )
 	{
 		throw PlanesException(_rstrw("Wrong name or password."));
 	}
-	//если все предыдущие операции удались, значит авторизация легальна
-	//загружаем самолеты профиля
+	//if all the verifications passed tha authorization succeedeed
+	//loading profile planes
 	profile_.loadPlanes(profilesDB);
-	//регистрируем имя
+	//locking the profile
 	profilesInfo_.loggedInProfiles.insert(name);
-	//изменяем статус
 	status_ = HANGAR;
-	//выводим сообщение
-	std::cout << profile_.login << " зашел в игру с адреса " 
-		<< connection_.getIP()
-		<< std::endl;
+
+	std::wcout << _rstrw("{0} logged in from ip {1}", profile_.login, connection_.getIP()).str() << std::endl;
 }
 
 void Client::setControllable( serverdata::Plane::ControllableParameters controllable )

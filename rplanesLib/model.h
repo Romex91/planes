@@ -1,5 +1,4 @@
 #pragma once
-//данный файл содержит класс модели самолета
 #include "stdafx.h"
 #include "modules.h"
 #include "profile.h"
@@ -9,27 +8,28 @@ namespace rplanes
 
 	namespace planedata
 	{
-		//модель самолета. Содержит список устанавливаемых модулей и количество модулей разных типов 
+		//plane model. all the data about each specific plane to store in database
+		//Contains number of modules for each type and the list of modules that fit the plane.
 #pragma  db  object
 		class Model
 		{
 		public:
-			//загрузить из базы данных стоковую конфигурацию
+			//creates a plane with the cheapest modules set
 			playerdata::Plane loadBasicConfiguration( std::shared_ptr<odb::database> planesDB, int & price, std::string profileName );
 
-			//название модели самолета
+			//plane name
 #pragma db id
 			std::string planeName;
 
 
-			//список названий устанавливаемых модулей
+			//names of modules fitting this plane
 #pragma db unordered\
 	id_column("planeName")\
 	value_column("module")
 			std::vector<std::string> modules;
 
 
-			//список типов орудий. Определяет количество устанавливаемых пулеметов и пушек
+			//determines number of guns for each gun type
 #pragma db unordered\
 	id_column("planeName")\
 	value_column("gun")
@@ -45,15 +45,11 @@ namespace rplanes
 			Nation nation;
 
 		private:
-			//найти самый дешевый модуль определенного типа
 			std::string getCheapestModule( int &price, ModuleType MT, std::shared_ptr<odb::database> planesDB);
-			//найти самую дешевую пушку определенного типа
 			std::string getCheapestGun( int &price, GunType GT, std::shared_ptr<odb::database> planesDB );
 
 		};
-		//загрузить из базы данных модуль и проверить его тип
 		std:: shared_ptr<Module> loadModule( std::string moduleName, ModuleType MT, std::shared_ptr<odb::database> db );
-		//загрузить из базы данных модуль
 		std:: shared_ptr<Module> loadModule( std::string moduleName, std::shared_ptr<odb::database> db );
 	}
 }

@@ -163,19 +163,19 @@ public:
 
 	typedef std::vector<ScriptLine> ScriptText;
 
-	//скрипт запускаемый при старте игры
+	//running when the game starts
 	std::vector<ScriptText> startScripts;
 
-	//скрипт запускаемый при присоединении нового игрока
+	//running when a new player joins the room
 	std::vector<ScriptText> joinScripts;
 
-	//скрипт запускаемый при пересечении границы триггера
+	//running when intersecting a trigger
 	std::vector<TriggerScript> triggerScripts;
 
-	//скрипт запускаемый при убийстве игрока
+	//running when a player is killed
 	std::vector<KilledScript> killedScripts;
 
-	//скрипт запускаемый периодично
+	//running by timer
 	std::vector<TimerScript> timerScripts;
 
 	void load(std::string filename);

@@ -12,7 +12,7 @@ namespace rplanes
 		class MessageStorage;
 
 		//////////////////////////////////////////////////////////////////////////
-		//базовый класс сообщений
+		//message classes base
 		class Message
 		{
 		public:
@@ -25,23 +25,20 @@ namespace rplanes
 			size_t clientID;
 			virtual void writeData( boost::archive::binary_oarchive & )=0;
 			virtual void readData(boost::archive::binary_iarchive &) = 0;
-			//виртуальный конструктор для messageStorage()
 			virtual std::shared_ptr<Message> copy() = 0;
 		};
 
 		//////////////////////////////////////////////////////////////////////////
-		//Используется для получения объектов сообщений по id
+		//stores registered messages
 		class MessageStorage
 		{
 		public:
-			//регистрация сообщений проводится до создания объектов MessageStorage
 			static void registryMessage(Message & mess);
 			MessageStorage();
 			Message & getMessage(unsigned short id);
 			unsigned short getLastMessageID();
 		private:
 			std::map < unsigned short,std::shared_ptr< Message > > messages_;
-			//базовая карта сообщений. В ней регистрируются все сообщения.
 			static std::map <unsigned short, std::shared_ptr<Message>> & baseMap();
 			unsigned short lastMessageId_;
 		};
@@ -84,8 +81,8 @@ namespace rplanes
 			size_t getClientID( );
 			std::string getIP();
 			unsigned short getLastMessageId();
-			bool handleInput( );//неблокирующая обработка входящих сообщений;
-			void sendMessage( Message & message );//отправка сообщения;
+			bool handleInput( );//nonblocking
+			void sendMessage( Message & message );
 		};
 	}
 }

@@ -109,7 +109,7 @@ std::vector< IntersectionInfo > getIntersections(rplanes::serverdata::Bullet & b
 		auto & module = target.modules[moduleNo];
 		auto & points = module->hitZone.shape.points;
 
-		//исключаем из обработки выпущенные ракеты
+		//TODO missiles are not implemented yet
 		if (auto *missile = dynamic_cast<rplanes::planedata::Missile *>(module))
 		{
 			if (missile->isEmpty)
@@ -145,7 +145,7 @@ std::vector< IntersectionInfo > getIntersections(rplanes::serverdata::Bullet & b
 		}
 	}
 
-	//сортируем пересечения по дальности от предыдущего значения пули
+	//sorting the intersections by the distance from the previous position of the bullet
 	std::sort(intersections.begin(), intersections.end(), [](IntersectionInfo a, IntersectionInfo b)
 	{
 		return a.distance < b.distance;
@@ -155,24 +155,21 @@ std::vector< IntersectionInfo > getIntersections(rplanes::serverdata::Bullet & b
 
 rplanes::PointXY getDeflectedPoint(DestroyablePlane * target, rplanes::PointXY gunPosition, rplanes::planedata::Gun & gun, float shooterSpeed /*= 0.f*/)
 {
-	//приближенное решение
+	//this solution is rough
 
-	//текущее расстояние до цели
+	//counting current distance to the target
 	float d = distance(gunPosition, target->position);
 
-	//расчитаем среднюю скорость пули, при полете в текущее положение цели
-
+	//calculating mean bullet speed flying to the current target position
 	float vMean = (gun.speed * rplanes::configuration().shooting.speedFactor
 		+ shooterSpeed * rplanes::configuration().flight.speedFactor)
 		+ gun.acceleration * rplanes::configuration().shooting.accelerationFactor * gun.getHitTime(d, shooterSpeed) / 2.f;
 
 
-	//рассчитаем отношение скорости цели к скорости пули
-
+	//calculating ratio of the target speed to the mean bullet speed 
 	float k = (target->target.V * rplanes::configuration().flight.speedFactor) / vMean;
 	
-	//сдвигаем упрежденную точку 
-
+	//calculating the deflected point
 	rplanes::PointXY retval;
 	retval.x = target->position.x + k * d * std::cos(target->position.angle / 180.f * M_PI);
 	retval.y = target->position.y + k * d * std::sin(target->position.angle / 180.f * M_PI);
@@ -188,26 +185,20 @@ void correctAngle(float & x)
 
 void Player::checkCollisions()
 {
-	//для каждого самолета в радиусе выстрела
 	for (auto & player : bulletPlayers_)
 	{
-		//застрелиться нельзя
 		if (player->getID() == getID())
 		{
 			continue;
 		}
 
 		auto & target = player->plane_;
-		//просмотрим все пули
 		for (size_t i = 0; i < bullets_.size(); i++)
 		{
-
-			//урон нанесенный пулей
 			int totalDamage = 0;
 
 			auto & bullet = bullets_[i];
 
-			//если пуля потеряла скорость, удаляем ее
 			if (bullet.isSpent())
 			{
 				collisionsRegistrar_.deleteProjectile(bullet.ID);
@@ -216,25 +207,19 @@ void Player::checkCollisions()
 				continue;
 			}
 
-
-			//если пуля далеко от цели, переходим к следующей
 			auto dist = rplanes::distance(bullet, target.position);
 			if (dist > rplanes::configuration().collisions.rammingDistance)
 			{
 				continue;
 			}
-			//в случае попадания (любого типа) клиенту будет отправлено сообщение 
-			//удаления устаревшей пули
+			//in case of collision of any type the DestroyBullet message would be sent to the client
 			servermessages::room::DestroyBullets::BulletInfo bi;
 			bi.bulletID = bullet.ID;
-			//указывает было ли отправлено сообщение уничтожения пули
 			bool bulletDestroyed = false;
 
 
-			//проверяем каждый модуль на предмет пересечений
 			std::vector< IntersectionInfo > intersections = getIntersections(bullet, target);
 
-			//обрабатываем пересечения по порядку
 			for (size_t intersectionNo = 0; intersectionNo < intersections.size(); intersectionNo++)
 			{
 				auto & intersection = intersections[intersectionNo];
@@ -242,8 +227,7 @@ void Player::checkCollisions()
 				auto & shape = module->hitZone.shape;
 				auto & heightRange = shape.heightRange;
 
-				//если пересечение произошло выше или ниже модуля
-				//просто заносим его в регистратор коллизий
+				//just register the border intersection if the bullet is upper or lower than the module
 				if ((bullet.z < heightRange.a || bullet.z > heightRange.b))
 				{
 					collisionsRegistrar_.handleCollision(bullet.ID,
@@ -251,10 +235,10 @@ void Player::checkCollisions()
 					continue;
 				}
 
-				//иначе произошло попадание в границу модуля
+				//otherwise we can tell the border collision occured
 
 
-				//производим проверку пробития
+				//check if the bullet penetrated the armor
 				float theta = (angleFromPoints(bullet, intersection.intersectionPoint)
 					- angleFromPoints(intersection.a, intersection.b)) / 180 * M_PI;
 
@@ -265,31 +249,29 @@ void Player::checkCollisions()
 				if (penetriation > module->armor
 					&& rand() / static_cast<float>(RAND_MAX) > rplanes::configuration().collisions.randomRicochetChance)
 				{
-					//в случае пробития
+					//in case of penetration
 
-					//повреждаем модуль
+					//damage the mdoule
 					module->damage(bullet.getCurrentDamage(), getID(), rplanes::planedata::ModuleHP::HIT);
 					totalDamage += bullet.getCurrentDamage();
 
-					//обновляем статистику
-
-					//изменяем параметры пули
+					//changing the bullet parameters
 					bullet.speedXY -= bullet.speedXY * module->armor / penetriation;
 					boost::random::normal_distribution<float> dist(0.f, rplanes::configuration().collisions.bulletDeflectionSigma);
 					bullet.angleXY += dist(gen);
 
-					//указываем причину удаления пули
+					//set the bullet destroy reason
 					bi.reason = servermessages::room::DestroyBullets::BulletInfo::HIT;
 
-					//заносим в регистратор коллизий
+					//updating the collision registrar
 					collisionsRegistrar_.handleCollision(bullet.ID,
 						CollisionsRegistrar::CollisionInfo(target.getId(), intersection.moduleNo));
 				}
 				else
 				{
-					//иначе пуля рикошетит
+					//in case of ricochet
 
-					//изменяем параметры пули
+					//changing bullet parameters
 					bullet.angleXY -= theta * 360 / M_PI;
 					bullet.speedXY *= 1 - std::pow(std::abs(sin(theta)), 4.f);
 
@@ -297,7 +279,7 @@ void Player::checkCollisions()
 					bullet.prevX = intersection.intersectionPoint.x;
 					bullet.prevY = intersection.intersectionPoint.y;
 
-					//вращаем позицию пули относительно точки рикошета
+					//rotating the bullet position around the intersection point
 					sf::Vector2f bulletPos(bullet.x, bullet.y);
 					bulletPos = sf::Transform()
 						.rotate(-theta * 360 / M_PI, sf::Vector2f(bullet.prevX, bullet.prevY))
@@ -306,33 +288,31 @@ void Player::checkCollisions()
 					bullet.x = bulletPos.x;
 					bullet.y = bulletPos.y;
 
-					//перерасчитываем пересечения
+					//recalculating intersections
 					intersections = getIntersections(bullet, target);
 					intersectionNo = 0;
 
-					//указываем причину удаления пули
 					bi.reason = servermessages::room::DestroyBullets::BulletInfo::RICOCHET;
 				}
-				//заносим сообщение уничтожения в очередь отправки
+				//sending the destroyed bullet message
 				if (!bulletDestroyed)
 				{
 					messagesInfo_.destroyedBullets.push_back(bi);
 					bulletDestroyed = true;
 				}
-			}//конец обработки пересечений
+			}//finished intersection handling
 
 			//////////////////////////////////////////////////////////////////////////
 
-			//обработка пуль, попадающих в дно и крышу модулей
+			//handling the bullets hitting top and bottom of the modules
 
-			//модули включающие пули
 			auto includingModules = collisionsRegistrar_.getIncludingModules(bullet.ID, target.getId());
 
 			auto includingModulesLambda = [&totalDamage, &includingModules, &bulletDestroyed, &target, &bullet, &bi, this](bool bottom)
 			{
 				if (bottom)
 				{
-					//сортируем модули по возрастанию высоты днищь
+					//sort by increasing of bottom heigh
 					std::sort(includingModules.begin(), includingModules.end(), [target](size_t a, size_t b)
 					{
 						auto & moduleA = target.modules[a];
@@ -342,7 +322,7 @@ void Player::checkCollisions()
 				}
 				else
 				{
-					//сортируем модули по убыванию высоты крыш
+					//sort by decreasing of top heigh
 					std::sort(includingModules.begin(), includingModules.end(), [target](size_t a, size_t b)
 					{
 						auto & moduleA = target.modules[a];
@@ -361,36 +341,34 @@ void Player::checkCollisions()
 						level = module->hitZone.shape.heightRange.b;
 
 
-					//проверяем пересекала ли пуля крышу
+					//check if the bullet intersected the module top
 					if ((level - bullet.z) * (level - bullet.prevZ) > 0)
 					{
 						continue;
 					}
-					//проверяем пробитие
 					float penetration = std::abs(bullet.getCurrentPenetration() * bullet.speedZ / bullet.speedXY) * 2.f;
 					if (penetration > module->armor)
 					{
-						//повреждаем модуль
 						{
 							module->damage(bullet.getCurrentDamage(), getID(), rplanes::planedata::ModuleHP::HIT);
 							totalDamage += bullet.getCurrentDamage();
 						}
-						//изменяем параметры пули
+
 						bullet.speedXY -= bullet.speedXY * module->armor / penetration;
 						bullet.prevZ = level;
-						//указываем причину
+
 						bi.reason = servermessages::room::DestroyBullets::BulletInfo::HIT;
 					}
 					else
 					{
-						//изменяем параметры пули
+
 						bullet.speedZ *= -1;
 						bullet.z = (bullet.prevZ + level) / 2.f;
-						//указываем причину
+
 						bi.reason = servermessages::room::DestroyBullets::BulletInfo::RICOCHET;
 					}
 
-					//заносим сообщение уничтожения в очередь отправки
+
 					if (!bulletDestroyed)
 					{
 						messagesInfo_.destroyedBullets.push_back(bi);
@@ -400,19 +378,18 @@ void Player::checkCollisions()
 
 			};
 
-			//проверяем крыши модулей
+			//check tops
 			includingModulesLambda(false);
 
-			//проверяем днища модулей
+			//check bottoms
 			includingModulesLambda(true);
 
-			//формируем сообщение рикошета (конечное состояние пули после всех пересечений )
 			if (!bullet.isSpent() && bulletDestroyed)
 			{
 				messagesInfo_.newRicochetes.push_back(bullet);
 			}
 
-			//обновляем статистику
+			//updating statistics
 			if (bulletDestroyed)
 			{
 				if (plane_.nation == target.nation)
@@ -468,7 +445,7 @@ void Player::updatePlayers()
 	for (auto player : visiblePlayers_)
 	{
 		auto & foreignPlane = player.second->plane_;
-		//пометить уничтоженные самолеты
+		//mark destroyed planes
 		if (foreignPlane.isDestroyed())
 		{
 			idsToDelete.push_back(player.first);
@@ -477,14 +454,14 @@ void Player::updatePlayers()
 		}
 
 		auto dist = rplanes::distance(foreignPlane.position, plane_.position);
-		//пометить удаленные самолеты
+		//mark vanished planes
 		if (dist >
 			rplanes::configuration().collisions.visibilityDistance)
 		{
 			idsToDelete.push_back(player.first);
 			messages.destroyPlanes.planes.push_back(foreignPlane.getDestructionInfo());
 		}
-		//заполнить векторы
+		//fill vectors
 		if (dist < rplanes::configuration().shooting.maxDistance )
 		{
 			bulletPlayers_.push_back(player.second);
@@ -558,13 +535,13 @@ void Player::shoot(float frameTime, float serverTime, IdGetter & idGetter)
 	bullets_.insert(bullets_.end(), messagesInfo_.newBullets.begin(), messagesInfo_.newBullets.end());
 }
 
-void Player::move(float frameTime) /*сдвинуть самолеты и пули */
+void Player::move(float frameTime)
 {
 	for (auto & Bullet : bullets_)
 	{
 		Bullet.move(frameTime);
 	}
-	//если самолет не уничтожен, сдвигаем его
+
 	if (!plane_.isDestroyed())
 	{
 		plane_.updateInterim();
@@ -597,7 +574,7 @@ bool Player::destroyIfNeed(float frameTime)
 
 		if (module->hp.checkConditionChange())
 		{
-			//обновляем информацию о модуле
+			//sending updated modules message
 			servermessages::room::UpdateModules::Module m;
 			m.defect = module->hp.isDefected();
 			m.hp = module->hp;
@@ -605,7 +582,7 @@ bool Player::destroyIfNeed(float frameTime)
 			m.planeID = id_;
 			m.reason = module->hp.getReason();
 			messagesInfo_.updatedModules.push_back(m);
-			//если прочность модуля меньше нуля, уничтожаем самолет, и прерываем проверку
+			//if hp < 0 destroy the plane
 			if (module->hp < 0
 				&& module->getType() != rplanes::GUN
 				&& module->getType() != rplanes::TURRET)
@@ -631,7 +608,7 @@ void Player::destroy(servermessages::room::DestroyPlanes::Reason reason, size_t 
 {
 	plane_.destroy(reason, moduleNo);
 
-	//обновляем статистику
+	//updating statistics
 	auto module = plane_.modules.begin();
 
 	for (auto i = plane_.modules.begin(); i != plane_.modules.end(); i++)
@@ -650,7 +627,6 @@ void Player::destroy(servermessages::room::DestroyPlanes::Reason reason, size_t 
 
 		if (killer->second->plane_.nation == plane_.nation)
 		{
-			//наказываем предателя
 			killerStat.friensDestroyed++;
 			killer->second->killingStatistics().friendsDestroyed = killerStat.friensDestroyed;
 			killerStat.money -= hp * rplanes::configuration().profile.damagePenalty;
@@ -673,7 +649,7 @@ void Player::setDestroyed(servermessages::room::DestroyPlanes::Reason reason, si
 }
 
 
-void Player::respawn(float x, float y, float angle) /*если игрок не отключился, возрождаем самолет */
+void Player::respawn(float x, float y, float angle)
 {
 	if (!isJoined)
 	{
@@ -682,7 +658,6 @@ void Player::respawn(float x, float y, float angle) /*если игрок не �
 	plane_.respawn(x, y, angle);
 }
 
-/*Если параметры модулей были изменены, обновляем самолет. */
 void Player::updateStaticalIfNeed()
 {
 	bool need = false;
@@ -753,7 +728,6 @@ void Player::controlTurrets(float frameTime)
 
 		turret.isShooting = false;
 
-		//вычисляем позицию турели
 		auto RotatedGunsPositions = turret.getRotatedGunsPositions(plane_.position.angle, plane_.position.roll);
 
 		auto centerGunPostion = RotatedGunsPositions[RotatedGunsPositions.size() / 2];
@@ -765,7 +739,7 @@ void Player::controlTurrets(float frameTime)
 		centerGunPostion.x += plane_.position.x;
 		centerGunPostion.y += plane_.position.y;
 
-		//ищем врагов находящихся в сексторе обстрела
+		//searching enemies in the aim sector
 		float gunMaxDistance = turret.gun.getMaxDistance(0);
 
 		auto enemies = lookAround().getEnemies(gunMaxDistance);
@@ -775,7 +749,7 @@ void Player::controlTurrets(float frameTime)
 			turret.aimAngle = turret.startAngle;
 			continue;
 		}
-		//выбираем самую ближнюю цель
+		//selecting the closest target
 		DestroyablePlane * nearestTarget = targets.front();
 		for (auto & target : targets)
 		{
@@ -792,18 +766,18 @@ void Player::controlTurrets(float frameTime)
 		{
 			continue;
 		}
-		//обрабатываем таймер прицеливания
+		//handling the aim timer
 
 		if (turret.aimTimer < 0.f)
 		{
-			//сбрасываем таймер
+			//reset the timer
 			boost::normal_distribution<float>
 				timerDist(rplanes::configuration().turrets.aimTimerMean,
 				rplanes::configuration().turrets.aimTimerSigma);
 
 			turret.aimTimer = timerDist(gen);
 
-			//устанавливаем ошибку прицеливания
+			//setting aim error
 			boost::normal_distribution<float>
 				errorDist(0.f, rplanes::configuration().turrets.aimErrorSigma);
 
@@ -811,34 +785,33 @@ void Player::controlTurrets(float frameTime)
 			turret.aimError.y = errorDist(gen);
 
 			rplanes::PointXY & aimError = turret.aimError;
-			//наиболее благоприятно прицеливание по преследующей с той же скоростью цели при нулевом крене и близком расстоянии
+			//the ideal conditions for aiming is a firing at a close target that is pursuing us with the same speed
+			//while our plane is flying horizontally
 
-			//учитываем разность скоростей
+			//speed difference penalty
 			aimError = aimError * (1.f + std::abs(plane_.target.V - nearestTarget->target.V) / plane_.target.V);
 
-			//учитываем разность направлений
+			//direction difference penalty
 			float angleResidual = std::abs(plane_.position.angle - targetPosition.angle);
 			if (angleResidual > 180.f)
 				angleResidual = 360.f - angleResidual;
 
 			aimError = aimError * (1.f + angleResidual / 180.f);
 
-			//учитваем крен самолета
+			//roll penalty
 			aimError = aimError * (1.f + std::abs(plane_.position.roll) / 90.f);
-			//учитываем дальность до цели
+			//distance penalty
 			aimError = aimError * (1.f + distance(centerGunPostion, targetPosition) / 300.f);
 		}
 		else
 			turret.aimTimer -= frameTime;
 
-		//расчитываем упрежденную точку
-		//rplanes::PointXY deflectedPoint(targetPosition.x, targetPosition.y);
-
+		//calculating deflected point
 		auto deflectedPoint = getDeflectedPoint(nearestTarget, rplanes::PointXY(centerGunPostion.x, centerGunPostion.y), turret.gun);
 
 		deflectedPoint = deflectedPoint + turret.aimError;
 
-		//поворачиваем турель на цель и производим стрельбу
+		//turning the turret and shooting
 		float targetDistance = distance(centerGunPostion, deflectedPoint);
 		if (targetDistance < gunMaxDistance)
 		{
@@ -860,7 +833,7 @@ void Player::controlTurrets(float frameTime)
 
 			turret.aimDistance += (targetDistance - turret.aimDistance) * frameTime * rplanes::configuration().turrets.aimIntense;
 
-			//производим стрельбу
+			//shooting
 			if (angleResidual < rplanes::configuration().turrets.aimExp
 				|| angleResidual > 360.f - rplanes::configuration().turrets.aimExp)
 			{
@@ -892,7 +865,7 @@ void Player::controlTurrets(float frameTime)
 
 
 
-		//корректируем углы
+		//correcting angles
 		float leftBorder = turret.startAngle - turret.sector / 2.f,
 			rightBorder = turret.startAngle + turret.sector / 2.f;
 
@@ -901,7 +874,7 @@ void Player::controlTurrets(float frameTime)
 		correctAngle(turret.aimAngle);
 		correctAngle(turret.startAngle);
 
-		//проверяем сектор обстрела
+		//check the aim is in the aim sector
 		{
 			float angleResidual = std::abs(turret.aimAngle - turret.startAngle);
 			if (angleResidual > 180.f)
@@ -913,7 +886,7 @@ void Player::controlTurrets(float frameTime)
 			}
 		}
 
-		//исключаем стрельбу через корпус
+		//forbid fire through the plane
 		if (plane_.position.roll > 15.f)
 		{
 			if (turret.gunsPosition.z < 0.f && turret.aimAngle < 180.f)
@@ -930,7 +903,7 @@ void Player::controlTurrets(float frameTime)
 		}
 
 
-		//проводим линию из турели в цель
+		//check if the line from the turret to the aim position intersects any module
 		if (!turret.isShooting)
 		{
 			continue;
@@ -946,7 +919,7 @@ void Player::controlTurrets(float frameTime)
 		b.y += turret.aimDistance * std::sin((turret.aimAngle + plane_.position.angle) / 180.0 * M_PI);
 		b.z = 0.f;
 
-		//проверяем не пересекает ли линия корпус, хвост, крыло, кабину или двигатель
+		//check framework cockpit wing or engine
 		ContainersMerger< rplanes::planedata::Module  > cm;
 		cm.addContainer(plane_.wings);
 		cm.addContainer(plane_.engines);
@@ -986,7 +959,7 @@ void Player::controlTurrets(float frameTime)
 				}
 				return false;
 			};
-			//если пересечение найдено, запрещаем стрельбу
+			//if the intersection found forbid the fire
 			if (checkCollisionsLambda(module))
 			{
 				turret.isShooting = false;

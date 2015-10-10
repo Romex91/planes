@@ -9,49 +9,43 @@ public:
 	void selectTarget(size_t botId, size_t targetId);
 	void deselect( size_t botId );
 	size_t countAttackers(size_t botId);
-	//если бот не имеет цели, вернет botId
+	//returns botId if the bot has no targets 
 	size_t getTarget(size_t botId);
 	void clear();
 private:
-	//список целей каждого бота
+	//target list for each boy
 	std::map< size_t, size_t > targets;
-	//количество атакующих ботов
+	//key - bot id, value - attackers count
 	std::map< size_t, size_t> nAttackersMap;
 };
 
 class BotCondition
 {
 public:
-	//управление ботом
 	void control(Player & player, float frameTime, BotTargetsStorage & botTargetsStorage)
 	{
 		control_derv(player,frameTime, botTargetsStorage);
 		player.setControllable(controllable_);
 	}
-	//инициализация списка переходных состояний
+
 	virtual void initializeConditionList() = 0;
-	//обработка списка переходных состояний
+
 	std::shared_ptr<BotCondition> handleConditionList(Player & player);
 protected:
 	virtual void control_derv(Player & player, float frameTime, BotTargetsStorage & botTargetsStorage) = 0;
-	//угол берется относительно носа самолета
 
+	//exp determines how aggressive would be acceleration for engine limits [~0.5, 1]
 	void accelerate(Player & player,
-		//требуемая скорость
 		unsigned short speed,
-		//точность следования критическим показателям. Чем ближе к еденице тем быстрее разгон при значениях > 1 двигатель будет повреждаться
 		float exp,
-		//скорость набора мощности
 		short increaseValue,
-		//скорость сброса мощности
 		short decreaseValue );
 	void turnToPoint(Player & player,
 		rplanes::PointXY point,
-		//уровень обморока до которого будет происходить набор угловой скорости. от 0 до 100
+		//[0,100]
 		unsigned short maxFaint,
-		//интенсивность поворота
+		//turn intensivity 
 		unsigned short turnValue,
-		//точность следования направлению
 		float angleExp
 		);
 	rplanes::serverdata::Plane::ControllableParameters controllable_;
@@ -92,7 +86,7 @@ namespace botconditions
 			virtual void control_derv(Player & player, float frameTime, BotTargetsStorage & botTargetsStorage);
 		private:
 			void selectTarget(Player & player, std::vector< DestroyablePlane * > & targets, BotTargetsStorage & botTargetsStorage);
-			//если < 0 значит подходящая цель не найдена
+			// < 0 means no target found
 			int targetNo_;
 			float selectTimer_;
 		};

@@ -67,8 +67,6 @@ private:
 
 	Map map_;
 
-	//блокируется ТОЛЬКО во время обработки входящих сообщений клиентов
-	Mutex roomMutex_;
 	std::vector< std::shared_ptr< Player > > players_;
 
 	updatable< servermessages::room::RoomInfo > roomInfo_;

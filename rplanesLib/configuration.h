@@ -31,7 +31,8 @@ namespace rplanes
 				damageFactor = 1.f,
 				speedFactor = 0.4f,			
 				accelerationFactor = 0.8f,		
-				ttlFactor = 0.5f,				// this value determines a bullet destruction speed. [0.f, 1.f]. Used in bullet::isSpent; gun::getMaxDistance
+				//affects bullets destruction time.  [0.f, 1.f]. Used in bullet::isSpent; gun::getMaxDistance
+				ttlFactor = 0.5f,				
 				penetFactor = 1.f,
 				impactFactor = 300.f,
 				impactRandomnesFactor = 10.f,

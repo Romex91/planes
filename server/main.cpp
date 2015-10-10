@@ -193,7 +193,7 @@ namespace rplanes
 				void RoomListRequest::handle()
 				{
 					auto & Client = server.getClient(clientID);
-					Client.profile();//просто для проверки нахождения в ангаре
+					Client.profile();//just to check the client is in hangar
 					network::servermessages::hangar::RoomList message;
 					{
 						MutexLocker ml(server.roomListMessage.mutex);
@@ -243,7 +243,7 @@ namespace rplanes
 
 			void TextMessage::handle()
 			{
-				std::cout << "Клиент " << clientID << " пишет: " << text << std::endl; 
+				std::wcout << _rstrw(":client{0}: {1}", clientID, text).str() << std::endl;
 			}
 
 			void ResourceStringMessage::handle()
@@ -283,7 +283,7 @@ class consoleHandler
 		}
 		if ( options[0] == "planes" )
 		{
-			MutexLocker ml(server.roomClients_.mutex);//блокируем выполнение комнатной петли
+			MutexLocker ml(server.roomClients_.mutex);
 			for ( auto & room : server.rooms_)
 			{
 				std::vector< std::shared_ptr<Player > > players;
@@ -302,7 +302,7 @@ class consoleHandler
 					std::cout << player->name << std::endl;
 					if ( player->plane_.isDestroyed() )
 					{
-						std::cout << "cамолет уничтожен " << std::endl; 
+						std::wcout << _rstrw("plane is destroyed").str() << std::endl; 
 					}
 					player->plane_.showParams();
 				}
@@ -319,7 +319,6 @@ public:
 		std::stringstream ss;
 		while (true)
 		{
-			//получение и разбор команды
 			std::getline( std::cin, line );
 			if ( line.size() == 0 )
 			{
@@ -338,7 +337,6 @@ public:
 				ss >> option;
 			}
 
-			//запуск обработчика
 #define CHECK_COMMAND(cmd)\
 	if( #cmd == command )\
 			{\

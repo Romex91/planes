@@ -3,7 +3,6 @@ using namespace rplanes;
 
 void Room::iterate( float frameTime, float serverTime )
 {
-	//удаляем отключенных уничтоженных игроков
 	deleteUnlogined();
 	std::vector< std::shared_ptr<Player> > handleList;
 
@@ -21,7 +20,6 @@ void Room::iterate( float frameTime, float serverTime )
 	for (int i = 0; i < handleList.size(); i++)
 	{
 		auto & player = *handleList[i];
-		//перекрестный доступ
 		for (auto & otherPlayer : handleList)
 		{
 			player.addPlayer(otherPlayer);
@@ -259,17 +257,17 @@ void Room::executeScript(const std::vector<ScriptLine> & script, std::shared_ptr
 			|| command == "%")
 		{
 			checkOptionsSize(2);
-			//ищем левую переменную
+			//searching the left variable
 			auto left = map_.variables.find(options[0]);
 			if (left == map_.variables.end())
 			{
 				throw PlanesException(_rstrw("Script error. Variable {0} is not found.", options[0]));
 			}
 
-			//определяем правое значение
+			//get the right value
 			int right = getOperandValue(options[1]);
 			
-			//выполняем операцию
+			//execute operation
 			switch (command[0])
 			{
 			case '=':
@@ -587,14 +585,14 @@ void Room::handleTriggers()
 {
 	for (auto & script : map_.triggerScripts)
 	{
-		//ищем триггер
+		//searching the trigger
 		if ( map_.triggers.count(script.trigger) == 0 )
 		{
 			throw PlanesException(_rstrw("{0} is not found.", script.trigger));
 		}
 
 		auto & trigger = map_.triggers[script.trigger];
-		//составляем группу игроков
+
 		std::vector< std::shared_ptr< Player > > players;
 
 		size_t groupFound = false;
@@ -622,14 +620,14 @@ void Room::handleTriggers()
 			{
 				continue;
 			}
-			//проверяем пересечение триггера
+			//check the trigger intersection
 			if ((rplanes::distance(player->getPosition(), trigger) - trigger.radius)
 				* (rplanes::distance(player->getPrevPosition(), trigger) - trigger.radius)
 			> 0)
 			{
 				continue;
 			}
-			//проверяем соответствие типа обработчика
+			//check the trigger type
 			if (rplanes::distance(player->getPosition(), trigger) < trigger.radius && script.type == Map::TriggerScript::ENTER
 				|| rplanes::distance(player->getPosition(), trigger) > trigger.radius && script.type == Map::TriggerScript::ESCAPE)
 			{
@@ -790,7 +788,7 @@ void Room::checkMapEscapes( std::vector<std::shared_ptr<Player>> players )
 			innerAngle += 360;
 		}
 
-		//если игрок улетел за границу карты, направляем его в центр карты
+		//assuming control if the player is out of the room border
 		if (
 			position.x < 0
 			|| position.y < 0

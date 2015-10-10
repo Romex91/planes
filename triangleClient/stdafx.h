@@ -4,7 +4,6 @@
 #define PLANES_CLIENT
 #include <messages.h>
 #include <database.h>
-#include <exceptions.h>
 #include <omp.h>
 #include <thread>
 #include <chrono>

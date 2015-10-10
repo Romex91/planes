@@ -4,17 +4,18 @@ namespace rplanes
 {
 	namespace playerdata
 	{
-#define PILOT_GETTER(x) float get_skill_##x( bool isDefected );
-#define PILOT_LEVEL_UP(x) void up_##x( size_t exp ){ if(exp_ > exp){ x##_ += exp; exp_ -= exp; } }
+#define PILOT_SKILL(x) \
+	private:\
+	size_t x##_; \
+	public: \
+	float get_skill_##x(bool isDefected);\
+	void up_##x(size_t exp){ if (exp_ > exp){ x##_ += exp; exp_ -= exp; } }\
+
 #pragma db value
 		class Pilot
 		{
 		private:
-			size_t engine_,	//навыки : двигатель,
-				flight_,		//маневренность,
-				endurance_,	//выносливость,
-				shooting_,	// стрельба.
-				exp_;
+			size_t exp_;
 			friend class odb::access;
 		public:
 			template<class Archive>
@@ -29,19 +30,14 @@ namespace rplanes
 
 
 			Pilot();
-			PILOT_GETTER(engine);
-			PILOT_GETTER(flight);
-			PILOT_GETTER(endurance);
-			PILOT_GETTER(shooting);
+			PILOT_SKILL(engine);
+			PILOT_SKILL(flight);
+			PILOT_SKILL(endurance);
+			PILOT_SKILL(shooting);
 
-			PILOT_LEVEL_UP(engine);
-			PILOT_LEVEL_UP(flight);
-			PILOT_LEVEL_UP(endurance);
-			PILOT_LEVEL_UP(shooting);
 			float getExp();
 			void addExp(int exp);
 		};
-#undef PILOT_GETTER
-#undef PILOT_LEVEL_UP
+#undef PILOT_SKILL
 	}
 }

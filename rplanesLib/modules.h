@@ -1,36 +1,38 @@
 #pragma  once
-//данный файл содержит классы модулей(конструктивных элементов самолета), а также классы пуля и запущенная ракета
 #include "stdafx.h"
 #include "hitzone.h"
 namespace rplanes
 {
-	enum GunType {GUN1, GUN2, GUN3, GUN4, CANNON1, CANNON2, CANNON3, CANNON4}; //тип именно подвески. Чем выше число справа, тем круче пушку можно запихать. Собственно параметр для магазина(shop, not magazine).
+	//a type of the gun pod. 
+	//bigger the number at right greater gun can be mounted
+	// i.e. a gun of type GUN2 can be mounted to a pod of type GUN3, but not vice versa
+	enum GunType {GUN1, GUN2, GUN3, GUN4, CANNON1, CANNON2, CANNON3, CANNON4}; 
 	enum EngineType {SCREW, JET};
 	enum ModuleType {GUN, MISSILE, WING, TAIL, CABINE, FRAMEWORK, TANK, ENGINE, AMMUNITION, TURRET};
 
 	namespace planedata
 	{
-		// наличие дефекта модуля, может устраниться со временем
+		//a deffect can decrease some module parameters
+		//if a deffect is not serious it can be fixed by the time
 		class Defect 
 		{
 		public:
-			// при timer >= permanentTimerValue деффект неустраним
+			// if timer >= permanentTimerValue deffect is unfixable
 			Defect(  float timer = -1.f ):  timer_(timer), updateRequired_(true) 
 			{}
-			//поврежден ли модуль
+			//true if defected
 			operator bool()const;
-			//является ли повреждение перманентным
+
 			bool isPermanent()const;
-			//уменьшить значение таймера. Возвращает true если дефект был устранен
+			//returns true if a defect was fixed
 			bool decrementTimer( float offset );
-			//увеличить значение таймера. при timer >= permanentTimerValue деффект неустраним
+			// if timer >= permanentTimerValue deffect is unfixable
 			void incrementTimer( float offset ); 
-			//сбросить значение таймера
+			//set timer to -1
 			void reset( float permanentTimerValue );
-			//проверить был ли модуль поврежден/починен со времени последнего вызова  checkUpdateNeed
+			//check if the defect status was changed after the last call of checkUpdateNeed
 			bool checkUpdateNeed();
 		private:
-			// необходимость обновления статических параметров самолета
 			bool updateRequired_; 
 			float timer_, permanentTimerValue_;
 		};
@@ -39,7 +41,7 @@ namespace rplanes
 		{
 		public:
 			friend class Module;
-			//причина, по которой произошло последнее изменение модуля
+			//the reason of the last module state change
 			enum ChangeReason
 			{
 				HIT,
@@ -47,31 +49,31 @@ namespace rplanes
 				REPAIR
 			};
 
-			//сломан ли модуль
 			bool isDefected()const;
 
-			//проверить было ли изменено состояние(прочность, статус поломки) cо времени последнего вызова checkConditionChange
+			//check if the defect status or hp were changed after the last call of checkConditionChange
 			bool checkConditionChange();
-			//проверить был ли модуль сломан/починен со времени последнего вызова checkDefectUpdate
+			//check if the defect status was changed after the last call of checkDefectUpdate
 			bool checkDefectUpdate();
-			//сбросить таймер поломки. Модуль может быть починен
+			//check if the module is defected and the defect is fixable it can be repaired in this method
 			void decrementDefectTimer(float frameTime);
-			//причина последнего изменения состояния
+			//the reason of the last condition change
 			ChangeReason getReason()const;
-			//игрок нанесший последний урон
+			//the client id of the player who did the last damage
 			size_t getLastHitClient()const;
-			//возвращаяет хп
+			//returns integer hp value
 			operator int()const;
 		private:
 			void reset(size_t clientID, int hpMax, float defectChance, float permanentTimerValue, float timerValueSigma, float timerValueMean);
 
-			//сломать модуль
 			void breakDown(ChangeReason reason, float timerVal);
 
-			//повредить модуль. Модуль может сломаться
+			//this method can apply a defect to the module
 			void damage(float damageVal, size_t clientID, ChangeReason reason);
 
-			//вероятность поломки при получении повреждения на половину прочности
+			//I am not good in the probability theory so I use this formula to check defection:
+			//float chance = configuration().defect.chanceFactor * defectChance_ * damageVal / hpMax_*2.f;
+			//if (rand() / static_cast<float>(RAND_MAX) < chance)
 			float defectChance_;
 
 			float
@@ -79,17 +81,13 @@ namespace rplanes
 				timerValueMean_;
 
 
-			//максимальное значение прочности
 			int hpMax_;
-			//текущая проочность
 			int hp_;
-			//определяет сломан ли модуль
 			Defect defect_;
-			//игрок нанесший последий урон
+			//the client id of the player who did the last damage
 			size_t lastHitClient_;
-			//было ли изменено состояние модуля
+			//check if the defect status or hp were changed after the last call of checkConditionChange
 			bool hpUpdated_;
-			//причина изменения состояния
 			ChangeReason changeReason_;
 		};
 
@@ -101,11 +99,10 @@ namespace rplanes
 			std::string name;
 
 			int price;
-			//максимальная прочность
 			int hpMax;
-			//вес в килограммах
+			//weight in kg
 			int weigth;
-			//в миллиметрах толщина брони
+			//mm
 			float armor; 
 
 			float 
@@ -113,22 +110,23 @@ namespace rplanes
 				defectTimerValueSigma,
 				defectTimerValueMean;
 
-			//вероятность выхода из строя при получении повреждения на половину прочности
-			float defectChance; 
+			//I am not good in the probability theory so I use this formula to check defection:
+			//float chance = configuration().defect.chanceFactor * defectChance_ * damageVal / hpMax_*2.f;
+			//if (rand() / static_cast<float>(RAND_MAX) < chance)
+			float defectChance;
 
-			//текущая прочность
 #pragma db transient
 			ModuleHP hp;
 
-			//зона повреждения
+			//used in collision model
 #pragma db transient
 			serverdata::HitZone hitZone;
 
-			//номер в самолете
+			//the slot number in the plane where the module is set
 #pragma db transient
 			size_t pos; 
 
-
+			//reload hp ammunition fuel etc.
 			void reload( size_t clientID );
 
 
@@ -138,24 +136,10 @@ namespace rplanes
 			virtual ~Module();;
 
 
-			//сломать модуль
-			void breakDown(ModuleHP::ChangeReason reason, float timerVal)
-			{
-				hp.breakDown(reason, timerVal);
-			}
+			void breakDown(ModuleHP::ChangeReason reason, float timerVal);
 
-			//повредить модуль. Модуль может сломаться
-			void damage(float damageVal, size_t clientID, ModuleHP::ChangeReason reason)
-			{
-				hp.damage(damageVal, clientID, reason);
-				if ( hp.isDefected() )
-				{
-					if (getType() == AMMUNITION || getType() == TANK)
-					{
-						hp.damage( hpMax , clientID, ModuleHP::FIRE);
-					}
-				}
-			}
+			//the module can be defected in this module
+			void damage(float damageVal, size_t clientID, ModuleHP::ChangeReason reason);
 		protected:
 			virtual void derv_reload();
 
@@ -168,13 +152,11 @@ namespace rplanes
 			Gun();
 			ModuleType getType();
 
-			//таймер для реализации стрельбы
 #pragma db transient
 			float timer;
 
 			size_t caliber;
 			int damage;
-			//тип подвески
 			GunType type;		
 			float penetration,	
 				shootRate,		
@@ -184,18 +166,18 @@ namespace rplanes
 				impact;
 
 
-			//темп стрельбы при повреждении
+			//shoot rate considering if the module is defected
 			float defectShootRate();
 
-			//подходит ли пушка к подвеске gt;
-			bool isSuitable( GunType gunType );
+			//check if the gun is suitable to a pod of the type podType
+			bool isSuitable( GunType podType );
 
 			float getMaxDistance( float planeSpeed );
 
-			//получить время, через которое выпущенный снаряд достигнет цели
+			//get a time for a bullet to reach the target
 			float getHitTime( float shootingDistance, float planeSpeed);
 
-			//получить начальную вертикальную скорость, необходимую для стрельбы на указанную дистанцию
+			//get the begining rate of climb for a bullet to fly to the shooting distance
 			float getSpeedZ(float shootingDistance, float planeSpeed, float gunHeight = 0.f);
 
 		protected:
@@ -210,7 +192,6 @@ namespace rplanes
 		public:
 			ModuleType getType();
 			bool isEmpty;
-			// урон в радиусе при взрыве
 			int damage; 
 			float radius,
 				speed,
@@ -219,9 +200,7 @@ namespace rplanes
 				accuracy;
 
 			float getMaxDistance( float planeSpeed );
-			//получить время, через которое выпущенный снаряд достигнет цели
 			float getHitTime( float shootingDistance, float planeSpeed );
-			//получить начальную вертикальную скорость, необходимую для стрельбы на указанную дистанцию
 			float getSpeedZ( float shootingDistance, float planeSpeed );
 		protected:
 			void derv_reload();
@@ -244,6 +223,8 @@ namespace rplanes
 			float mobilityFactor;
 			float defectMobilityFactor();
 		};
+
+		//TODO: rename to cockpit
 #pragma db object
 		class Cabine : public Module
 		{
@@ -263,9 +244,7 @@ namespace rplanes
 		{
 		public:
 			ModuleType getType();
-			//емкость
 			float capacity;
-			//запас
 #pragma db transient
 			float fuel;		
 		protected:
@@ -287,14 +266,17 @@ namespace rplanes
 			float maxPower;
 			float fuelIntake;
 
-			//температурные параметры
 			float
-				maxTemperature,					//температура при минимальной скорости и максимальной тяге
-				minTemperature,					//температура при максимальной скорости и минимальной тяге  
-				declaredMaxDt,					//максимально допустимое наращивание температуры
-				criticalTemperature,			//температура, при которой двигатель повреждается
-				heatingFactor,					//степень нагревания двигателя
-				cooldownFactor;					//степень охлаждения двигателя
+				//engine temperature stabilizing when speed is minimal and power is maximal
+				maxTemperature,
+				//engine temperature stabilizing when speed is maximal and power is minimal
+				minTemperature,
+				declaredMaxDt,
+				criticalTemperature,
+				//default value is 1
+				heatingFactor,
+				//default value is 1
+				cooldownFactor;
 
 
 #pragma db transient
@@ -342,22 +324,20 @@ namespace rplanes
 			Gun gun;
 
 
-			//расстояние между пушками
+			//distance between guns. reading when loading hitzones
 #pragma db transient
 			float gunShift;
 
 #pragma db transient
 			PointXYZ gunsPosition;
 
-			//сектор обстрела
+			//horizontal turret sector 
 #pragma db transient
 			float sector;
-			//начальное направление турели
+			//gun orientation. doesn't matter when sector >=180
 #pragma db transient 
 			float startAngle;
 
-
-			//вспомогательные данные
 
 #pragma  db transient
 			PointXY aimError;
@@ -367,10 +347,8 @@ namespace rplanes
 			float shootTimer;
 #pragma db transient
 			float cooldownTimer;
-			//текущая дальность стрельбы
 #pragma db transient
 			float aimDistance;
-			//текущий угол турели
 #pragma db transient 
 			float aimAngle;
 #pragma db transient

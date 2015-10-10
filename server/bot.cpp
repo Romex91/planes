@@ -85,11 +85,9 @@ void BotCondition::turnToPoint(Player & player,
 
 void BotCondition::accelerate(
 	Player & player,
-	/*требуемая скорость */
 	unsigned short speed,
-	/*точность следования критическим показателям. Чем ближе к еденице тем быстрее разгон при значениях > 1 двигатель будет повреждаться */
-	float exp, /*скорость набора мощности */
-	short increaseValue, /*скорость сброса мощности */
+	float exp,
+	short increaseValue,
 	short decreaseValue)
 {
 	auto & interfaceData = player.messages.interfaceData;

@@ -37,7 +37,7 @@ std::shared_ptr<Client> Server::ClientsQueue::pop()
 
 std::shared_ptr<Client> & Server::emptyClient(ClientsList & cl, size_t & pos)
 {
-	//ищем свободную позицию в ангарном векторе 
+	//searching for free position in the hangar client vector
 	size_t newClientPos = 0;
 	for (; newClientPos != cl.clients.size(); newClientPos++)
 	{
@@ -46,10 +46,9 @@ std::shared_ptr<Client> & Server::emptyClient(ClientsList & cl, size_t & pos)
 			break;
 		}
 	}
-	//если свободный клиент не найден, добавим новый
+	//add new if not found
 	if (newClientPos == cl.clients.size())
 	{
-		//создаем новый клиент
 		cl.clients.push_back(std::shared_ptr<Client>());
 	}
 	pos = newClientPos;
@@ -78,7 +77,6 @@ std::shared_ptr<Client> & Server::getClientPtr(size_t clientID)
 
 void Server::deleteClient(std::shared_ptr<Client> & client)
 {
-	//пытаемся корректно завершить работу клиента
 	try
 	{
 		switch (client->getStatus())
@@ -98,9 +96,7 @@ void Server::deleteClient(std::shared_ptr<Client> & client)
 	{
 		std::wcout << _rstrw("Unexpected error deleting client. {0}", e.what()).str() << std::endl;
 	}
-	//выводим сообщение
 	std::wcout << _rstrw("Lost connection. {0}", client->connection_.getIP()).str() << std::endl;
-	//удаляем клиент
 	client.reset();
 }
 
@@ -108,7 +104,7 @@ void Server::listen()
 {
 	while (true)
 	{
-		//пробуем подключитсья
+		//trying to connect
 		static std::shared_ptr<Client> newClient;
 		{
 			try
@@ -121,7 +117,7 @@ void Server::listen()
 				boost::system::error_code err = newClient->connection_.accept(acceptor_);
 				if (err)
 				{
-					//если новых подключений не найдено, завершаем listen
+					//no new connections found
 					return;
 				}
 				newClient->connection_.non_blocking(true);
@@ -130,12 +126,12 @@ void Server::listen()
 				return;
 			}
 		}
-		//заносим новый клиент в ангарный вектор
+		//adding new client to the hangar vector
 		size_t id;
 		emptyClient(hangarClients_, id) = newClient;
 		newClient->setID(id);
-		//выводим сообщение
-		std::cout << "получено новое подключение " << newClient->connection_.getIP() << std::endl;
+		std::wcout << _rstrw("new connection accepted. ip : {0}", 
+			newClient->connection_.getIP()).str() << std::endl;
 		newClient.reset();
 	}
 }
@@ -145,16 +141,15 @@ void Server::handleHangarInput()
 	for (size_t i = 0; i < hangarClients_.clients.size(); i++)
 	{
 		size_t handledMessages = 0;
-		while (hangarClients_.clients[i]) //цикл выполняется до тех пор, пока клиент не будет  удален из ангарного списка, либо не кончатся сообщения
+		while (hangarClients_.clients[i])
 		{
-			//пытаемся получить сообщение
+			//trying to accept a message
 			try
 			{
 				if (!hangarClients_.clients[i]->connection_.handleInput())
 				{
 					break;
 				}
-				//если сообщение получено, проверяем количество обработанных сообщений
 				handledMessages++;
 				if (handledMessages > configuration().server.hangarMessagesPerFrame)
 				{
@@ -164,7 +159,6 @@ void Server::handleHangarInput()
 			}
 			catch (std::exception & e)
 			{
-				//возникла ошибка, удаляем клиент
 				std::wcout << _rstrw("Failed handling message {0}. {1}", 
 					hangarClients_.clients[i]->connection_.getLastMessageId(), e.what()).str() << std::endl;
 				deleteClient(hangarClients_.clients[i]);
@@ -196,17 +190,15 @@ void Server::handleRoomInput()
 	for (int i = 0; i < roomClients_.clients.size(); i++)
 	{
 		size_t handledMessages = 0;
-		//цикл выполняется до тех пор, пока клиент не будет  удален из комнатного списка, либо не кончатся сообщения
+
 		while (roomClients_.clients[i])
 		{
-			//пытаемся получить сообщение
 			try
 			{
 				if (!roomClients_.clients[i]->connection_.handleInput())
 				{
 					break;
 				}
-				//если сообщение получено, проверяем количество обработанных сообщений
 				handledMessages++;
 				if (handledMessages > configuration().server.roomMessagesPerFrame)
 				{
@@ -214,7 +206,6 @@ void Server::handleRoomInput()
 					throw PlanesException(_rstrw("Client has sent {0} messages per one frame. {1} messages per frame permitted.", handledMessages, configuration().server.roomMessagesPerFrame));
 				}
 			}
-			//возникла ошибка, обрываем связь и помещаяем клиент в очередь удаления
 			catch (std::exception & e)
 			{
 				std::wcout << _rstrw("Failed handling message {0}. {1}", 
@@ -265,6 +256,8 @@ void Server::joinRoom(size_t clientID, std::string creatorName, size_t planeNumb
 	{
 		throw PlanesException(_rstrw("Cannot join room. Player is out of hangar."));
 	}
+
+	//
 	//если клиент является создателем комнаты, он присоединится именно к своей комнате
 	auto room = rooms_.find(client->profile_.login);
 	if (room == rooms_.end())
@@ -313,7 +306,7 @@ void Server::createRoom(size_t clientID, std::string description, std::string ma
 	room.description = description;
 	room.banlist = client.profile_.banlist;
 
-	MutexLocker ml(roomClients_.mutex);//блокируем мьютекс комнатной петли
+	MutexLocker ml(roomClients_.mutex);
 	{
 		rooms_[client.profile().login] = room;
 	}
@@ -349,23 +342,23 @@ void Server::hangarLoop()
 		iterationBegin = std::chrono::steady_clock::now();
 		{
 			MutexLocker ml(hangarClients_.mutex);
-			//подключаем новых клиентов
+			//add new players
 			listen();
 			//выполняем команды клиентов
 			handleHangarInput();
-			//удаляем неавторизованных клиентов
+			//deleting players which are delaying authorization
 			deleteUnlogined(frameTime.count());
 
-			//обработать очередь выхода из комнаты
+			//handle clients which are exiting rooms
 			while (auto client = hangarQueue_.pop())
 			{
 				client->exitRoom();
 				size_t pos;
 				emptyClient(hangarClients_, pos) = client;
 				client->setID(convertPosToID(pos, false));
-				std::cout << "Клиент " << client->profile().login << " выброшен из комнаты" << std::endl;
+				std::wcout << _rstrw("client {0} returned to the hangar", client->profile().login).str() << std::endl;
 			}
-			//обработать очередь удаления
+			//handle deleting clients queue
 			while (auto client = deleteQueue_.pop())
 			{
 				deleteClient(client);
@@ -383,18 +376,16 @@ void Server::hangarLoop()
 
 void Server::roomLoop()
 {
-	//время начала итерации
+	//time of the iteration begining 
 	std::chrono::steady_clock::time_point iterationBegin;
 
-	//время кадра, указанное в конфигурации
 	std::chrono::microseconds configFrameTime(
 		static_cast<long long>(
 		configuration().server.roomFrameTime * 1000000));
 
-	//полное время кадра. складывается из времени итерации и времени сна
+	//the full frame time combined of the iteration time and the sleep time
 	std::chrono::duration<float> frameTime;
 
-	//время выполнения итерации
 	std::chrono::microseconds iterationTime;
 	std::shared_ptr< MutexLocker > locker;
 	{
@@ -404,16 +395,13 @@ void Server::roomLoop()
 
 			locker = std::shared_ptr<MutexLocker>(new MutexLocker(roomClients_.mutex));
 
-			//выполняем команды клиентов
 			handleRoomInput();
 
-			//обрабатываем каждую комнату
 			for (auto & room : rooms_)
 			{
 				room.second.iterate(frameTime.count(), getTime());
 			}
 
-			//отправляем сообщения игрокам
 			for (int i = 0; i < roomClients_.clients.size(); i++)
 			{
 				if (!roomClients_.clients[i])continue;
@@ -430,7 +418,7 @@ void Server::roomLoop()
 				}
 			}
 
-			//выбрасываем в ангар отключенных клиентов
+			//throwing exited clients to the hangar
 			for (auto & client : roomClients_.clients)
 			{
 				if (!client)

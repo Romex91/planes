@@ -18,7 +18,8 @@ namespace rplanes
 				std::string profileName;
 			};
 		}
-		//шаблон самолета. Содержит названия всех модулей, установленных на данном самолете профиля
+		//in-hangar plane. 
+		//contains names of the modules mounted to this plane
 #pragma  db object
 		class Plane
 		{
@@ -66,6 +67,7 @@ namespace rplanes
 
 			void save(std::shared_ptr< odb::database > profilesDB);
 
+			//build in-room plane
 			serverdata::Plane buildPlane(Pilot Pilot, std::shared_ptr<odb::database>  planesDB);
 
 			bool isReadyForJoinRoom();
@@ -111,7 +113,7 @@ namespace rplanes
 				return *this;
 			}
 		};
-		//профиль игрока. Содержит данные пилота, список названий модулей, содержащихся на складе. И конфигурации имеющихся самолетов.
+
 #pragma db object
 		class Profile
 		{
@@ -143,52 +145,53 @@ namespace rplanes
 	value_column("banlist")
 			std::set < std::string > banlist;
 
-			//статистика. общая и по самолетам.  ключ - название самолета или total для общей
+			//key is a plane model name or 'total'
 			std::map< std::string, Statistics> statistics;
 
 			Profile();
 
 			void loadPlanes(std::shared_ptr< odb::database > profilesDB);
 
-			//сохранение профиля включая самолеты
+			//save all data to database
 			void save(std::shared_ptr< odb::database > profilesDB);
 
-			//возвращает строки типа "самолет куплен" и т.п.
+			//returns status text
 			rstring::_rstrw_t buyPlane(
 				std::string planeName, std::shared_ptr<odb::database> planesDB);
 
-			// Покупка и установка модуля в позицию moduleNo. возвращает строки типа "модуль куплен" и т.п. 
-			//если модуль есть на складе,  деньги потрачены не будут. Если moduleNo не корректно, будет возвращено сообщение ошибке.
+			//returns status text
+			//first it searchs a module in the module store and get it from there
+			//if such a module doesn't exist it would be bought
 			rstring::_rstrw_t buyModule(
 				std::string planeName,
 				size_t moduleNo,
 				std::string moduleName,
 				std::shared_ptr<odb::database > planesDB);
 
-			//покупка и установка модулей во все подходящие слоты
+			//returns status text
+			//set modules to all the fitting slots
 			rstring::_rstrw_t buyModules(
 				std::string planeName,
 				std::string moduleName,
 				std::shared_ptr<odb::database > planesDB
 				);
 
-			// если цена < 0, значит самолет уже есть, а abs(цена) соответствует цене самолета
+			// if price < 0, the plane persists in the hangar
 			std::vector<std::pair<std::string, int> > planePriceList(std::shared_ptr<odb::database> planesDB);
 
-			//список модулей конкретного типа, устанавливаемых на самолет в конкретную позицию. 
-			//Если модуль есть на складе, цена будет равна 0. Если pos не коректно, будет возвращен пустой массив.
+			//if such a module persists in the hangar it's price would be 0
 			std::vector<std::pair<std::string, int> > modulePriceList(
 				std::string  planeName,
 				ModuleType moduleType,
 				size_t moduleNo,
 				std::shared_ptr<odb::database> planesDB);
-			// Список модулей, содержащихся на складе.
+
 			std::vector<std::pair<std::string, int> > moduleStorePriceList(std::shared_ptr<odb::database> planesDB);
-			// возвращает строки типа "самолет продан"
+
 			rstring::_rstrw_t sellPlane(
 				std::string planeName,
 				std::shared_ptr<odb::database> planesDB);
-			// Продавать можно только модули, хранящиеся на складе. Возвращает строки типа "модуль продан"
+			// you can sell only the modules from the module store
 			rstring::_rstrw_t sellModule(
 				std::string moduleName,
 				size_t nModules,

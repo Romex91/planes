@@ -1,5 +1,4 @@
 #pragma once
-//данный файл содержит класс "готового" самолета
 #include "modules.h"
 #include "pilot.h"
 #include "projectile.h"
@@ -10,7 +9,7 @@ namespace rplanes
 
 	namespace serverdata
 	{
-		//"готовый" самолет
+		//in-room plane
 		class Plane
 		{
 		public:
@@ -27,7 +26,7 @@ namespace rplanes
 				}
 				float x, y, angle,roll;
 			};
-			// параметры, которые меняются относительно редко.
+			//parameters that are changing rarely (when some module brakes down).
 			class StaticalParameters 
 			{
 			public:
@@ -40,7 +39,7 @@ namespace rplanes
 					rollSpeed,
 					mass;
 			};
-			// параметры, манипулируемые игроком
+			//parameters changing by the player
 			class ControllableParameters 
 			{
 			public:
@@ -53,26 +52,28 @@ namespace rplanes
 					launchMissile = false;
 					missileAim = false;
 				}
-				//в диапазоне от 0 до 100
+				//[0,100]
 				short power;
-				//в метрах
+				//distance between guns and the aim mark center in meters
 				short shootingDistanceOffset;
-				//в диапазоне от -100 до 100
+				//[-100,100]
 				short turningVal; 
 				bool isShooting;
 				bool launchMissile;
-				//ракетный прицел
+				//missiles Aim
 				bool missileAim;		
 			};
-			// параметры, расчитываемые только из статических параметров и навыков пилота, в передаче туда-сюда не нуждаются.
+			//parameters that depend on statical parameters and pilot skills and nothing else
+			//so we update them only when statical parameters changing
 			class DependentParameters 
 			{
 			public:
 				float frictionFactor,
 					minPower;
 			};
-			// промежуточные параметры. Являются сугубо серверной собственностью. Помимо статических и депендиальных параметров зависят от целевых параметров.
-			// Расчитывается каждый кадр.
+
+			// parameters needed to calculate target parameters
+			// updating once per frame
 			class InterimParameters 
 			{				
 			public:
@@ -102,7 +103,7 @@ namespace rplanes
 					ACS = 0.f;
 				}
 			};
-			//собственно цель расчетов. Характер движения ,состояние двигателя и пилота. Расчитывается каждый кадр.
+			//parameters needed to move plane on the map and to display on the player monitor 
 			class TargetParameters 
 			{
 			public:
@@ -115,23 +116,25 @@ namespace rplanes
 					faintVal = 0;
 					faintTimer = -1;
 				}
-				float V,					// скорость
-					acceleration,			// прирост скорости
-					angularVelocity,		// угловая скорость
-					angularAcceleration,	// прирост угловой скорости
-					faintVal,				// уровень затемнения экрана от перегрузок при значении > 1 - обморок
-					faintTimer,				// оставшееся время нахождения в обмороке
-					clientShootingDistance,	// дальность стрельбы, отображаемая у клиента
-					aimSize;				// радиус прицельной рамки
+				float V,					
+					acceleration,
+					angularVelocity,
+					angularAcceleration,
+					//level of g-force vision blackout
+					faintVal,
+					faintTimer,
+					clientShootingDistance,
+					aimSize;
 			};
 
-			//data
+
 			std::vector<  planedata::Module * > modules;
+			//using when calculating aimsize. initializing in the reload method
 			planedata:: Gun * bestGun;
 			planedata::Missile * currentMissile;
 
 			std::string name;
-			//Элементы
+
 			playerdata::Pilot pilot;
 			Nation nation;
 			planedata:: Cabine cabine;
@@ -145,39 +148,39 @@ namespace rplanes
 			std::vector< planedata::Wing> wings;
 			std::vector< planedata::Turret> turrets;
 
-			//Параметры
-			//редко меняемые
+			//these parameters are changing rarely
+
 			StaticalParameters statical;
 			DependentParameters dependent;
-			//Часто меняемые
+
+			//parameters changing each frame
+
 			PlanePosition position;
 			ControllableParameters controllable;
 			InterimParameters interim;
 			TargetParameters target;
 
-			//functions
-
 
 			bool isFilled()const;
-			//устанавливает топливо/боезапас/прочность модулей/lastHtiClient в начальное значение. Выбор лучшей пушки и текущей ракеты
+			//reset fuel/ammunition/hp/lastHitClient. Change the best gun and current missile
 			void reload( size_t clientID );
-			//загрузка зон повреждения, заполнение массива указателей на модули. 
+			//load hitzones. fill the modules array
 			void initModules(); 
 			void showParams();
-			//запускается при изменении  параметров модулей
+			//run this method when modules parameters are changed
 			void updateStatical();
-			//запускается при изменении параметров модулей
+			//run this method after updateStatical
 			void updateDependent();
 
-			//запускается перед move каждый кадр
+
 			void updateInterim();
-			//запускается каждый кадр
 			void move( float frameTime );
 
-			//запускается при стрельбе ракетами
+			//run after missile fire
 			void updateCurrentMissile();
 
-			//провести стрельбу из курсовых орудий и турелей в течении frameTime если пилот не в обмороке. ID пуль не устанавливаются
+			//guns and turrets fire
+			//new bullets ids shold be initialized after this method
 			std::vector<Bullet> shoot( float frameTime, size_t clientID, float serverTime);
 
 			std::vector< rplanes::serverdata::LaunchedMissile > launchMissile(size_t clientID);
