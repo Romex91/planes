@@ -30,9 +30,9 @@
     </vendersLib>
     <planesOutDir>$(SolutionDir)out\</planesOutDir>
     <rplanesLibInclude>$(solutionDir)rplanesLib\</rplanesLibInclude>
-    <rplanesLibDir>$(planesOutDir)rplanesLib\</rplanesLibDir>
     <rplanesLib>rplanesLib$(dSuffix).lib</rplanesLib>
     <planesBin>$(planesOutDir)$(configuration)\</planesBin>
+    <rplanesLibDir>$(planesBin)\</rplanesLibDir>
     <commonDefenitions>_WIN32_WINNT=0x0501;_SCL_SECURE_NO_WARNINGS;$(commonDefenitions)</commonDefenitions>
   </PropertyGroup>
 </Project>

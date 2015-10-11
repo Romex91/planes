@@ -51,6 +51,9 @@
       <Command>
       </Command>
     </PostBuildEvent>
+    <BuildLog>
+      <Path>$(TargetDir)$(MSBuildProjectName).log</Path>
+    </BuildLog>
   </ItemDefinitionGroup>
   <ItemDefinitionGroup Condition="'$(Configuration)|$(Platform)'=='Release|x64'">
     <ClCompile>
@@ -64,6 +67,9 @@
       <Command>
       </Command>
     </PostBuildEvent>
+    <BuildLog>
+      <Path>$(TargetDir)$(MSBuildProjectName).log</Path>
+    </BuildLog>
   </ItemDefinitionGroup>
   <ItemGroup>
     <ClCompile Include="database.cpp" />

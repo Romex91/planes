@@ -8,9 +8,9 @@ namespace rplanes
 		PlanesException(const rstring::_rstrw_t & string);
 		virtual ~PlanesException() throw();
 		virtual const char * what() const throw() override;
-		const rstring::_rstrw_t & getString();
+		const rstring::_rstrw_t & getString() const;
 	private:
-		const rstring::_rstrw_t & _string;
+		rstring::_rstrw_t _string;
 	};
 
 }

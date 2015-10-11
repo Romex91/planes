@@ -257,8 +257,7 @@ void Server::joinRoom(size_t clientID, std::string creatorName, size_t planeNumb
 		throw PlanesException(_rstrw("Cannot join room. Player is out of hangar."));
 	}
 
-	//
-	//если клиент является создателем комнаты, он присоединится именно к своей комнате
+	//if the client has undeleted room he cannot join to another one
 	auto room = rooms_.find(client->profile_.login);
 	if (room == rooms_.end())
 	{
@@ -285,7 +284,7 @@ void Server::joinRoom(size_t clientID, std::string creatorName, size_t planeNumb
 		client->setID(convertPosToID(pos, true));
 	}
 
-	std::wcout << _rstrw("{0} connected to room {1}", client->profile().login, room->first).str() << std::endl;
+	std::wcout << _rstrw("{0} connected to room {1}", client->profile_.login, room->first).str() << std::endl;
 	client.reset();
 }
 

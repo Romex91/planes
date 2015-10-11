@@ -20,7 +20,7 @@ const char * rplanes::PlanesException::what() const
 	}
 }
 
-const rstring::_rstrw_t & rplanes::PlanesException::getString()
+const rstring::_rstrw_t & rplanes::PlanesException::getString() const
 {
 	return _string;
 }
