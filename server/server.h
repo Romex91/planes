@@ -13,7 +13,7 @@ public:
 	struct RoomListMessage
 	{
 		Mutex mutex;
-		servermessages::hangar::RoomList message;
+		MRoomList message;
 	}roomListMessage;
 
 	void updateRoomMessage();
@@ -38,7 +38,7 @@ public:
 	//multi-threaded
 	void roomLoop();
 
-	void administerRoom( size_t clientID , rplanes::network::clientmessages::room::AdministerRoom::Operation operation,
+	void administerRoom( size_t clientID , rplanes::network::MAdministerRoom::Operation operation,
 		std::vector<std::string> options);
 
 

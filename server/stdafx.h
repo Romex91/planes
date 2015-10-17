@@ -16,6 +16,7 @@
 
 #define PLANES_SERVER
 #include <messages.h>
+#include <roomMessages.h>
 #include <parallel.h>
 #include <profile.h>
 #include <configuration.h>

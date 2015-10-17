@@ -1,7 +1,7 @@
 #define PLANES_CLIENT //должно стоять до messages.h
 #include "stdafx.h"
 using boost::asio::ip::tcp;
-
+using namespace rplanes::network;
 std::string server_ip = "127.0.0.1";
 
 float scale = 2.f; //увеличивает серверные данные при отрисовке
@@ -23,11 +23,192 @@ class Client
 public:
 
 	//сообщение, передаваемое серверу каждый серверный кадр
-	rplanes::network::clientmessages::room::SendControllable controllable;
+	rplanes::network::MSendControllable controllable;
 
 	rplanes::network::Connection connection;
 	Client() : connection(io_service)
-	{}
+	{
+		//////////////////////////////////////////////////////////////////////////
+		//setting message handlers
+		//////////////////////////////////////////////////////////////////////////
+
+		//приходит после отправки запроса статуса
+		connection.setHandler<MStatus>([this](const MStatus & m) {
+			status = m.status;
+		});
+		//после успешной авторизации сервер отсылает конфигурацию, необходимую для корректной работы interpolate и т.п.
+		connection.setHandler<MServerConfiguration>([this](const MServerConfiguration & m){
+			std::wcout << _rstrw("reading server configuration...").str() << std::endl;
+			rplanes::configuration() = m.conf;
+		});
+		connection.setHandler<MProfile>([this](const MProfile & m){
+			profile = m.profile;
+		});
+		connection.setHandler<MRoomList>([this](const MRoomList & m){
+			rooms = m.rooms;
+		});
+		connection.setHandler<MChangeMap>([this](const MChangeMap & m){
+			std::wcout << _rstrw("changing map to {0}...", m.mapName).str() << std::endl;
+		});
+		//сообщение приходит после запроса серверного времени
+		connection.setHandler<MServerTime>([this](const MServerTime & m){
+			client.serverTime = m.time;
+
+			//запрашиваем серверное время
+			client.connection.sendMessage(MServerTimeRequest());
+
+			//клиент должен отсылать управление как можно чаще, но при этом не привышать квоту
+			//поэтому отправляем данные управления вместе с запросом времени
+			client.connection.sendMessage(client.controllable);
+		});
+
+		connection.setHandler<MCreateBullets>([this](const MCreateBullets & m){
+			for (auto & bullet : m.bullets)
+			{
+				client.bullets[bullet.ID] = bullet;
+				//сдвигаем пулю на актуальную на данный момент позицию
+				if (client.clientTime > m.time)
+					client.bullets[bullet.ID].move(client.clientTime - m.time);
+			}
+		});
+		connection.setHandler<MCreatePlanes>([this](const MCreatePlanes & m){
+			for (auto & plane : m.planes)
+			{
+
+				if (client.planes.count(plane.id) != 0)
+				{
+					std::wcout << _rstrw("duplicate plane creation").str() << std::endl;
+				}
+				std::wcout << _rstrw("creating new plane '{0}' player '{1}' id '{2}'",
+					plane.planeName, plane.playerName, plane.id).str() << std::endl;
+				client.planes[plane.id] = plane;
+			}
+		});
+		//логически идентична createBullets
+		//можно использовать другие графические эффекты, и т.п.
+		connection.setHandler<MCreateRicochetes>([this](const MCreateRicochetes & m){
+			for (auto & bullet : m.bullets)
+			{
+				client.bullets[bullet.ID] = bullet;
+				//сдвигаем пулю на актуальную на данный момент позицию
+				if (client.clientTime > m.time)
+					client.bullets[bullet.ID].move(client.clientTime - m.time);
+			}
+		});
+		//приходит только при попаданиях. Остальные пули удаляются в главной петле
+		connection.setHandler<MDestroyBullets>([this](const MDestroyBullets & m){
+			//пуля уничтожена во время коллизий
+			for (auto & bullet : m.bullets)
+			{
+				client.bullets.erase(bullet.bulletID);
+			}
+		});
+		//может означать не только уничтожение, но и вылет за границы видимости
+		connection.setHandler<MDestroyPlanes>([this](const MDestroyPlanes & m){
+			for (auto & destroyedPlane : m.planes)
+			{
+				switch (destroyedPlane.reason)
+				{
+				case rplanes::network::MDestroyPlanes::MODULE_DESTROYED:
+					std::wcout << _rstrw("plane {0} is downing because of {2} {1} destruction",
+						destroyedPlane.planeID, destroyedPlane.moduleNo,
+						rplanes::moduleTypesNames[client.planes[destroyedPlane.planeID].modules[destroyedPlane.moduleNo].type]).str() << std::endl;
+					break;
+				case rplanes::network::MDestroyPlanes::FUEL:
+					std::wcout << _rstrw("plane {0} is out of fuel", destroyedPlane.planeID).str() << std::endl;
+					break;
+				case rplanes::network::MDestroyPlanes::VANISH:
+					std::wcout << _rstrw("plane {0} vanished", destroyedPlane.planeID).str() << std::endl;
+					break;
+				case  rplanes::network::MDestroyPlanes::RAMMED:
+					std::wcout << _rstrw("plane {0} rammed with another plane", destroyedPlane.planeID).str() << std::endl;
+					break;
+				case rplanes::network::MDestroyPlanes::FIRE:
+					std::wcout << _rstrw("plane {0} is burning down", destroyedPlane.planeID).str() << std::endl;
+					break;
+				}
+				client.planes.erase(destroyedPlane.planeID);
+			}
+		});
+
+		//приходит каждый серверный кадр
+		connection.setHandler<MInterfaceData>([this](const MInterfaceData & m){
+			client.interfaceData = m;
+		});
+		connection.setHandler<MPlanesPositions>([this](const MPlanesPositions & m){
+			for (auto & position : m.positions)
+			{
+				auto & plane = client.planes[position.planeID];
+				plane.extrapolationData = position.extrapolationData;
+				plane.pos = position.pos;
+				//сдвигаем самолет на актуальную позицию
+				plane.extrapolate(client.clientTime - m.time);
+			}
+		});
+		connection.setHandler<MRoomInfo>([this](const MRoomInfo & m){
+			/*for (auto & player : newPlayers)
+			{
+			std::cout << player.name + " присоединился на самолете " + player.planeName + "." << std::endl;
+			}
+			for (auto & player : disconnectedPlayers)
+			{
+			std::cout << player + " покинул комнату." << std::endl;
+			}
+			std::cout << "Ваша текущая цель - " + goal.description + "." << std::endl;
+			for (auto & stat : updatedStatistics)
+			{
+			std::cout
+			<< "Статистика игрока "
+			<< stat.first
+			<< " обновлена. Убито : "
+			<< stat.second.destroyed
+			<< " умер : "
+			<< stat.second.crashes
+			<< " союзников уничтожено : "
+			<< stat.second.friendsDestroyed
+			<< std::endl;
+			}*/
+		});
+		//приходит только при изменении параметров модулей
+		connection.setHandler<MUpdateModules>([this](const MUpdateModules & m){
+			for (auto & module : m.modules)
+			{
+				if (client.planes.count(module.planeID) == 0)
+				{
+					continue;
+				}
+				auto & plane = client.planes[module.planeID];
+				plane.modules[module.moduleNo].defected = module.defect;
+				plane.modules[module.moduleNo].hp = module.hp;
+				//switch (module.reason)
+				//{
+				//case rplanes::planedata::ModuleHP::FIRE:
+				//	std::cout << " Модуль поврежден пожаром. ";
+				//	break;
+				//case rplanes::planedata::ModuleHP::HIT:
+				//	std::cout << " Модуль поврежден пулей. ";
+				//	break;
+				//case rplanes::planedata::ModuleHP::REPAIR:
+				//	std::cout << " Модуль восстановлен. ";
+				//	break;
+				//}
+
+				//std::cout << "Номер модуля " << module.moduleNo << ". ";
+				//auto moduleType = plane.modules[module.moduleNo].type;
+				//std::cout << "Тип модуля " << moduleTypesNames[moduleType] << "." << std::endl;
+			}
+		});
+
+		connection.setHandler<MText>([this](const MText & m){
+			std::wcout << _rstrw("server message : {0}", m.text).str();
+		});
+		connection.setHandler<MExitRoom>([this](const MExitRoom & m){
+			std::wcout << _rstrw("exited from room").str();
+		});
+		connection.setHandler<MResourceString>([this](const MResourceString & m){
+			std::wcout << _rstrw("server message : {0}", m.string).str();
+		});
+	}
 
 	void connect()
 	{
@@ -39,14 +220,14 @@ public:
 
 	//все следующие штуки мы получаем от сервера
 
-	class plane : public sf::Drawable, public rplanes::network::servermessages::room::Plane
+	class Plane : public sf::Drawable, public rplanes::network::MCreatePlanes::Plane
 	{
 	public:
-		plane() :
-			rplanes::network::servermessages::room::Plane()
+		Plane() :
+			rplanes::network::MCreatePlanes::Plane()
 		{}
-		plane(const rplanes::network::servermessages::room::Plane  & Plane) :
-			rplanes::network::servermessages::room::Plane(Plane)
+		Plane(const rplanes::network::MCreatePlanes::Plane  & Plane) :
+			rplanes::network::MCreatePlanes::Plane(Plane)
 		{}
 		void draw(sf::RenderTarget & target, sf::RenderStates states) const
 		{
@@ -70,7 +251,7 @@ public:
 				//	shape.setOutlineColor(sf::Color::Green);
 				//}
 				
-				switch ( rplanes::network::servermessages::room::Plane::nation)
+				switch ( rplanes::network::MCreatePlanes::Plane::nation)
 				{
 				case rplanes::ALLIES:
 					shape.setOutlineColor(sf::Color::Green);
@@ -87,15 +268,15 @@ public:
 			}
 		}
 	};
-	class bullet : public sf::Drawable, public rplanes::serverdata::Bullet
+	class Bullet : public sf::Drawable, public rplanes::serverdata::Bullet
 	{
 	public:
-		bullet() :
+		Bullet() :
 			rplanes::serverdata::Bullet()
 		{
 
 			}
-		bullet(const rplanes::serverdata::Bullet & bullet) :
+		Bullet(const rplanes::serverdata::Bullet & bullet) :
 			rplanes::serverdata::Bullet(bullet)
 		{}
 		void draw(sf::RenderTarget & target, sf::RenderStates states) const
@@ -122,9 +303,9 @@ public:
 
 
 	//список видимых самолетов. изменяется сообщениями createPlanes destroyPlanes
-	std::map<size_t, plane> planes;
+	std::map<size_t, Plane> planes;
 	//список пуль. Новые пули создаются в сообщении createBullets, при попаданиях пули удаляются сообщением destroyBullets, иначе в главной петле при излете
-	std::map<size_t, bullet> bullets;
+	std::map<size_t, Bullet> bullets;
 	//статус клиента
 	//	UNLOGINED - не прошел авторизацию, если в течении 1 секунды не придет легальное сообщение login, соединение будет оборвано
 	//	HANGAR - клиент находится в ангаре. Может покупать самолеты и прочее, управлять комнатами и т.п.
@@ -135,12 +316,12 @@ public:
 	//После того как было отправлено одно из этих сообщений, необходимо запросить статус у сервера
 	rplanes::network::ClientStatus status;
 	//показания приборов, уровень перегрузки и прочее
-	rplanes::network::servermessages::room::InterfaceData interfaceData;
+	rplanes::network::MInterfaceData interfaceData;
 	//профиль игрока. Содержит список самолетов в ангаре, игровую статисктику и проч.
 	rplanes::playerdata::Profile profile;
 
 	//информация о комнатах
-	typedef rplanes::network::servermessages::hangar::RoomList::RoomInfo RoomInfo;
+	typedef rplanes::network::MRoomList::RoomInfo RoomInfo;
 	std::vector<RoomInfo> rooms;
 
 	//время используется для синхронизации при получении некоторых сообщений
@@ -151,244 +332,10 @@ public:
 }client;
 
 //messages handlers
-namespace rplanes
-{
-	namespace network
-	{
-		namespace servermessages
-		{
-			//приходит после отправки запроса статуса
-			void StatusMessage::handle()
-			{
-				client.status = status;
-
-			}
-
-			//сообщения отправляемые клиенту, находящимуся в ангаре
-			namespace hangar
-			{
-				//после успешной авторизации сервер отсылает конфигурацию, необходимую для корректной работы interpolate и т.п.
-				void ServerConfiguration::handle()
-				{
-					std::wcout << _rstrw("reading server configuration...").str() << std::endl;
-					rplanes::configuration() = conf;
-				}
-				void SendProfile::handle()
-				{
-					client.profile = profile;
-				}
-				void RoomList::handle()
-				{
-					client.rooms = rooms;
-				}
-
-			}
-
-			//сообщения отправляемые клиенту, находящимуся в комнате
-			namespace room
-			{
-
-				void ChangeMap::handle()
-				{
-					std::wcout << _rstrw("changing map to {0}...", mapName).str() << std::endl;
-				}
-
-				//сообщение приходит после запроса серверного времени
-				void ServerTime::handle()
-				{
-					client.serverTime = time;
-
-					//запрашиваем серверное время
-					client.connection.sendMessage(clientmessages::room::ServerTimeRequest());
-
-					//клиент должен отсылать управление как можно чаще, но при этом не привышать квоту
-					//поэтому отправляем данные управления вместе с запросом времени
-					client.connection.sendMessage(client.controllable);
-				}
-
-				void CreateBullets::handle()
-				{
-					for (auto & bullet : bullets)
-					{
-						//сдвигаем пулю на актуальную на данный момент позицию
-						if (client.clientTime > time)
-							bullet.move(client.clientTime - time);
-						client.bullets[bullet.ID] = bullet;
-					}
-				}
-
-				//данный клиент игнорирует ракеты
-				void CreateMissiles::handle()
-				{
-				}
-
-				void CreatePlanes::handle()
-				{
-					for (auto & plane : Planes)
-					{
-
-						if (client.planes.count(plane.id) != 0)
-						{
-							std::wcout << _rstrw("duplicate plane creation").str() << std::endl;
-						}
-						std::wcout << _rstrw("creating new plane '{0}' player '{1}' id '{2}'",
-							plane.planeName, plane.playerName, plane.id).str() << std::endl;
-						client.planes[plane.id] = plane;
-					}
-
-				}
-
-				//логически идентична createBullets
-				//можно использовать другие графические эффекты, и т.п.
-				void CreateRicochetes::handle()
-				{
-					for (auto & bullet : bullets)
-					{
-						if (client.clientTime > time)
-							bullet.move(client.clientTime - time);
-						client.bullets[bullet.ID] = bullet;
-					}
-				}
-
-				//приходит только при попаданиях. Остальные пули удаляются в главной петле
-				void DestroyBullets::handle()
-				{
-					//пуля уничтожена во время коллизий
-					for (auto & bullet : bullets)
-					{
-						client.bullets.erase(bullet.bulletID);
-					}
-				}
-
-				void DestroyMissiles::handle()
-				{
-				}
-
-				//может означать не только уничтожение, но и вылет за границы видимости
-				void DestroyPlanes::handle()
-				{
-					for (auto & destroyedPlane : planes)
-					{
-						switch (destroyedPlane.reason)
-						{
-						case rplanes::network::servermessages::room::DestroyPlanes::MODULE_DESTROYED:
-							std::wcout << _rstrw("plane {0} is downing because of {2} {1} destruction",
-								destroyedPlane.planeID, destroyedPlane.moduleNo,
-								rplanes::moduleTypesNames[ client.planes[destroyedPlane.planeID].modules[destroyedPlane.moduleNo].type ]).str() << std::endl;
-							break;
-						case rplanes::network::servermessages::room::DestroyPlanes::FUEL:
-							std::wcout << _rstrw("plane {0} is out of fuel", destroyedPlane.planeID).str() << std::endl;
-							break;
-						case rplanes::network::servermessages::room::DestroyPlanes::VANISH:
-							std::wcout << _rstrw("plane {0} vanished", destroyedPlane.planeID).str() << std::endl;
-							break;
-						case  rplanes::network::servermessages::room::DestroyPlanes::RAMMED:
-							std::wcout << _rstrw("plane {0} rammed with another plane", destroyedPlane.planeID).str() << std::endl;
-							break;
-						case rplanes::network::servermessages::room::DestroyPlanes::FIRE:
-							std::wcout << _rstrw("plane {0} is burning down", destroyedPlane.planeID).str() << std::endl;
-							break;
-						}
-						client.planes.erase(destroyedPlane.planeID);
-					}
-				}
-
-				//приходит каждый серверный кадр
-				void InterfaceData::handle()
-				{
-					client.interfaceData = *this;
-				}
-
-				//приходит каждый серверный кадр
-				void SetPlanesPositions::handle()
-				{
-					for (auto & position : positions)
-					{
-						auto & plane = client.planes[position.planeID];
-						plane.extrapolationData = position.extrapolationData;
-						plane.pos = position.pos;
-						//сдвигаем самолет на актуальную позицию
-						plane.extrapolate(client.clientTime - time);
-					}
-				}
-
-				//приходит только при изменении параметров модулей
-				void UpdateModules::handle()
-				{
-					for (auto & module : modules)
-					{
-						if (client.planes.count(module.planeID) == 0)
-						{
-							continue;
-						}
-						auto & plane = client.planes[module.planeID];
-						plane.modules[module.moduleNo].defected = module.defect;
-						plane.modules[module.moduleNo].hp = module.hp;
-						//switch (module.reason)
-						//{
-						//case rplanes::planedata::ModuleHP::FIRE:
-						//	std::cout << " Модуль поврежден пожаром. ";
-						//	break;
-						//case rplanes::planedata::ModuleHP::HIT:
-						//	std::cout << " Модуль поврежден пулей. ";
-						//	break;
-						//case rplanes::planedata::ModuleHP::REPAIR:
-						//	std::cout << " Модуль восстановлен. ";
-						//	break;
-						//}
-
-						//std::cout << "Номер модуля " << module.moduleNo << ". ";
-						//auto moduleType = plane.modules[module.moduleNo].type;
-						//std::cout << "Тип модуля " << moduleTypesNames[moduleType] << "." << std::endl;
-					}
-				}
 
 
-				void RoomInfo::handle()
-				{
-					/*for (auto & player : newPlayers)
-					{
-						std::cout << player.name + " присоединился на самолете " + player.planeName + "." << std::endl;
-					}
-					for (auto & player : disconnectedPlayers)
-					{
-						std::cout << player + " покинул комнату." << std::endl;
-					}
-					std::cout << "Ваша текущая цель - " + goal.description + "." << std::endl;
-					for (auto & stat : updatedStatistics)
-					{
-						std::cout
-							<< "Статистика игрока "
-							<< stat.first
-							<< " обновлена. Убито : "
-							<< stat.second.destroyed
-							<< " умер : "
-							<< stat.second.crashes
-							<< " союзников уничтожено : "
-							<< stat.second.friendsDestroyed
-							<< std::endl;
-					}*/
-				}
-			}
-		}
 
-		namespace bidirectionalmessages
-		{
-			void TextMessage::handle()
-			{
-				std::wcout << _rstrw("server message : {0}", text).str();
-			}
-			void ExitRoom::handle()
-			{
-				std::wcout << _rstrw("exited from room").str();
-			}
-			void ResourceStringMessage::handle()
-			{
-				std::wcout << _rstrw("server message : {0}", string).str();
-			}
-		}
-	}
-}
+
 
 std::string password = "qwerty";
 
@@ -398,13 +345,12 @@ void loginAndJoinRoom(std::string profileName, size_t planeNo, bool bot = false)
 	std::chrono::milliseconds hangarFrameTime(static_cast<long long> (rplanes::configuration().server.hangarFrameTime * 1000));
 
 	//заранее создаем сообщение авторизации
-	rplanes::network::clientmessages::unlogined::Login loginMessage;
+	rplanes::network::MLogin loginMessage;
 	loginMessage.name = profileName;
 	loginMessage.encryptedPassword = password;
 
 	//подключаемся к серверу
 	client.connect();
-	client.connection.non_blocking(true);
 
 	//отправляем сообщение авторизации
 	std::wcout << _rstrw("sending auhtentication request...").str() << std::endl;
@@ -417,15 +363,16 @@ void loginAndJoinRoom(std::string profileName, size_t planeNo, bool bot = false)
 	//если все прошло успешно, мы находимся в ангаре. Для проверки на acmd клиенте можно запросить у сервера статус.
 
 	//запрашиваем список комнат
-	client.connection.sendMessage(rplanes::network::clientmessages::hangar::RoomListRequest());
+	client.connection.sendMessage(rplanes::network::MRoomListRequest());
 
 	//ждем ответа
 	size_t tries = 0;
 	for (; tries < 10; tries++)
 	{
-		if (client.connection.handleInput())
+		auto handledMessage = client.connection.handleMessage();
+		if (handledMessage)
 		{
-			if (rplanes::network::servermessages::hangar::RoomList().getId() == client.connection.getLastMessageId())
+			if (rplanes::network::MRoomList::id == handledMessage->getId())
 			{
 				break;
 			}
@@ -446,7 +393,7 @@ void loginAndJoinRoom(std::string profileName, size_t planeNo, bool bot = false)
 	//если список комнат пуст, создаем свою. Имя игрока может оставаться пустым.
 	if (client.rooms.size() == 0)
 	{
-		rplanes::network::clientmessages::hangar::CreateRoomRequest crr;
+		rplanes::network::MCreateRoomRequest crr;
 		crr.description = "the best map on the server";
 		crr.mapName = "bot.map";
 		client.connection.sendMessage(crr);
@@ -500,14 +447,14 @@ void loginAndJoinRoom(std::string profileName, size_t planeNo, bool bot = false)
 
 
 	//подключаемся к первой комнате
-	rplanes::network::clientmessages::hangar::JoinRoomRequest jrr;
+	rplanes::network::MJoinRoomRequest jrr;
 	jrr.planeNo = planeNo;
 	jrr.playerName = roomCreatorName;
 
 	client.connection.sendMessage(jrr);
 
 	//запрашиваем серверное время. Последующие запросы будут отправлены из обработчика ServerTime
-	client.connection.sendMessage(rplanes::network::clientmessages::room::ServerTimeRequest());
+	client.connection.sendMessage(rplanes::network::MServerTimeRequest());
 
 	//есть ли фокус на окне
 	bool focusPocus = true;
@@ -559,8 +506,8 @@ void loginAndJoinRoom(std::string profileName, size_t planeNo, bool bot = false)
 				window.close();
 			if ((event.type == sf::Event::KeyPressed) && (event.key.code == sf::Keyboard::R))
 			{
-				rplanes::network::clientmessages::room::AdministerRoom ar;
-				ar.operation = rplanes::network::clientmessages::room::AdministerRoom::RESTART;
+				rplanes::network::MAdministerRoom ar;
+				ar.operation = rplanes::network::MAdministerRoom::RESTART;
 				client.connection.sendMessage(ar);
 				std::wcout << _rstrw("sending restart command to the server").str() << std::endl;
 			}
@@ -667,7 +614,7 @@ void loginAndJoinRoom(std::string profileName, size_t planeNo, bool bot = false)
 
 
 		//принимаем серверные сообщения. Будут созданы новые пули, самолеты, и обновлено состояние самолетов
-		while (client.connection.handleInput())
+		while (client.connection.handleMessage())
 		{
 		};
 
@@ -748,7 +695,7 @@ void loginAndJoinRoom(std::string profileName, size_t planeNo, bool bot = false)
 void registry(std::string profileName)
 {
 	//заранее создаем сообщение регистрации
-	rplanes::network::clientmessages::unlogined::Registry registryMessage;
+	rplanes::network::MRegistry registryMessage;
 	registryMessage.name = profileName;
 	registryMessage.password = password;
 
@@ -757,7 +704,7 @@ void registry(std::string profileName)
 	//отправляем сообщение
 	client.connection.sendMessage(registryMessage);
 	//обрабатываем вывод сервера
-	while (client.connection.handleInput())
+	while (client.connection.handleMessage())
 	{
 	}
 }
@@ -765,14 +712,12 @@ void registry(std::string profileName)
 void loginAndBuyPlane(std::string profileName, std::string planeName)
 {
 	//заранее создаем сообщение авторизации
-	rplanes::network::clientmessages::unlogined::Login loginMessage;
+	rplanes::network::MLogin loginMessage;
 	loginMessage.name = profileName;
 	loginMessage.encryptedPassword = password;
 
 	//подключаемся к серверу
 	client.connect();
-	client.connection.non_blocking(true);
-
 
 	//отправляем сообщение авторизации
 	std::wcout << _rstrw("sending authentication request..").str() << std::endl;
@@ -780,20 +725,21 @@ void loginAndBuyPlane(std::string profileName, std::string planeName)
 	//ждем секунду, чтобы не привысить квоту
 	std::this_thread::sleep_for(std::chrono::seconds(1));
 
-	//похорошему нужно запросить у сервера статус клиента
+	//по-хорошему нужно запросить у сервера статус клиента
 
 	//теперь мы в ангаре, купим самолет
 
-	client.connection.sendMessage(rplanes::network::clientmessages::hangar::ProfileRequest());
+	client.connection.sendMessage(rplanes::network::MProfileRequest());
 	//если авторизация не прошла успешно, сервер оборвет подклбчение.
 
 	//ждем ответа сервера
 	size_t tries = 0;
 	for (; tries < 3; tries++)
 	{
-		if (client.connection.handleInput())
+		auto handledMessage = client.connection.handleMessage();
+		if (handledMessage)
 		{
-			if (rplanes::network::servermessages::hangar::SendProfile().getId() == client.connection.getLastMessageId())
+			if (rplanes::network::MProfile::id == handledMessage->getId())
 			{
 				std::wcout << _rstrw("authentication succeeded").str() << std::endl;
 				break;
@@ -801,21 +747,21 @@ void loginAndBuyPlane(std::string profileName, std::string planeName)
 		}
 		std::this_thread::sleep_for(std::chrono::seconds(1));
 	}
-	if (tries == 10)
+	if (tries == 3)
 	{
 		std::wcout << _rstrw("authentication failed").str() << std::endl;
 		return;
 	}
 
 	std::this_thread::sleep_for(std::chrono::seconds(1));
-	rplanes::network::clientmessages::hangar::BuyPlaneRequest bpr;
+	rplanes::network::MBuyPlaneRequest bpr;
 	bpr.planeName = planeName;
 	std::wcout << _rstrw("sending buying request").str() << std::endl;
 	client.connection.sendMessage(bpr);
 	//обрабатываем вывод сервера
 	while (true)
 	{
-		client.connection.handleInput();
+		while(client.connection.handleMessage());
 		std::this_thread::sleep_for(std::chrono::milliseconds(100));
 	}
 }

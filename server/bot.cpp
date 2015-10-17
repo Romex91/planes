@@ -150,8 +150,8 @@ void botconditions::easy::Patrol::initializeConditionList()
 
 		for (auto & destroyedPlane : player.messages.destroyPlanes.planes)
 		{
-			if ((destroyedPlane.reason == rplanes::network::servermessages::room::DestroyPlanes::MODULE_DESTROYED
-				|| destroyedPlane.reason == rplanes::network::servermessages::room::DestroyPlanes::FIRE)
+			if ((destroyedPlane.reason == rplanes::network::MDestroyPlanes::MODULE_DESTROYED
+				|| destroyedPlane.reason == rplanes::network::MDestroyPlanes::FIRE)
 				&& destroyedPlane.nation == player.getNation())
 			{
 				return true;
@@ -250,8 +250,8 @@ void botconditions::easy::Attack::initializeConditionList()
 		for (auto & destroyedPlane : player.messages.destroyPlanes.planes)
 		{
 			if (destroyedPlane.nation == player.getNation() &&
-				(destroyedPlane.reason == rplanes::network::servermessages::room::DestroyPlanes::MODULE_DESTROYED
-				|| destroyedPlane.reason == rplanes::network::servermessages::room::DestroyPlanes::FIRE))
+				(destroyedPlane.reason == rplanes::network::MDestroyPlanes::MODULE_DESTROYED
+				|| destroyedPlane.reason == rplanes::network::MDestroyPlanes::FIRE))
 			{
 				if (player.lookAround().getEnemies().size() >= player.lookAround().getFriends().size()
 					&& rand() < configuration().bots.easyPanicChance * RAND_MAX)
@@ -280,7 +280,7 @@ void botconditions::easy::Attack::control_derv(Player & player, float frameTime,
 		return;
 	}
 	//если картина боя меняется, переопределяем цель
-	if (player.messages.createPlanes.Planes.size() != 0 || player.messages.destroyPlanes.planes.size() != 0 || targetNo_ < 0 || selectTimer_ < 0.f)
+	if (player.messages.createPlanes.planes.size() != 0 || player.messages.destroyPlanes.planes.size() != 0 || targetNo_ < 0 || selectTimer_ < 0.f)
 	{
 		boost::random::normal_distribution<float> dist(configuration().bots.easyTargetSelectionTimeMean, configuration().bots.easyTargerSelectionTimeSigma);
 		selectTimer_ = dist(gen);
@@ -458,7 +458,7 @@ void botconditions::Peacefull::control_derv(Player & player, float frameTime, Bo
 
 		for (auto & destroyedPlane : player.messages.destroyPlanes.planes)
 		{
-			if (destroyedPlane.reason == rplanes::network::servermessages::room::DestroyPlanes::MODULE_DESTROYED
+			if (destroyedPlane.reason == rplanes::network::MDestroyPlanes::MODULE_DESTROYED
 				&& destroyedPlane.nation == player.getNation())
 			{
 				needTurn = true;

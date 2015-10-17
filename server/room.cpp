@@ -79,9 +79,9 @@ void Room::deleteUnlogined()
 	}
 }
 
-std::map< rplanes::Nation, rplanes::network::servermessages::hangar::RoomList::RoomInfo::SlotInfo > Room::getPlayerNumber()
+std::map< rplanes::Nation, rplanes::network::MRoomList::RoomInfo::SlotInfo > Room::getPlayerNumber()
 {
-	std::map< rplanes::Nation, rplanes::network::servermessages::hangar::RoomList::RoomInfo::SlotInfo > retval;
+	std::map< rplanes::Nation, rplanes::network::MRoomList::RoomInfo::SlotInfo > retval;
 	for ( auto & group : map_.humanGroups )
 	{
 		retval[group.getNation()].nPlayersMax += group.getPlayerNumber().second;
@@ -130,13 +130,13 @@ void Room::addPlayer( std::shared_ptr< Player > player )
 		});
 	}
 
-	servermessages::room::RoomInfo::NewPlayerInfo newPlayerInfo;
+	MRoomInfo::NewPlayerInfo newPlayerInfo;
 	newPlayerInfo.name = player->name;
 	newPlayerInfo.nation = player->getNation();
 	newPlayerInfo.planeName = player->getPlaneName();
 	roomInfo_().newPlayers.push_back(newPlayerInfo);
 
-	servermessages::room::RoomInfo roomInfoMessage;
+	MRoomInfo roomInfoMessage;
 	for ( auto & i: handleList )
 	{
 		newPlayerInfo.name = i->name;
@@ -348,7 +348,7 @@ void Room::executeScript(const std::vector<ScriptLine> & script, std::shared_ptr
 				{
 					if ( player->openedMaps.count( options[2] ) == 0 )
 					{
-						rplanes::network::bidirectionalmessages::ResourceStringMessage message;
+						rplanes::network::MResourceString message;
 						message.string =  _rstrw("Map {0} is unlocked.", options[2]);
 						player->messages.stringMessages.push_back(message);
 						player->openedMaps.insert(options[2]);
@@ -361,7 +361,7 @@ void Room::executeScript(const std::vector<ScriptLine> & script, std::shared_ptr
 				{
 					if (player->openedPlanes.count(options[2]) == 0)
 					{
-						rplanes::network::bidirectionalmessages::ResourceStringMessage message;
+						rplanes::network::MResourceString message;
 						message.string = _rstrw("Plane {0} is unlocked.", options[2]);
 						player->messages.stringMessages.push_back(message);
 						player->openedPlanes.insert(options[2]);
@@ -471,7 +471,7 @@ void Room::executeScript(const std::vector<ScriptLine> & script, std::shared_ptr
 			auto players = getGroupPlayers(options[0]);
 			for ( auto & player : players )
 			{
-				rplanes::network::bidirectionalmessages::ResourceStringMessage message;
+				rplanes::network::MResourceString message;
 				message.string = _rstrw("{0}", messageText);
 				player->messages.stringMessages.push_back(message);
 			}
@@ -483,7 +483,7 @@ void Room::executeScript(const std::vector<ScriptLine> & script, std::shared_ptr
 			for (auto & player : players)
 			{
 				std::string reasonString = options[1];
-				typedef rplanes::network::servermessages::room::DestroyPlanes::Reason Reason;
+				typedef rplanes::network::MDestroyPlanes::Reason Reason;
 				Reason reason;
 				size_t moduleNo = 0;
 				if ( reasonString == "FIRE")
@@ -679,7 +679,7 @@ void Room::regroup()
 		}
 		if (!added)
 		{
-			rplanes::network::bidirectionalmessages::ResourceStringMessage tm;
+			rplanes::network::MResourceString tm;
 			tm.string = _rstrw("Room is full.");
 			player->messages.stringMessages.push_back(tm);
 			player->isJoined = false;
@@ -704,12 +704,12 @@ void Room::kickPlayers(std::vector< std::string > & names)
 		{
 			if (name == players_[i]->name)
 			{
-				rplanes::network::bidirectionalmessages::ResourceStringMessage tm;
+				rplanes::network::MResourceString tm;
 				
 				tm.string = _rstrw("You are banned by {0}", creator);
 
 				players_[i]->messages.stringMessages.push_back(tm);
-				players_[i]->destroy(rplanes::network::servermessages::room::DestroyPlanes::FIRE, 0);
+				players_[i]->destroy(rplanes::network::MDestroyPlanes::FIRE, 0);
 				players_[i]->isJoined = false;
 				break;
 			}
@@ -721,10 +721,10 @@ void Room::changeMap(std::string mapName)
 {
 	for (auto & player : players_)
 	{
-		player->setDestroyed(rplanes::network::servermessages::room::DestroyPlanes::VANISH, 0);
+		player->setDestroyed(rplanes::network::MDestroyPlanes::VANISH, 0);
 	}
 	map_.load(mapName);
-	rplanes::network::servermessages::room::ChangeMap changeMapMessage;
+	rplanes::network::MChangeMap changeMapMessage;
 	changeMapMessage.mapName = mapName;
 	for (auto & player : players_)
 	{
@@ -744,7 +744,7 @@ void Room::setPlayerDestroyed(std::string playerName)
 	{
 		if (player->name == playerName)
 		{
-			player->setDestroyed(rplanes::network::servermessages::room::DestroyPlanes::FIRE, 0);
+			player->setDestroyed(rplanes::network::MDestroyPlanes::FIRE, 0);
 			handleDeath(player);
 		}
 	}
@@ -820,7 +820,7 @@ void Room::checkPlayersOpenedMaps()
 	{
 		if ( player->openedMaps.count( map_.name ) == 0 )
 		{
-			rplanes::network::bidirectionalmessages::ResourceStringMessage message;
+			rplanes::network::MResourceString message;
 
 			message.string = _rstrw("Map {0} is closed. A client application should check opened maps in a user profile.", map_.name) ;
 			player->messages.stringMessages.push_back(message);

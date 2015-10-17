@@ -223,7 +223,7 @@ void Server::updateRoomMessage()
 	roomListMessage.message.rooms.clear();
 	for (auto & room : rooms_)
 	{
-		roomListMessage.message.rooms.push_back(servermessages::hangar::RoomList::RoomInfo());
+		roomListMessage.message.rooms.push_back(MRoomList::RoomInfo());
 		roomListMessage.message.rooms.back().description = room.second.description;
 		roomListMessage.message.rooms.back().mapName = "not specified";
 		roomListMessage.message.rooms.back().creatorName = room.first;
@@ -452,7 +452,7 @@ void Server::roomLoop()
 	}
 }
 
-void Server::administerRoom(size_t clientID, rplanes::network::clientmessages::room::AdministerRoom::Operation operation, std::vector<std::string> options)
+void Server::administerRoom(size_t clientID, rplanes::network::MAdministerRoom::Operation operation, std::vector<std::string> options)
 {
 
 	auto & client = getClient(clientID);
@@ -469,10 +469,10 @@ void Server::administerRoom(size_t clientID, rplanes::network::clientmessages::r
 
 	switch (operation)
 	{
-	case rplanes::network::clientmessages::room::AdministerRoom::KICK_PLAYERS:
+	case rplanes::network::MAdministerRoom::KICK_PLAYERS:
 		room.kickPlayers(options);
 		break;
-	case rplanes::network::clientmessages::room::AdministerRoom::BAN_PLAYERS:
+	case rplanes::network::MAdministerRoom::BAN_PLAYERS:
 		if ( client.profile_.banlist.size() > rplanes::configuration().profile.maxBanlistSize )
 		{
 			throw PlanesException(_rstrw("Banlist overflowed."));
@@ -481,23 +481,23 @@ void Server::administerRoom(size_t clientID, rplanes::network::clientmessages::r
 		room.banlist.insert(options.begin(), options.end());
 		room.kickPlayers(options);
 		break;
-	case rplanes::network::clientmessages::room::AdministerRoom::UNBAN_PLAYERS:
+	case rplanes::network::MAdministerRoom::UNBAN_PLAYERS:
 		for (auto & name : options)
 		{
 			room.banlist.erase(name);
 		}
 		break;
-	case rplanes::network::clientmessages::room::AdministerRoom::CHANGE_MAP:
+	case rplanes::network::MAdministerRoom::CHANGE_MAP:
 		if (options.size() != 1)
 		{
 			throw PlanesException(_rstrw("Cannot change map. Wrong argument."));
 		}
 		room.changeMap(options[0]);
 		break;
-	case rplanes::network::clientmessages::room::AdministerRoom::RESTART:
+	case rplanes::network::MAdministerRoom::RESTART:
 		room.restart();
 		break;
-	case rplanes::network::clientmessages::room::AdministerRoom::KILL_PLAYERS:
+	case rplanes::network::MAdministerRoom::KILL_PLAYERS:
 		for (auto & name : options)
 		{
 			room.setPlayerDestroyed(name);

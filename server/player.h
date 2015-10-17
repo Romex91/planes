@@ -94,10 +94,10 @@ class DestroyablePlane : public rplanes::serverdata::Plane
 {
 public:
 	DestroyablePlane(rplanes::serverdata::Plane & playerPlane);
-	servermessages::room::DestroyPlanes::DestroyedPlane getDestructionInfo();
+	MDestroyPlanes::DestroyedPlane getDestructionInfo();
 	bool isDestroyed()const;
 	void respawn(float x, float y, float angle);
-	void destroy(servermessages::room::DestroyPlanes::Reason reason, size_t modulePos);
+	void destroy(MDestroyPlanes::Reason reason, size_t modulePos);
 	void setID(size_t id);
 	int getTotalHp()const;
 	void move(float frameTime);
@@ -106,7 +106,7 @@ public:
 private:
 	bool destroyed_;
 	//using in the updatePlayers method
-	servermessages::room::DestroyPlanes::DestroyedPlane destructionInfo_;
+	MDestroyPlanes::DestroyedPlane destructionInfo_;
 	size_t id_;
 };
 
@@ -145,25 +145,25 @@ public:
 	class messages_t
 	{
 	public:
-		servermessages::room::CreatePlanes createPlanes;
-		servermessages::room::DestroyPlanes destroyPlanes;
-		servermessages::room::SetPlanesPositions setPlanesPositions;
-		servermessages::room::UpdateModules updateModules;
+		MCreatePlanes createPlanes;
+		MDestroyPlanes destroyPlanes;
+		MPlanesPositions setPlanesPositions;
+		MUpdateModules updateModules;
 
-		servermessages::room::CreateBullets createBullets;
-		servermessages::room::CreateRicochetes createRicochetes;
-		servermessages::room::DestroyBullets destroyBullets;
+		MCreateBullets createBullets;
+		MCreateRicochetes createRicochetes;
+		MDestroyBullets destroyBullets;
 
-		servermessages::room::CreateMissiles createMissiles;
-		servermessages::room::DestroyMissiles destroyMissiles;
+		MCreateMissiles createMissiles;
+		MDestroyMissiles destroyMissiles;
 
-		servermessages::room::InterfaceData interfaceData;
+		MInterfaceData interfaceData;
 
-		std::vector< bidirectionalmessages::ResourceStringMessage > stringMessages;
+		std::vector< MResourceString > stringMessages;
 
-		std::vector< servermessages::room::ChangeMap > changeMapMessages;
+		std::vector< MChangeMap > changeMapMessages;
 
-		std::vector< servermessages::room::RoomInfo > roomInfos;
+		std::vector< MRoomInfo > roomInfos;
 	}messages;
 
 
@@ -175,7 +175,7 @@ public:
 	std::string name;
 
 	updatable<Goal> goal;
-	updatable< servermessages::room::RoomInfo::Statistics > killingStatistics;
+	updatable< MRoomInfo::Statistics > killingStatistics;
 
 	rplanes::playerdata::Statistics statistics;
 
@@ -207,10 +207,10 @@ public:
 	bool destroyIfNeed(float frameTime);
 
 	//destroy the plane updating statistics
-	void destroy(servermessages::room::DestroyPlanes::Reason reason, size_t moduleNo);
+	void destroy(MDestroyPlanes::Reason reason, size_t moduleNo);
 
 	//destroy the plane without updating statistics
-	void setDestroyed(servermessages::room::DestroyPlanes::Reason reason, size_t moduleNo);
+	void setDestroyed(MDestroyPlanes::Reason reason, size_t moduleNo);
 
 
 	//move the plane and the bullets
@@ -317,12 +317,12 @@ private:
 	class MessagesInfo
 	{
 	public:
-		std::vector< servermessages::room::UpdateModules::Module> updatedModules;
+		std::vector< MUpdateModules::Module> updatedModules;
 		//updating in the method 'move' using in the method 'addPlayers'
-		servermessages::room::Plane clientPlane;
+		MCreatePlanes::Plane clientPlane;
 		std::vector< rplanes::serverdata::Bullet > newBullets;
 		std::vector< rplanes::serverdata::Bullet> newRicochetes;
-		std::vector< servermessages::room::DestroyBullets::BulletInfo > destroyedBullets;
+		std::vector< MDestroyBullets::BulletInfo > destroyedBullets;
 		std::vector< rplanes::serverdata::LaunchedMissile> newMissiles;
 		std::vector<size_t> destroyedMissiles;
 	}messagesInfo_;

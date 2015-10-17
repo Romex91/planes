@@ -22,7 +22,11 @@ public:
 	~Client();
 	void setID( size_t id );
 
-	void sendMessage( Message & mess );
+	template<class _Message>
+	void sendMessage(const _Message & mess)
+	{
+		connection_.sendMessage(mess);
+	}
 
 	void setControllable( rplanes::serverdata::Plane::ControllableParameters controllable );
 
@@ -50,11 +54,7 @@ private:
 	{
 		std::set<std::string> loggedInProfiles;
 		Mutex Mutex;
-		size_t clientsCount;
-		ProfilesInfo()
-		{
-			clientsCount = 0;
-		}
+		size_t clientsCount = 0;
 	};
 
 	static ProfilesInfo profilesInfo_;

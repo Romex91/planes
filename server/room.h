@@ -27,7 +27,7 @@ public:
 
 	void addPlayer(std::shared_ptr< Player > player);
 
-	std::map< rplanes::Nation, rplanes::network::servermessages::hangar::RoomList::RoomInfo::SlotInfo > getPlayerNumber();
+	std::map< rplanes::Nation, rplanes::network::MRoomList::RoomInfo::SlotInfo > getPlayerNumber();
 
 	void deleteUnlogined();
 
@@ -69,5 +69,5 @@ private:
 
 	std::vector< std::shared_ptr< Player > > players_;
 
-	updatable< servermessages::room::RoomInfo > roomInfo_;
+	updatable< MRoomInfo > roomInfo_;
 };

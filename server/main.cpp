@@ -13,30 +13,30 @@ namespace rplanes
 	{
 		namespace clientmessages
 		{
-			void StatusRequest::handle()
+			void MStatusRequest::handle()
 			{
-				network::servermessages::StatusMessage mess;
+				network::servermessages::MStatus mess;
 				auto & Client = server.getClient(clientID);
 				mess.status =  Client.getStatus();
 				Client.sendMessage(mess);
 			}
 			namespace room
 			{
-				void SendControllable::handle()
+				void MSendControllable::handle()
 				{
 					auto & Client = server.getClient(clientID);
 					Client.setControllable(params);
 				}
 
-				void ServerTimeRequest::handle()
+				void MServerTimeRequest::handle()
 				{
 					auto & Client = server.getClient(clientID);
-					servermessages::room::ServerTime mess;
+					MServerTime mess;
 					mess.time = server.getTime();
 					Client.sendMessage(mess);
 				}
 
-				void AdministerRoom::handle()
+				void MAdministerRoom::handle()
 				{
 					try
 					{
@@ -44,7 +44,7 @@ namespace rplanes
 					}
 					catch (PlanesException & e)
 					{
-						network::bidirectionalmessages::ResourceStringMessage mess;
+						network::MResourceString mess;
 						mess.string = e.getString();
 						auto & Client = server.getClient(clientID);
 						Client.sendMessage(mess);
@@ -55,18 +55,18 @@ namespace rplanes
 			namespace hangar
 			{
 
-				void ProfileRequest::handle()
+				void MProfileRequest::handle()
 				{
 					auto & Client = server.getClient(clientID);
-					network::servermessages::hangar::SendProfile mess;
+					network::MProfile mess;
 					mess.profile = Client.profile();
 					Client.sendMessage(mess);
 				}
 
-				void PlayerProfileRequest::handle()
+				void MPlayerProfileRequest::handle()
 				{ 
 					auto & Client = server.getClient(clientID);
-					network::servermessages::hangar::SendProfile profileMessage;
+					network::MProfile profileMessage;
 					try
 					{
 						odb::transaction t(profilesDB->begin());
@@ -75,7 +75,7 @@ namespace rplanes
 					}
 					catch (...)
 					{
-						network::bidirectionalmessages::ResourceStringMessage txt;
+						network::MResourceString txt;
 						txt.string = _rstrw("Profile {0} is not found in database.", playerName);
 						Client.sendMessage(txt);
 						return;
@@ -83,69 +83,69 @@ namespace rplanes
 					Client.sendMessage(profileMessage);
 				}
 
-				void SellModuleRequest::handle()
+				void MSellModuleRequest::handle()
 				{
 					auto & Client = server.getClient(clientID);
-					network::bidirectionalmessages::ResourceStringMessage mess;
+					network::MResourceString mess;
 					mess.string = Client.profile().sellModule(moduleName, nModulesToSell, planesDB);
 					Client.sendMessage(mess);
 				}
 
-				void SellPlaneRequest::handle()
+				void MSellPlaneRequest::handle()
 				{
 					auto & Client = server.getClient(clientID);
-					network::bidirectionalmessages::ResourceStringMessage mess;
+					network::MResourceString mess;
 					mess.string = Client.profile().sellPlane(planeName, planesDB);
 					Client.sendMessage(mess);
 				}
 
-				void BuyModuleRequest::handle()
+				void MBuyModuleRequest::handle()
 				{
 					auto & Client = server.getClient(clientID);
 					if(setToAllSlots)
 					{
-						network::bidirectionalmessages::ResourceStringMessage mess;
+						network::MResourceString mess;
 						mess.string = Client.profile().buyModules(planeName, moduleName,planesDB);
 						Client.sendMessage(mess);						
 					}
 					else
 					{
-						network::bidirectionalmessages::ResourceStringMessage mess;
+						network::MResourceString mess;
 						mess.string = Client.profile().buyModule(planeName, moduleNo, moduleName,planesDB);
 						Client.sendMessage(mess);
 					}
 				}
 
-				void BuyPlaneRequest::handle()
+				void MBuyPlaneRequest::handle()
 				{
 					auto & Client = server.getClient(clientID);
-					network::bidirectionalmessages::ResourceStringMessage mess;
+					network::MResourceString mess;
 					mess.string = Client.profile().buyPlane(planeName,planesDB);
 					Client.sendMessage(mess);
 				};
 
-				void UpSkillRequest::handle()
+				void MUpSkillRequest::handle()
 				{
 					auto & Client = server.getClient(clientID);
 					auto & pilot = Client.profile().pilot;
 					switch (skill)
 					{
-					case rplanes::network::clientmessages::hangar::UpSkillRequest::FLIGHT:
+					case rplanes::network::clientmessages::hangar::MUpSkillRequest::FLIGHT:
 						pilot.up_flight(experienceToSpend);
 						break;
-					case rplanes::network::clientmessages::hangar::UpSkillRequest::ENDURANCE:
+					case rplanes::network::clientmessages::hangar::MUpSkillRequest::ENDURANCE:
 						pilot.up_endurance(experienceToSpend);
 						break;
-					case rplanes::network::clientmessages::hangar::UpSkillRequest::SHOOTING:
+					case rplanes::network::clientmessages::hangar::MUpSkillRequest::SHOOTING:
 						pilot.up_shooting(experienceToSpend);
 						break;
-					case rplanes::network::clientmessages::hangar::UpSkillRequest::ENGINE:
+					case rplanes::network::clientmessages::hangar::MUpSkillRequest::ENGINE:
 						pilot.up_engine(experienceToSpend);
 						break;
 					}
 				}
 
-				void JoinRoomRequest::handle()
+				void MJoinRoomRequest::handle()
 				{
 					try
 					{
@@ -153,14 +153,14 @@ namespace rplanes
 					}
 					catch(PlanesException & e)
 					{
-						network::bidirectionalmessages::ResourceStringMessage mess;
+						network::MResourceString mess;
 						mess.string = e.getString();
 						auto & Client = server.getClient(clientID);
 						Client.sendMessage(mess);
 					}
 				};
 
-				void CreateRoomRequest::handle()
+				void MCreateRoomRequest::handle()
 				{
 					try
 					{
@@ -168,14 +168,14 @@ namespace rplanes
 					}
 					catch (PlanesException & e)
 					{
-						network::bidirectionalmessages::ResourceStringMessage mess;
+						network::MResourceString mess;
 						mess.string = e.getString();
 						auto & Client = server.getClient(clientID);
 						Client.sendMessage(mess);
 					}
 				};
 
-				void DestroyRoomRequest::handle()
+				void MDestroyRoomRequest::handle()
 				{
 					try
 					{
@@ -183,18 +183,18 @@ namespace rplanes
 					}
 					catch (PlanesException & e)
 					{
-						network::bidirectionalmessages::ResourceStringMessage mess;
+						network::MResourceString mess;
 						mess.string = e.getString();
 						auto & Client = server.getClient(clientID);
 						Client.sendMessage(mess);
 					}
 				}
 
-				void RoomListRequest::handle()
+				void MRoomListRequest::handle()
 				{
 					auto & Client = server.getClient(clientID);
 					Client.profile();//just to check the client is in hangar
-					network::servermessages::hangar::RoomList message;
+					network::MRoomList message;
 					{
 						MutexLocker ml(server.roomListMessage.mutex);
 						message = server.roomListMessage.message;
@@ -206,26 +206,26 @@ namespace rplanes
 			namespace unlogined
 			{
 
-				void Login::handle()
+				void MLogin::handle()
 				{
 					auto & Client = server.getClient(clientID);
 					try
 					{
 						Client.login(name,encryptedPassword);
-						servermessages::hangar::ServerConfiguration confMessage;
+						MServerConfiguration confMessage;
 						confMessage.conf = configuration();
 						Client.sendMessage(confMessage);
 					}
 					catch( PlanesException & e )
 					{
-						network::bidirectionalmessages::ResourceStringMessage mess;
+						network::MResourceString mess;
 						mess.string = e.getString();
 						Client.sendMessage(mess);
 						throw e;
 					}
 				}
 
-				void Registry::handle()
+				void MRegistry::handle()
 				{
 					auto & Client = server.getClient(clientID);
 					playerdata::Profile Profile;
@@ -241,17 +241,17 @@ namespace rplanes
 		namespace bidirectionalmessages
 		{
 
-			void TextMessage::handle()
+			void MText::handle()
 			{
 				std::wcout << _rstrw(":client{0}: {1}", clientID, text).str() << std::endl;
 			}
 
-			void ResourceStringMessage::handle()
+			void MResourceString::handle()
 			{
 				std::wcout << _rstrw(":client{0}: {1}", clientID, string).str() << std::endl;
 			}
 
-			void ExitRoom::handle()
+			void MExitRoom::handle()
 			{
 				auto & client = server.getClient(clientID);
 				client.prepareRoomExit();

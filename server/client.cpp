@@ -54,7 +54,7 @@ void Client::exitRoom()
 	//trying to send a message to a client
 	try
 	{
-		sendMessage(network::bidirectionalmessages::ExitRoom());
+		sendMessage(network::MExitRoom());
 	}
 	catch (...)
 	{}
@@ -168,15 +168,9 @@ void Client::setControllable( serverdata::Plane::ControllableParameters controll
 	player_->setControllable(controllable);
 }
 
-void Client::sendMessage( Message & mess )
-{
-	connection_.sendMessage(mess);
-}
-
 void Client::setID( size_t id )
 {
 	id_ = id;
-	connection_.setClientID( id_);
 }
 
 Client::~Client()
@@ -205,7 +199,7 @@ void Client::sendRoomMessages()
 	{
 		throw PlanesException(_rstrw("Failed sanding room messages. Client is out of room."));
 	}
-	if (player_->messages.createPlanes.Planes.size() > 0)
+	if (player_->messages.createPlanes.planes.size() > 0)
 		sendMessage(player_->messages.createPlanes);
 	if (player_->messages.createBullets.bullets.size() > 0)
 		sendMessage(player_->messages.createBullets);

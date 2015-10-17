@@ -65,6 +65,9 @@
     <ClCompile Include="database.cpp">
       <Filter>Source Files</Filter>
     </ClCompile>
+    <ClCompile Include="roomMessages.cpp">
+      <Filter>Source Files</Filter>
+    </ClCompile>
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="odb\model-odb.hxx">
@@ -113,6 +116,9 @@
       <Filter>Header Files</Filter>
     </ClInclude>
     <ClInclude Include="planesException.h">
+      <Filter>Header Files</Filter>
+    </ClInclude>
+    <ClInclude Include="roomMessages.h">
       <Filter>Header Files</Filter>
     </ClInclude>
   </ItemGroup>

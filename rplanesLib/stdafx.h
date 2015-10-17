@@ -4,6 +4,8 @@
 #include <boost/archive/text_oarchive.hpp>
 #include <boost/serialization/vector.hpp>
 #include <boost/serialization/map.hpp>
+#include <boost/serialization/set.hpp>
+
 #include <boost/archive/binary_oarchive.hpp>
 #include <boost/archive/binary_iarchive.hpp>
 #include <boost/archive/xml_iarchive.hpp>
@@ -22,6 +24,7 @@
 #include <iostream>
 #include <fstream>
 #include <algorithm>
+#include <queue>
 
 #include <odb/core.hxx>
 #include <odb/database.hxx>

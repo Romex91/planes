@@ -41,7 +41,7 @@ void Player::updatePositionsMessage(float serverTime)
 
 	for (auto & player : visiblePlayers_)
 	{
-		servermessages::room::SetPlanesPositions::PlanePos p;
+		MPlanesPositions::PlanePos p;
 		p.extrapolationData = player.second->messagesInfo_.clientPlane.extrapolationData;
 		p.planeID = player.first;
 		p.pos = player.second->messagesInfo_.clientPlane.pos;
@@ -213,7 +213,7 @@ void Player::checkCollisions()
 				continue;
 			}
 			//in case of collision of any type the DestroyBullet message would be sent to the client
-			servermessages::room::DestroyBullets::BulletInfo bi;
+			MDestroyBullets::BulletInfo bi;
 			bi.bulletID = bullet.ID;
 			bool bulletDestroyed = false;
 
@@ -261,7 +261,7 @@ void Player::checkCollisions()
 					bullet.angleXY += dist(gen);
 
 					//set the bullet destroy reason
-					bi.reason = servermessages::room::DestroyBullets::BulletInfo::HIT;
+					bi.reason = MDestroyBullets::BulletInfo::HIT;
 
 					//updating the collision registrar
 					collisionsRegistrar_.handleCollision(bullet.ID,
@@ -292,7 +292,7 @@ void Player::checkCollisions()
 					intersections = getIntersections(bullet, target);
 					intersectionNo = 0;
 
-					bi.reason = servermessages::room::DestroyBullets::BulletInfo::RICOCHET;
+					bi.reason = MDestroyBullets::BulletInfo::RICOCHET;
 				}
 				//sending the destroyed bullet message
 				if (!bulletDestroyed)
@@ -357,7 +357,7 @@ void Player::checkCollisions()
 						bullet.speedXY -= bullet.speedXY * module->armor / penetration;
 						bullet.prevZ = level;
 
-						bi.reason = servermessages::room::DestroyBullets::BulletInfo::HIT;
+						bi.reason = MDestroyBullets::BulletInfo::HIT;
 					}
 					else
 					{
@@ -365,7 +365,7 @@ void Player::checkCollisions()
 						bullet.speedZ *= -1;
 						bullet.z = (bullet.prevZ + level) / 2.f;
 
-						bi.reason = servermessages::room::DestroyBullets::BulletInfo::RICOCHET;
+						bi.reason = MDestroyBullets::BulletInfo::RICOCHET;
 					}
 
 
@@ -431,7 +431,7 @@ void Player::addPlayer(std::shared_ptr<Player> Player)
 	{
 		return;
 	}
-	messages.createPlanes.Planes.push_back(
+	messages.createPlanes.planes.push_back(
 		Player->messagesInfo_.clientPlane);
 	visiblePlayers_[Player->id_] = Player;
 }
@@ -501,7 +501,7 @@ void Player::clearTemporaryData()
 	messages.changeMapMessages.clear();
 	messages.createBullets.bullets.clear();
 	messages.createMissiles.missiles.clear();
-	messages.createPlanes.Planes.clear();
+	messages.createPlanes.planes.clear();
 	messages.createRicochetes.bullets.clear();
 	messages.destroyBullets.bullets.clear();
 	messages.destroyMissiles.ids.clear();
@@ -565,7 +565,7 @@ bool Player::destroyIfNeed(float frameTime)
 	bool retval = false;
 	if (!plane_.isFilled())
 	{
-		destroy(servermessages::room::DestroyPlanes::FUEL, 0);
+		destroy(MDestroyPlanes::FUEL, 0);
 		retval = true;
 	}
 	for (auto & module : plane_.modules)
@@ -575,7 +575,7 @@ bool Player::destroyIfNeed(float frameTime)
 		if (module->hp.checkConditionChange())
 		{
 			//sending updated modules message
-			servermessages::room::UpdateModules::Module m;
+			MUpdateModules::Module m;
 			m.defect = module->hp.isDefected();
 			m.hp = module->hp;
 			m.moduleNo = pos;
@@ -590,11 +590,11 @@ bool Player::destroyIfNeed(float frameTime)
 				retval = true;
 				if (module->hp.getReason() == rplanes::planedata::ModuleHP::FIRE)
 				{
-					destroy(servermessages::room::DestroyPlanes::FIRE, pos);
+					destroy(MDestroyPlanes::FIRE, pos);
 				}
 				else
 				{
-					destroy(servermessages::room::DestroyPlanes::MODULE_DESTROYED, pos);
+					destroy(MDestroyPlanes::MODULE_DESTROYED, pos);
 				}
 				break;
 			}
@@ -604,7 +604,7 @@ bool Player::destroyIfNeed(float frameTime)
 	return retval;
 }
 
-void Player::destroy(servermessages::room::DestroyPlanes::Reason reason, size_t moduleNo)
+void Player::destroy(MDestroyPlanes::Reason reason, size_t moduleNo)
 {
 	plane_.destroy(reason, moduleNo);
 
@@ -642,7 +642,7 @@ void Player::destroy(servermessages::room::DestroyPlanes::Reason reason, size_t 
 	killingStatistics().crashes = statistics.crashes;
 }
 
-void Player::setDestroyed(servermessages::room::DestroyPlanes::Reason reason, size_t moduleNo)
+void Player::setDestroyed(MDestroyPlanes::Reason reason, size_t moduleNo)
 {
 	if (!isDestroyed())
 		plane_.destroy(reason, moduleNo);
@@ -978,7 +978,7 @@ void DestroyablePlane::setID(size_t id)
 	id_ = id;
 }
 
-void DestroyablePlane::destroy(servermessages::room::DestroyPlanes::Reason reason, size_t modulePos)
+void DestroyablePlane::destroy(MDestroyPlanes::Reason reason, size_t modulePos)
 {
 	destructionInfo_.moduleNo = modulePos;
 	destructionInfo_.reason = reason;
@@ -993,7 +993,7 @@ void DestroyablePlane::destroy(servermessages::room::DestroyPlanes::Reason reaso
 
 void DestroyablePlane::respawn(float x, float y, float angle)
 {
-	destructionInfo_.reason = servermessages::room::DestroyPlanes::VANISH;
+	destructionInfo_.reason = MDestroyPlanes::VANISH;
 	destructionInfo_.planeID = id_;
 	destructionInfo_.moduleNo = 0;
 	destructionInfo_.killerId = id_;
@@ -1021,7 +1021,7 @@ bool DestroyablePlane::isDestroyed() const
 	return destroyed_;
 }
 
-servermessages::room::DestroyPlanes::DestroyedPlane DestroyablePlane::getDestructionInfo()
+MDestroyPlanes::DestroyedPlane DestroyablePlane::getDestructionInfo()
 {
 	return destructionInfo_;
 }
