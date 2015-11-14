@@ -64,16 +64,16 @@ void Client::joinRoom( Room & room, size_t planeNo)
 {
 	if ( status_ != HANGAR )
 	{
-		throw PlanesException(_rstrw("Cannot join room. Client is out of hangar."));
+		throw RPLANES_EXCEPTION("Cannot join room. Client is out of hangar.");
 	}
 	if ( planeNo >= profile_.planes.size()  )
 	{
-		throw PlanesException(_rstrw("Cannot join room. Wrong parameters."));
+		throw RPLANES_EXCEPTION("Cannot join room. Wrong parameters.");
 	}
 
 	if (!profile_.planes[planeNo].isReadyForJoinRoom())
 	{
-		throw PlanesException(_rstrw("Cannot join room. Ensure that wings engines missiles and guns are mounted symmetrically"));
+		throw RPLANES_EXCEPTION("Cannot join room. Ensure that wings engines missiles and guns are mounted symmetrically");
 	}
 
 	serverdata::Plane plane;
@@ -92,7 +92,7 @@ playerdata::Profile & Client::profile()
 {
 	if ( status_!=HANGAR )
 	{
-		throw PlanesException(_rstrw("Cannot get profile. Client is out of hangar."));
+		throw RPLANES_EXCEPTION("Cannot get profile. Client is out of hangar.");
 	}
 	return profile_;
 }
@@ -113,7 +113,7 @@ void Client::logout()
 		MutexLocker locker( profilesInfo_.Mutex );
 		if( profilesInfo_.loggedInProfiles.erase(profile_.login) != 1 )
 		{
-			throw PlanesException(_rstrw("the profiles set does not contain {0}", profile_.login));
+			throw RPLANES_EXCEPTION("the profiles set does not contain {0}", profile_.login);
 		}
 	}
 	profile_.save(profilesDB);
@@ -124,14 +124,14 @@ void Client::login( std::string name, std::string password )
 {
 	if ( status_ != UNLOGGED )
 	{
-		throw PlanesException(_rstrw("Client has already logged in."));
+		throw RPLANES_EXCEPTION("Client has already logged in.");
 	}
 
 	//check if the profile is already locked
 	MutexLocker locker( profilesInfo_.Mutex );
 	if ( profilesInfo_.loggedInProfiles.count(name) > 0 )
 	{
-		throw PlanesException(_rstrw("{0} is locked by other player."));
+		throw RPLANES_EXCEPTION("{0} is locked by other player.");
 	}
 	//trying to load the profile from database
 	try
@@ -142,12 +142,12 @@ void Client::login( std::string name, std::string password )
 	}
 	catch(...)
 	{
-		throw PlanesException(_rstrw("Wrong name or password."));
+		throw RPLANES_EXCEPTION("Wrong name or password.");
 	}
 	//verifying the password
 	if ( profile_.password != password )
 	{
-		throw PlanesException(_rstrw("Wrong name or password."));
+		throw RPLANES_EXCEPTION("Wrong name or password.");
 	}
 	//if all the verifications passed tha authorization succeedeed
 	//loading profile planes
@@ -163,7 +163,7 @@ void Client::setControllable( serverdata::Plane::ControllableParameters controll
 {
 	if ( status_ != ROOM  || !player_)
 	{
-		throw PlanesException(_rstrw("Cannot set controllable parameters. Client is out of room."));
+		throw RPLANES_EXCEPTION("Cannot set controllable parameters. Client is out of room.");
 	}
 	player_->setControllable(controllable);
 }
@@ -188,7 +188,7 @@ Client::Client( boost::asio::io_service& io_service , size_t clientID /*= 0 */ )
 	MutexLocker( profilesInfo_.Mutex );
 	if ( profilesInfo_.clientsCount >= configuration().server.maxClientsNumber )
 	{
-		throw PlanesException(_rstrw("Server is overloaded."));
+		throw RPLANES_EXCEPTION("Server is overloaded.");
 	}
 	profilesInfo_.clientsCount++;
 }
@@ -197,7 +197,7 @@ void Client::sendRoomMessages()
 {
 	if (status_ != ROOM)
 	{
-		throw PlanesException(_rstrw("Failed sanding room messages. Client is out of room."));
+		throw RPLANES_EXCEPTION("Failed sanding room messages. Client is out of room.");
 	}
 	if (player_->messages.createPlanes.planes.size() > 0)
 		sendMessage(player_->messages.createPlanes);
@@ -240,7 +240,7 @@ void Client::prepareRoomExit()
 {
 	if (status_ != ROOM)
 	{
-		throw PlanesException(_rstrw("Cannot exit room. Client is out of room."));
+		throw RPLANES_EXCEPTION("Cannot exit room. Client is out of room.");
 	}
 	player_->isJoined = false;
 }

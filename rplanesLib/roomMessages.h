@@ -58,7 +58,7 @@ namespace rplanes {
 			void serialize(Archive& ar, const unsigned int version){}
 			RPLANES_MESSAGE_ID(14);
 		};
-		RPLANES_REGISTER_MESSAGE(MServerTimeRequest);
+		RPLANES_REGISTER_MESSAGE_ALL_ARCHIVES(MServerTimeRequest);
 
 		class MSendControllable : public MessageBase
 		{
@@ -76,7 +76,7 @@ namespace rplanes {
 			serverdata::Plane::ControllableParameters params;
 			RPLANES_MESSAGE_ID(15);
 		};
-		RPLANES_REGISTER_MESSAGE(MSendControllable);
+		RPLANES_REGISTER_MESSAGE_ALL_ARCHIVES(MSendControllable);
 
 		//available only for the room master
 		class MAdministerRoom : public MessageBase
@@ -106,7 +106,7 @@ namespace rplanes {
 			std::vector<std::string> options;
 			RPLANES_MESSAGE_ID(16);
 		};
-		RPLANES_REGISTER_MESSAGE(MAdministerRoom);
+		RPLANES_REGISTER_MESSAGE_ALL_ARCHIVES(MAdministerRoom);
 
 		//////////////////////////////////////////////////////////////////////////
 		//messages sending by the server
@@ -125,7 +125,7 @@ namespace rplanes {
 			float time;
 			RPLANES_MESSAGE_ID(18);
 		};
-		RPLANES_REGISTER_MESSAGE(MCreateBullets);
+		RPLANES_REGISTER_MESSAGE_ALL_ARCHIVES(MCreateBullets);
 
 		class MInterfaceData : public MessageBase
 		{
@@ -214,7 +214,7 @@ namespace rplanes {
 
 			RPLANES_MESSAGE_ID(19);
 		};
-		RPLANES_REGISTER_MESSAGE(MInterfaceData);
+		RPLANES_REGISTER_MESSAGE_ALL_ARCHIVES(MInterfaceData);
 
 
 		//logicaly identical to CreateBullets 
@@ -232,7 +232,7 @@ namespace rplanes {
 			float time;
 			RPLANES_MESSAGE_ID(20);
 		};
-		RPLANES_REGISTER_MESSAGE(MCreateRicochetes);
+		RPLANES_REGISTER_MESSAGE_ALL_ARCHIVES(MCreateRicochetes);
 
 		class MCreateMissiles : public MessageBase
 		{
@@ -248,7 +248,7 @@ namespace rplanes {
 			float time;
 			RPLANES_MESSAGE_ID(21);
 		};
-		RPLANES_REGISTER_MESSAGE(MCreateMissiles);
+		RPLANES_REGISTER_MESSAGE_ALL_ARCHIVES(MCreateMissiles);
 
 		//client also should check isSpent method and delete the bullet if it returns true
 		class MDestroyBullets : public MessageBase
@@ -281,7 +281,7 @@ namespace rplanes {
 			std::vector<BulletInfo> bullets;
 			RPLANES_MESSAGE_ID(22)
 		};
-		RPLANES_REGISTER_MESSAGE(MDestroyBullets);
+		RPLANES_REGISTER_MESSAGE_ALL_ARCHIVES(MDestroyBullets);
 
 		//client also should check isSpent method and delete the bullet if it returns true
 		class MDestroyMissiles : public MessageBase
@@ -295,7 +295,7 @@ namespace rplanes {
 			std::vector<size_t> ids;
 			RPLANES_MESSAGE_ID(23)
 		};
-		RPLANES_REGISTER_MESSAGE(MDestroyMissiles);
+		RPLANES_REGISTER_MESSAGE_ALL_ARCHIVES(MDestroyMissiles);
 
 		class MChangeMap : public MessageBase
 		{
@@ -308,7 +308,7 @@ namespace rplanes {
 			std::string mapName;
 			RPLANES_MESSAGE_ID(24);
 		};
-		RPLANES_REGISTER_MESSAGE(MChangeMap);
+		RPLANES_REGISTER_MESSAGE_ALL_ARCHIVES(MChangeMap);
 
 
 
@@ -404,7 +404,7 @@ namespace rplanes {
 			std::vector< Plane > planes;
 			RPLANES_MESSAGE_ID(25);
 		};
-		RPLANES_REGISTER_MESSAGE(MCreatePlanes);
+		RPLANES_REGISTER_MESSAGE_ALL_ARCHIVES(MCreatePlanes);
 
 		//specific plane is downing or vanished
 		class MDestroyPlanes : public MessageBase
@@ -446,7 +446,7 @@ namespace rplanes {
 			std::vector<DestroyedPlane> planes;
 			RPLANES_MESSAGE_ID(26);
 		};
-		RPLANES_REGISTER_MESSAGE(MDestroyPlanes);
+		RPLANES_REGISTER_MESSAGE_ALL_ARCHIVES(MDestroyPlanes);
 
 		//positions off all the planes in the vision zone
 		class MPlanesPositions : public MessageBase
@@ -477,7 +477,7 @@ namespace rplanes {
 			float time;
 			RPLANES_MESSAGE_ID(27);
 		};
-		RPLANES_REGISTER_MESSAGE(MPlanesPositions);
+		RPLANES_REGISTER_MESSAGE_ALL_ARCHIVES(MPlanesPositions);
 
 		class MUpdateModules : public MessageBase
 		{
@@ -508,7 +508,7 @@ namespace rplanes {
 			std::vector< Module > modules;
 			RPLANES_MESSAGE_ID(28);
 		};
-		RPLANES_REGISTER_MESSAGE(MUpdateModules);
+		RPLANES_REGISTER_MESSAGE_ALL_ARCHIVES(MUpdateModules);
 
 		//servers sends its time when sending each frame
 		class MServerTime : public MessageBase
@@ -522,7 +522,7 @@ namespace rplanes {
 			float time;
 			RPLANES_MESSAGE_ID(29);
 		};
-		RPLANES_REGISTER_MESSAGE(MServerTime);
+		RPLANES_REGISTER_MESSAGE_ALL_ARCHIVES(MServerTime);
 
 		class MRoomInfo : public MessageBase
 		{
@@ -591,6 +591,6 @@ namespace rplanes {
 
 			RPLANES_MESSAGE_ID(30);
 		};
-		RPLANES_REGISTER_MESSAGE(MRoomInfo);
+		RPLANES_REGISTER_MESSAGE_ALL_ARCHIVES(MRoomInfo);
 	}
 }

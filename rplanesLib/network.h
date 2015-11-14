@@ -23,28 +23,41 @@ namespace rplanes
 			virtual ~MessageBase(){};
 		};
 
-		template<class _Message, class _Archive>
-		class MessageSerializer
-		{
-		public:
-			MessageSerializer(_Archive & archive) : _ar(archive){}
+		namespace details {
+			template<MessageId _Id, class _Archive>
+			std::shared_ptr<MessageBase> registeredReadFunction(_Archive & ar)
+			{
+				throw RPLANES_EXCEPTION("unregistered message {0} for iostream '{1}'", _Id, typeid(_Archive).name());
+			}
 
-			std::shared_ptr<MessageBase> read()
+			template<class _Archive, MessageId...ids>
+			std::shared_ptr<MessageBase> selectRegisteredReadFunction
+				(MessageId id, _Archive & ar, std::integer_sequence<MessageId, ids...>)
 			{
-				_Message message;
-				_ar >> message;
-				return std::make_shared<MessageBase>(message);
+				using base_maker = std::shared_ptr<MessageBase>(*)(_Archive & ar);
+				static const base_maker makers[]{
+					registeredReadFunction<ids>...
+				};
+				return makers[id](ar);
 			}
-			void write( MessageBase & mess )
+
+			template <class _Message, class _Archive>
+			std::shared_ptr<MessageBase> readMessageImpl(_Archive & ar)
 			{
-				_Message & message = dynamic_cast<_Message & >(mess);
-				_ar << message;
+				_Message mess;
+				ar >> mess;
+				return std::shared_ptr<MessageBase>(new _Message(mess));
 			}
-		private:
-			_Archive & _ar;
-		};
-		
-		
+		}
+
+		template<class _Archive>
+		inline std::shared_ptr<MessageBase> readMessage(MessageId id, _Archive & ar)
+		{
+			if (id >= RPLANES_MAX_MESSAGE_ID)
+				throw RPLANES_EXCEPTION("message id {0} is bigger then allowed {1}", id, RPLANES_MAX_MESSAGE_ID);
+			return details::selectRegisteredReadFunction(id, ar,
+				std::make_integer_sequence<MessageId, RPLANES_MAX_MESSAGE_ID>{});
+		}
 
 		//contains a bit of compile-time magic and asynch insanity
 		class Connection
@@ -94,7 +107,7 @@ namespace rplanes
 				boost::asio::write(_socket, buffers, error);
 				if (error)
 				{
-					throw PlanesException(_rstrw("Failed sending message. {0}", error.message()));
+					throw RPLANES_EXCEPTION("Failed sending message. {0}", error.message());
 				}
 			}
 
@@ -103,6 +116,8 @@ namespace rplanes
 				std::istringstream messageStream;
 				{
 					MutexLocker l(_mutex);
+					if (_pendingMessages.size() == 0)
+						return nullptr;
 					auto frontValue = _pendingMessages.front();
 					messageStream = std::istringstream(std::string(&frontValue[0], frontValue.size()));
 					_pendingMessages.pop();
@@ -111,7 +126,15 @@ namespace rplanes
 				IArchive archive(messageStream, boost::archive::no_header);
 				MessageId id;
 				archive >> id;
-				return handleMessage_selectSpecialization(id, archive);
+				auto message = readMessage(id, archive);
+
+				if (_handlers.count(id) == 0) {
+					if (noHandlerBehavior == NoHandlerBehavior::DO_NOTHING)
+						return message;
+					throw RPLANES_EXCEPTION("no handler for the message {0}", id);
+				}
+				_handlers[id](*message);
+				return message;
 			}
 
 			boost::system::error_code accept(boost::asio::ip::tcp::acceptor & acceptor);
@@ -170,46 +193,7 @@ namespace rplanes
 				});
 			}
 
-			//read a message with a specific id from the socket
-			//calls the id-specific specialization for the registered message type
-			template<MessageId _Left = 0, MessageId _Right = RPLANES_MAX_MESSAGE_ID>
-			std::shared_ptr<MessageBase> handleMessage_selectSpecialization(MessageId messageId, IArchive & ar)
-			{
-				if (_Left == messageId)
-					return handleMessage_registered<_Left>(ar);
-				else
-					return handleMessage_selectSpecialization<_Left + 1>(messageId, ar);
-			}
-
-			//to register a new message add a specialization of this method containing the call to readMessageImpl
-			//see the RPLANES_REGISTER_MESSAGE macro
-			template <MessageId _MessageId>
-			std::shared_ptr<MessageBase> handleMessage_registered(IArchive & ar)
-			{
-				throw PlanesException(_rstrw("unregistered message id {0}", _MessageId));
-			}
-
-			//read and handle a message of the specific type
-			template <class _Message>
-			std::shared_ptr<MessageBase> handleMessageImpl(IArchive & ar)
-			{
-				_Message mess;
-				ar >> mess;
-				if (_handlers.count(_Message::id) == 0) {
-					if (noHandlerBehavior == NoHandlerBehavior::DO_NOTHING)
-						return std::shared_ptr<MessageBase> (new _Message(mess));
-					throw PlanesException(_rstrw("no handler for the message {0}", _Message::id));
-				}
-				_handlers[_Message::id](mess);
-				return std::shared_ptr<MessageBase>(new _Message(mess));
-			}
 		};
-
-		template <>
-		inline std::shared_ptr<MessageBase> Connection::handleMessage_selectSpecialization<RPLANES_MAX_MESSAGE_ID + 1>(MessageId messageId, IArchive & ar)
-		{
-			throw PlanesException(_rstrw("unregistered message id {0}", RPLANES_MAX_MESSAGE_ID + 1));
-		}
 
 	}
 }
@@ -219,10 +203,16 @@ namespace rplanes
 	virtual MessageId getId() const override { return id; }\
 enum { id = messageId }; \
 
-#define RPLANES_REGISTER_MESSAGE(classname)\
+
+#define RPLANES_REGISTER_MESSAGE(classname, archive)\
 	template<>\
-	inline std::shared_ptr<rplanes::network::MessageBase> rplanes::network::Connection::handleMessage_registered<classname::id>(rplanes::network::Connection::IArchive & ar)\
+	inline std::shared_ptr<rplanes::network::MessageBase>\
+		rplanes::network::details::registeredReadFunction<classname::id, archive>(archive & ar)\
 {\
-	return handleMessageImpl<classname>(ar); \
+	return readMessageImpl<classname, archive>(ar);\
 }\
+
+#define RPLANES_REGISTER_MESSAGE_ALL_ARCHIVES(classname) \
+	RPLANES_REGISTER_MESSAGE(classname, boost::archive::binary_iarchive)\
+	RPLANES_REGISTER_MESSAGE(classname, boost::archive::text_iarchive)
 

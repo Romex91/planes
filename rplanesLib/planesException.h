@@ -2,6 +2,8 @@
 #include "stdafx.h"
 namespace rplanes
 {
+#define RPLANES_EXCEPTION(stringConstant,...) PlanesException(_rstrw(stringConstant, ##__VA_ARGS__))
+
 	class PlanesException : public std::exception
 	{
 	public:

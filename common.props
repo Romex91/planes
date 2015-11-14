@@ -7,14 +7,14 @@
   <PropertyGroup>
     <baseDir>C:\projects\</baseDir>
     <vendersInclude>
-      C:\projects\boost_1_57_0\;
+      C:\projects\boost_1_59_0\;
       C:\projects\odb\;
-      C:\projects\SFML-2.3\include\;
+      C:\projects\SFML-2.3.2\include\;
       C:\projects\ResourceString\ResourceString\;
     </vendersInclude>
     <vendersLibDir>
-      C:\projects\SFML-2.3\lib\;
-      C:\projects\boost_1_57_0\stage\lib\;
+      C:\projects\SFML-2.3.2\lib\;
+      C:\projects\boost_1_59_0\stage\lib\;
       C:\projects\odb\lib64\;
     </vendersLibDir>
     <vendersLib>
@@ -24,9 +24,9 @@
       sfml-main$(dSuffix).lib;
       sfml-window$(dSuffix).lib;
       sfml-graphics$(dSuffix).lib;
-      libboost_serialization-vc120-mt$(dSuffixBoost)-1_57.lib;
-      libboost_system-vc120-mt$(dSuffixBoost)-1_57.lib;
-      libboost_random-vc120-mt$(dSuffixBoost)-1_57.lib;
+      libboost_serialization-vc120-mt$(dSuffixBoost)-1_59.lib;
+      libboost_system-vc120-mt$(dSuffixBoost)-1_59.lib;
+      libboost_random-vc120-mt$(dSuffixBoost)-1_59.lib;
     </vendersLib>
     <planesOutDir>$(SolutionDir)out\</planesOutDir>
     <rplanesLibInclude>$(solutionDir)rplanesLib\</rplanesLibInclude>

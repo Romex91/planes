@@ -19,7 +19,7 @@ void Server::ClientsQueue::join(std::shared_ptr<Client> & client)
 	}
 	else
 	{
-		throw PlanesException(_rstrw("Null ptr in clients queue."));
+		throw RPLANES_EXCEPTION("Null ptr in clients queue.");
 	}
 }
 
@@ -72,7 +72,7 @@ std::shared_ptr<Client> & Server::getClientPtr(size_t clientID)
 			return hangarClients_.clients[pos];
 		}
 	}
-	throw PlanesException(_rstrw("client is not connected"));
+	throw RPLANES_EXCEPTION("client is not connected");
 }
 
 void Server::deleteClient(std::shared_ptr<Client> & client)
@@ -154,7 +154,8 @@ void Server::handleHangarInput()
 				if (handledMessages > configuration().server.hangarMessagesPerFrame)
 				{
 					std::cout << handledMessages << std::endl;
-					throw PlanesException(_rstrw("Client has sent {0} messages per one frame. {1} messages per frame permitted.", handledMessages, configuration().server.hangarMessagesPerFrame));
+					throw RPLANES_EXCEPTION("Client has sent {0} messages per one frame. {1} messages per frame permitted.", 
+						handledMessages, configuration().server.hangarMessagesPerFrame);
 				}
 			}
 			catch (std::exception & e)
@@ -203,7 +204,8 @@ void Server::handleRoomInput()
 				if (handledMessages > configuration().server.roomMessagesPerFrame)
 				{
 					std::cout << handledMessages << std::endl;
-					throw PlanesException(_rstrw("Client has sent {0} messages per one frame. {1} messages per frame permitted.", handledMessages, configuration().server.roomMessagesPerFrame));
+					throw RPLANES_EXCEPTION("Client has sent {0} messages per one frame. {1} messages per frame permitted.", 
+						handledMessages, configuration().server.roomMessagesPerFrame);
 				}
 			}
 			catch (std::exception & e)
@@ -254,7 +256,7 @@ void Server::joinRoom(size_t clientID, std::string creatorName, size_t planeNumb
 	auto & client = getClientPtr(clientID);
 	if (client->getStatus() != HANGAR)
 	{
-		throw PlanesException(_rstrw("Cannot join room. Player is out of hangar."));
+		throw RPLANES_EXCEPTION("Cannot join room. Player is out of hangar.");
 	}
 
 	//if the client has undeleted room he cannot join to another one
@@ -266,13 +268,13 @@ void Server::joinRoom(size_t clientID, std::string creatorName, size_t planeNumb
 
 	if (room == rooms_.end())
 	{
-		throw PlanesException(_rstrw("Room is not found."));
+		throw RPLANES_EXCEPTION("Room is not found.");
 	}
 
 	if (std::find(room->second.banlist.begin(), room->second.banlist.end(), client->profile_.login)
 		!= room->second.banlist.end())
 	{
-		throw PlanesException(_rstrw("Player is in the banlist."));
+		throw RPLANES_EXCEPTION("Player is in the banlist.");
 	}
 
 
@@ -293,11 +295,11 @@ void Server::createRoom(size_t clientID, std::string description, std::string ma
 	auto & client = getClient(clientID);
 	if (client.getStatus() != HANGAR)
 	{
-		throw PlanesException(_rstrw("Cannot create room. Player is out of hangar."));
+		throw RPLANES_EXCEPTION("Cannot create room. Player is out of hangar.");
 	}
 	if (rooms_.count(client.profile().login) != 0)
 	{
-		throw PlanesException(_rstrw("Player has already created a room."));
+		throw RPLANES_EXCEPTION("Player has already created a room.");
 	}
 
 	Room room(mapName);
@@ -319,11 +321,11 @@ void Server::destroyRoom(size_t clientID)
 	auto & client = getClient(clientID);
 	if (client.getStatus() != HANGAR)
 	{
-		throw PlanesException(_rstrw("Cannot destroy room. Player is out of hangar."));
+		throw RPLANES_EXCEPTION("Cannot destroy room. Player is out of hangar.");
 	}
 	if (rooms_.erase(client.profile_.login) == 0)
 	{
-		throw PlanesException(_rstrw("Player has no room to destroy."));
+		throw RPLANES_EXCEPTION("Player has no room to destroy.");
 	}
 }
 
@@ -458,12 +460,12 @@ void Server::administerRoom(size_t clientID, rplanes::network::MAdministerRoom::
 	auto & client = getClient(clientID);
 	if (client.getStatus() != ROOM)
 	{
-		throw PlanesException(_rstrw("Join room first."));
+		throw RPLANES_EXCEPTION("Join room first.");
 	}
 
 	if (rooms_.count(client.profile_.login) == 0)
 	{
-		throw PlanesException(_rstrw("Player has no room to administer."));
+		throw RPLANES_EXCEPTION("Player has no room to administer.");
 	}
 	auto & room = rooms_[client.profile_.login];
 
@@ -475,7 +477,7 @@ void Server::administerRoom(size_t clientID, rplanes::network::MAdministerRoom::
 	case rplanes::network::MAdministerRoom::BAN_PLAYERS:
 		if ( client.profile_.banlist.size() > rplanes::configuration().profile.maxBanlistSize )
 		{
-			throw PlanesException(_rstrw("Banlist overflowed."));
+			throw RPLANES_EXCEPTION("Banlist overflowed.");
 		}
 		client.profile_.banlist.insert(options.begin(), options.end());
 		room.banlist.insert(options.begin(), options.end());
@@ -490,7 +492,7 @@ void Server::administerRoom(size_t clientID, rplanes::network::MAdministerRoom::
 	case rplanes::network::MAdministerRoom::CHANGE_MAP:
 		if (options.size() != 1)
 		{
-			throw PlanesException(_rstrw("Cannot change map. Wrong argument."));
+			throw RPLANES_EXCEPTION("Cannot change map. Wrong argument.");
 		}
 		room.changeMap(options[0]);
 		break;

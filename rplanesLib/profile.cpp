@@ -505,7 +505,7 @@ namespace rplanes
 			}
 			catch( odb::object_not_persistent )
 			{
-				throw PlanesException(_rstrw("Model {0} is not found.", planeName));
+				throw RPLANES_EXCEPTION("Model {0} is not found.", planeName);
 			}
 			//loading modules suitable to this plane
 			try
@@ -519,7 +519,7 @@ namespace rplanes
 			}
 			catch( odb::object_not_persistent )
 			{
-				throw PlanesException(_rstrw("Model {0} is invalid.", planeName));
+				throw RPLANES_EXCEPTION("Model {0} is invalid.", planeName);
 			}
 
 			//for modules persisting in the store set prices to 0
@@ -557,7 +557,7 @@ namespace rplanes
 			}
 			catch( odb::object_not_persistent )
 			{
-				throw PlanesException(_rstrw("Model {0} is invalid.", planeName));
+				throw RPLANES_EXCEPTION("Model {0} is invalid.", planeName);
 			}
 
 			//delete modules allready stored on the plane

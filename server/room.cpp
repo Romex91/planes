@@ -107,7 +107,7 @@ void Room::addPlayer( std::shared_ptr< Player > player )
 	}
 	if ( !added )
 	{
-		throw PlanesException(_rstrw("Cannot add player. Room is filled."));
+		throw RPLANES_EXCEPTION("Cannot add player. Room is filled.");
 	}
 	
 	player->setID( playerIDGetter.getID() );
@@ -210,7 +210,7 @@ void Room::executeScript(const std::vector<ScriptLine> & script, std::shared_ptr
 		{
 			if ( !thisPlayer )
 			{
-				throw PlanesException(_rstrw("Script error. this does not exist."));
+				throw RPLANES_EXCEPTION("Script error. this does not exist.");
 			}
 			retval.push_back(thisPlayer);
 			groupFound = true;
@@ -230,7 +230,7 @@ void Room::executeScript(const std::vector<ScriptLine> & script, std::shared_ptr
 		});
 		if ( !groupFound )
 		{
-			throw PlanesException(_rstrw("Script error. Group {0} is not found.", groupName));
+			throw RPLANES_EXCEPTION("Script error. Group {0} is not found.", groupName);
 		}
 		return retval;
 	};
@@ -244,7 +244,7 @@ void Room::executeScript(const std::vector<ScriptLine> & script, std::shared_ptr
 		{
 			if (options.size() < minSize)
 			{
-				throw PlanesException(_rstrw("Script error. Wrong arguments {0}.", command));
+				throw RPLANES_EXCEPTION("Script error. Wrong arguments {0}.", command);
 			}
 		};
 
@@ -261,7 +261,7 @@ void Room::executeScript(const std::vector<ScriptLine> & script, std::shared_ptr
 			auto left = map_.variables.find(options[0]);
 			if (left == map_.variables.end())
 			{
-				throw PlanesException(_rstrw("Script error. Variable {0} is not found.", options[0]));
+				throw RPLANES_EXCEPTION("Script error. Variable {0} is not found.", options[0]);
 			}
 
 			//get the right value
@@ -427,7 +427,7 @@ void Room::executeScript(const std::vector<ScriptLine> & script, std::shared_ptr
 			auto players = getGroupPlayers(options[0]);
 			if ( map_.goals.count(options[1]) == 0 )
 			{
-				throw PlanesException(_rstrw("{0} is not found.", options[1]));
+				throw RPLANES_EXCEPTION("{0} is not found.", options[1]);
 			}
 			for (auto & player : players)
 			{
@@ -450,7 +450,7 @@ void Room::executeScript(const std::vector<ScriptLine> & script, std::shared_ptr
 					{
 						if ( !thisPlayer )
 						{
-							throw PlanesException(_rstrw("this does not exist."));
+							throw RPLANES_EXCEPTION("this does not exist.");
 						}
 						s = thisPlayer->name;
 					}
@@ -515,7 +515,7 @@ void Room::executeScript(const std::vector<ScriptLine> & script, std::shared_ptr
 				}
 				else
 				{
-					throw PlanesException(_rstrw("Script error. Unknown argument. {0}", reasonString));
+					throw RPLANES_EXCEPTION("Script error. Unknown argument. {0}", reasonString);
 				}
 				if ( command == "kill" )
 				{
@@ -532,7 +532,7 @@ void Room::executeScript(const std::vector<ScriptLine> & script, std::shared_ptr
 		{
 			if ( command[0] != '/' )
 			{
-				throw PlanesException(_rstrw("Script error. Unknown command. {0}", command));
+				throw RPLANES_EXCEPTION("Script error. Unknown command. {0}", command);
 			}
 		}
 
@@ -573,11 +573,11 @@ void Room::spawn(std::shared_ptr<Player> player, float timeDelay)
 	});
 	if (groupsFound == 0)
 	{
-		throw PlanesException(_rstrw("{0} is unknown group.", player->getGroupName()));
+		throw RPLANES_EXCEPTION("{0} is unknown group.", player->getGroupName());
 	}
 	else if ( groupsFound > 1 )
 	{
-		throw PlanesException(_rstrw("{0} is ambiguous.", player->getGroupName()));
+		throw RPLANES_EXCEPTION("{0} is ambiguous.", player->getGroupName());
 	}
 }
 
@@ -588,7 +588,7 @@ void Room::handleTriggers()
 		//searching the trigger
 		if ( map_.triggers.count(script.trigger) == 0 )
 		{
-			throw PlanesException(_rstrw("{0} is not found.", script.trigger));
+			throw RPLANES_EXCEPTION("{0} is not found.", script.trigger);
 		}
 
 		auto & trigger = map_.triggers[script.trigger];
@@ -611,7 +611,7 @@ void Room::handleTriggers()
 		});
 		if ( !groupFound )
 		{
-			throw PlanesException(_rstrw("{0} is unknown group.", script.group));
+			throw RPLANES_EXCEPTION("{0} is unknown group.", script.group);
 		}
 
 		for (auto & player : players)

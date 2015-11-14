@@ -76,7 +76,7 @@ namespace rplanes
 			}
 			RPLANES_MESSAGE_ID(0);
 		};
-		RPLANES_REGISTER_MESSAGE(MStatusRequest);
+		RPLANES_REGISTER_MESSAGE_ALL_ARCHIVES(MStatusRequest);
 
 		class MLogin : public MessageBase
 		{
@@ -91,7 +91,7 @@ namespace rplanes
 			std::string encryptedPassword;
 			RPLANES_MESSAGE_ID(1);
 		};
-		RPLANES_REGISTER_MESSAGE(MLogin);
+		RPLANES_REGISTER_MESSAGE_ALL_ARCHIVES(MLogin);
 
 		class MRegistry : public MessageBase
 		{
@@ -106,7 +106,7 @@ namespace rplanes
 			std::string name, password;
 			RPLANES_MESSAGE_ID(2)
 		};
-		RPLANES_REGISTER_MESSAGE(MRegistry);
+		RPLANES_REGISTER_MESSAGE_ALL_ARCHIVES(MRegistry);
 
 
 		class MRoomListRequest : public MessageBase
@@ -116,7 +116,7 @@ namespace rplanes
 			void serialize(Archive& ar, const unsigned int version){}
 			RPLANES_MESSAGE_ID(3)
 		};
-		RPLANES_REGISTER_MESSAGE(MRoomListRequest);
+		RPLANES_REGISTER_MESSAGE_ALL_ARCHIVES(MRoomListRequest);
 
 		class MCreateRoomRequest : public MessageBase
 		{
@@ -131,7 +131,7 @@ namespace rplanes
 			std::string mapName;
 			RPLANES_MESSAGE_ID(4)
 		};
-		RPLANES_REGISTER_MESSAGE(MCreateRoomRequest);
+		RPLANES_REGISTER_MESSAGE_ALL_ARCHIVES(MCreateRoomRequest);
 
 		class MDestroyRoomRequest : public MessageBase
 		{
@@ -141,7 +141,7 @@ namespace rplanes
 			{}
 			RPLANES_MESSAGE_ID(5)
 		};
-		RPLANES_REGISTER_MESSAGE(MDestroyRoomRequest);
+		RPLANES_REGISTER_MESSAGE_ALL_ARCHIVES(MDestroyRoomRequest);
 
 
 		class MJoinRoomRequest : public MessageBase
@@ -158,7 +158,7 @@ namespace rplanes
 			std::string playerName;
 			RPLANES_MESSAGE_ID(6)
 		};
-		RPLANES_REGISTER_MESSAGE(MJoinRoomRequest);
+		RPLANES_REGISTER_MESSAGE_ALL_ARCHIVES(MJoinRoomRequest);
 
 		class MProfileRequest : public MessageBase
 		{
@@ -169,7 +169,7 @@ namespace rplanes
 			}
 			RPLANES_MESSAGE_ID(7)
 		};
-		RPLANES_REGISTER_MESSAGE(MProfileRequest);
+		RPLANES_REGISTER_MESSAGE_ALL_ARCHIVES(MProfileRequest);
 
 		//get random player profile data
 		class MPlayerProfileRequest : public MessageBase
@@ -184,7 +184,7 @@ namespace rplanes
 			std::string playerName;
 			RPLANES_MESSAGE_ID(8)
 		};
-		RPLANES_REGISTER_MESSAGE(MPlayerProfileRequest);
+		RPLANES_REGISTER_MESSAGE_ALL_ARCHIVES(MPlayerProfileRequest);
 
 		class MBuyPlaneRequest : public MessageBase
 		{
@@ -198,7 +198,7 @@ namespace rplanes
 			std::string planeName;
 			RPLANES_MESSAGE_ID(9)
 		};
-		RPLANES_REGISTER_MESSAGE(MBuyPlaneRequest);
+		RPLANES_REGISTER_MESSAGE_ALL_ARCHIVES(MBuyPlaneRequest);
 
 		//If such a module isn't persisting in the store this action will buy the module
 		class MBuyModuleRequest : public MessageBase
@@ -223,7 +223,7 @@ namespace rplanes
 			rplanes::ModuleType moduleType;
 			RPLANES_MESSAGE_ID(10);
 		};
-		RPLANES_REGISTER_MESSAGE(MBuyModuleRequest);
+		RPLANES_REGISTER_MESSAGE_ALL_ARCHIVES(MBuyModuleRequest);
 
 		//sell a plane with all mounted modules
 		class MSellPlaneRequest : public MessageBase
@@ -238,7 +238,7 @@ namespace rplanes
 			std::string planeName;
 			RPLANES_MESSAGE_ID(11);
 		};
-		RPLANES_REGISTER_MESSAGE(MSellPlaneRequest);
+		RPLANES_REGISTER_MESSAGE_ALL_ARCHIVES(MSellPlaneRequest);
 
 		//sell a module from the store
 		class MSellModuleRequest : public MessageBase
@@ -255,7 +255,7 @@ namespace rplanes
 			size_t nModulesToSell;
 			RPLANES_MESSAGE_ID(12)
 		};
-		RPLANES_REGISTER_MESSAGE(MSellModuleRequest);
+		RPLANES_REGISTER_MESSAGE_ALL_ARCHIVES(MSellModuleRequest);
 
 		class MUpSkillRequest : public MessageBase
 		{
@@ -270,7 +270,7 @@ namespace rplanes
 			size_t experienceToSpend;
 			RPLANES_MESSAGE_ID(13)
 		};
-		RPLANES_REGISTER_MESSAGE(MUpSkillRequest);
+		RPLANES_REGISTER_MESSAGE_ALL_ARCHIVES(MUpSkillRequest);
 
 		enum  ClientStatus
 		{
@@ -293,7 +293,7 @@ namespace rplanes
 			ClientStatus status;
 			RPLANES_MESSAGE_ID(17);
 		};
-		RPLANES_REGISTER_MESSAGE(MStatus);
+		RPLANES_REGISTER_MESSAGE_ALL_ARCHIVES(MStatus);
 
 
 
@@ -339,7 +339,7 @@ namespace rplanes
 			std::vector<RoomInfo> rooms;
 			RPLANES_MESSAGE_ID(31);
 		};
-		RPLANES_REGISTER_MESSAGE(MRoomList);
+		RPLANES_REGISTER_MESSAGE_ALL_ARCHIVES(MRoomList);
 
 		class MProfile : public MessageBase
 		{
@@ -352,7 +352,7 @@ namespace rplanes
 			rplanes::playerdata::Profile profile;
 			RPLANES_MESSAGE_ID(32);
 		};
-		RPLANES_REGISTER_MESSAGE(MProfile);
+		RPLANES_REGISTER_MESSAGE_ALL_ARCHIVES(MProfile);
 
 		class MServerConfiguration : public MessageBase
 		{
@@ -365,7 +365,7 @@ namespace rplanes
 			Configuration conf;
 			RPLANES_MESSAGE_ID(33);
 		};
-		RPLANES_REGISTER_MESSAGE(MServerConfiguration);
+		RPLANES_REGISTER_MESSAGE_ALL_ARCHIVES(MServerConfiguration);
 
 		//////////////////////////////////////////////////////////////////////////
 		//messages sending to both directions
@@ -382,7 +382,7 @@ namespace rplanes
 			std::string text;
 			RPLANES_MESSAGE_ID(34);
 		};
-		RPLANES_REGISTER_MESSAGE(MText);
+		RPLANES_REGISTER_MESSAGE_ALL_ARCHIVES(MText);
 
 		class MExitRoom : public MessageBase
 		{
@@ -395,7 +395,7 @@ namespace rplanes
 
 			RPLANES_MESSAGE_ID(35);
 		};
-		RPLANES_REGISTER_MESSAGE(MExitRoom);
+		RPLANES_REGISTER_MESSAGE_ALL_ARCHIVES(MExitRoom);
 
 		class MResourceString : public MessageBase
 		{
@@ -409,6 +409,6 @@ namespace rplanes
 			rstring::_rstrw_t string;
 			RPLANES_MESSAGE_ID(36);
 		};
-		RPLANES_REGISTER_MESSAGE(MResourceString);
+		RPLANES_REGISTER_MESSAGE_ALL_ARCHIVES(MResourceString);
 	}
 }

@@ -442,7 +442,7 @@ namespace rplanes
 				}
 				else
 				{
-					throw PlanesException(_rstrw("Wrong hitzones format. {0}", name));
+					throw RPLANES_EXCEPTION("Wrong hitzones format. {0}", name);
 				}
 				std::getline(in, moduleName);
 			}
