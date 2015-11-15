@@ -121,6 +121,9 @@
     <ClInclude Include="roomMessages.h">
       <Filter>Header Files</Filter>
     </ClInclude>
+    <ClInclude Include="messagesRegistration.h">
+      <Filter>Header Files</Filter>
+    </ClInclude>
   </ItemGroup>
   <ItemGroup>
     <CustomBuild Include="model.h">

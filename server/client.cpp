@@ -175,7 +175,7 @@ void Client::setID( size_t id )
 
 Client::~Client()
 {
-	MutexLocker( profilesInfo_.Mutex );
+	MutexLocker ml( profilesInfo_.Mutex );
 	profilesInfo_.clientsCount--;
 }
 
@@ -185,7 +185,7 @@ Client::Client( boost::asio::io_service& io_service , size_t clientID /*= 0 */ )
 	status_(UNLOGGED)
 {
 	setID(clientID);
-	MutexLocker( profilesInfo_.Mutex );
+	MutexLocker ml( profilesInfo_.Mutex );
 	if ( profilesInfo_.clientsCount >= configuration().server.maxClientsNumber )
 	{
 		throw RPLANES_EXCEPTION("Server is overloaded.");
@@ -243,4 +243,9 @@ void Client::prepareRoomExit()
 		throw RPLANES_EXCEPTION("Cannot exit room. Client is out of room.");
 	}
 	player_->isJoined = false;
+}
+
+void Client::setMessageHandlers()
+{
+	connection_.setHandler<MStatusRequest>([this](const MStatus))
 }

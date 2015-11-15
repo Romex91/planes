@@ -42,6 +42,8 @@ public:
 
 private:
 
+	void setMessageHandlers();
+
 	void sendRoomMessages();
 
 	//call this method from the hungar loop before moving the client to the room queue

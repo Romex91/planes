@@ -95,6 +95,7 @@
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="helpers.h" />
+    <ClInclude Include="messagesRegistration.h" />
     <ClInclude Include="parallel.h" />
     <ClInclude Include="odb\model-odb.hxx" />
     <ClInclude Include="odb\modules-odb.hxx" />
