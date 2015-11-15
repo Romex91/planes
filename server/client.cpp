@@ -247,5 +247,66 @@ void Client::prepareRoomExit()
 
 void Client::setMessageHandlers()
 {
-	connection_.setHandler<MStatusRequest>([this](const MStatus))
+	connection_.setHandler<MStatusRequest>([this](const MStatusRequest &) {
+		MStatus mess;
+		mess.status = status_;
+		sendMessage(mess);
+	});
+
+	connection_.setHandler<MSendControllable>(std::bind(&Client::setControllable, this, std::placeholders::_1));
+
+
+	connection_.setHandler<MProfileRequest>([this](const MProfileRequest &) {
+		network::MProfile mess;
+		mess.profile = profile();
+		sendMessage(mess);
+	});
+
+	connection_.setHandler<MSellModuleRequest>([this](const MSellModuleRequest & message) {
+		sendMessage(MResourceString(profile().sellModule(message.moduleName, message.nModulesToSell, planesDB)));
+	});
+
+	connection_.setHandler<MSellPlaneRequest>([this](const MSellPlaneRequest & message) {
+		sendMessage(MResourceString(profile().sellPlane(message.planeName, planesDB)));
+	});
+	connection_.setHandler<MBuyModuleRequest>([this](const MBuyModuleRequest & message) {
+		if (message.setToAllSlots) {
+			network::MResourceString mess;
+			sendMessage(MResourceString(profile().buyModules(message.planeName, message.moduleName, planesDB)));
+		} else {
+			sendMessage(MResourceString(profile().buyModule(message.planeName, message.moduleNo, message.moduleName, planesDB)));
+		}
+	});
+
+	connection_.setHandler<MBuyPlaneRequest>([this](const MBuyPlaneRequest & message) {
+		sendMessage(MResourceString(profile().buyPlane(message.planeName, planesDB)));
+	});
+	connection_.setHandler<MUpSkillRequest>([this](const MUpSkillRequest & message) {
+		auto & pilot = profile().pilot;
+		switch (message.skill)
+		{
+		case MUpSkillRequest::FLIGHT:
+			pilot.up_flight(message.experienceToSpend);
+			break;
+		case MUpSkillRequest::ENDURANCE:
+			pilot.up_endurance(message.experienceToSpend);
+			break;
+		case MUpSkillRequest::SHOOTING:
+			pilot.up_shooting(message.experienceToSpend);
+			break;
+		case MUpSkillRequest::ENGINE:
+			pilot.up_engine(message.experienceToSpend);
+			break;
+		}
+	});
+	connection_.setHandler<MLogin>([this](const MLogin & message) {
+		login(message.name, message.encryptedPassword);
+		sendMessage(MServerConfiguration(configuration()));
+	});
+
+	connection_.setHandler<MExitRoom>([this](const MExitRoom & message) {
+		prepareRoomExit();
+	});
+
 }
+

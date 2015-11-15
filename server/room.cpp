@@ -696,7 +696,7 @@ Room::~Room()
 	}
 }
 
-void Room::kickPlayers(std::vector< std::string > & names)
+void Room::kickPlayers(const std::vector< std::string > & names)
 {
 	for (size_t i = 0; i < players_.size(); i++)
 	{

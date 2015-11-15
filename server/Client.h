@@ -21,9 +21,12 @@ public:
 	Client( boost::asio::io_service& io_service , size_t clientID = 0 );
 	~Client();
 	void setID( size_t id );
+	size_t getId() 
+	{
+		return id_;
+	}
 
-	template<class _Message>
-	void sendMessage(const _Message & mess)
+	void sendMessage(const MessageBase & mess)
 	{
 		connection_.sendMessage(mess);
 	}
@@ -41,6 +44,7 @@ public:
 	rplanes::playerdata::Profile & profile();
 
 private:
+
 
 	void setMessageHandlers();
 

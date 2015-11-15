@@ -120,7 +120,7 @@ void Server::listen()
 					//no new connections found
 					return;
 				}
-				newClient->connection_.non_blocking(true);
+				newClient->connection_;
 			} catch (std::exception & e) {
 				std::cout << e.what() << std::endl;
 				return;
@@ -132,6 +132,7 @@ void Server::listen()
 		newClient->setID(id);
 		std::wcout << _rstrw("new connection accepted. ip : {0}", 
 			newClient->connection_.getIP()).str() << std::endl;
+		setMessageHandlers(newClient);
 		newClient.reset();
 	}
 }
@@ -146,7 +147,7 @@ void Server::handleHangarInput()
 			//trying to accept a message
 			try
 			{
-				if (!hangarClients_.clients[i]->connection_.handleInput())
+				if (!hangarClients_.clients[i]->connection_.handleMessage())
 				{
 					break;
 				}
@@ -196,7 +197,7 @@ void Server::handleRoomInput()
 		{
 			try
 			{
-				if (!roomClients_.clients[i]->connection_.handleInput())
+				if (!roomClients_.clients[i]->connection_.handleMessage())
 				{
 					break;
 				}
@@ -226,10 +227,10 @@ void Server::updateRoomMessage()
 	for (auto & room : rooms_)
 	{
 		roomListMessage.message.rooms.push_back(MRoomList::RoomInfo());
-		roomListMessage.message.rooms.back().description = room.second.description;
+		roomListMessage.message.rooms.back().description = room.second->description;
 		roomListMessage.message.rooms.back().mapName = "not specified";
 		roomListMessage.message.rooms.back().creatorName = room.first;
-		roomListMessage.message.rooms.back().slots = room.second.getPlayerNumber();
+		roomListMessage.message.rooms.back().slots = room.second->getPlayerNumber();
 	}
 }
 
@@ -271,8 +272,8 @@ void Server::joinRoom(size_t clientID, std::string creatorName, size_t planeNumb
 		throw RPLANES_EXCEPTION("Room is not found.");
 	}
 
-	if (std::find(room->second.banlist.begin(), room->second.banlist.end(), client->profile_.login)
-		!= room->second.banlist.end())
+	if (std::find(room->second->banlist.begin(), room->second->banlist.end(), client->profile_.login)
+		!= room->second->banlist.end())
 	{
 		throw RPLANES_EXCEPTION("Player is in the banlist.");
 	}
@@ -280,7 +281,7 @@ void Server::joinRoom(size_t clientID, std::string creatorName, size_t planeNumb
 
 	MutexLocker ml(roomClients_.mutex);
 	{
-		client->joinRoom(room->second, planeNumber);
+		client->joinRoom(*room->second, planeNumber);
 		size_t pos;
 		emptyClient(roomClients_, pos) = client;
 		client->setID(convertPosToID(pos, true));
@@ -290,40 +291,31 @@ void Server::joinRoom(size_t clientID, std::string creatorName, size_t planeNumb
 	client.reset();
 }
 
-void Server::createRoom(size_t clientID, std::string description, std::string mapName)
+void Server::createRoom(std::shared_ptr<Client> client, const MCreateRoomRequest & message)
 {
-	auto & client = getClient(clientID);
-	if (client.getStatus() != HANGAR)
-	{
-		throw RPLANES_EXCEPTION("Cannot create room. Player is out of hangar.");
-	}
-	if (rooms_.count(client.profile().login) != 0)
+	auto & profile = client->profile();
+	if (rooms_.count(profile.login) != 0)
 	{
 		throw RPLANES_EXCEPTION("Player has already created a room.");
 	}
 
-	Room room(mapName);
-	room.creator = client.profile().login;
-	room.description = description;
-	room.banlist = client.profile_.banlist;
+	auto room = std::make_shared<Room>(message.mapName);
+	room->creator = profile.login;
+	room->description = message.description;
+	room->banlist = profile.banlist;
 
 	MutexLocker ml(roomClients_.mutex);
 	{
-		rooms_[client.profile().login] = room;
+		rooms_[profile.login] = room;
 	}
 
-	std::wcout << _rstrw("{0} created a room.", client.profile().login).str() << std::endl;
+	std::wcout << _rstrw("{0} created a room.", profile.login).str() << std::endl;
 }
 
 
-void Server::destroyRoom(size_t clientID)
+void Server::destroyRoom(std::shared_ptr<Client> client)
 {
-	auto & client = getClient(clientID);
-	if (client.getStatus() != HANGAR)
-	{
-		throw RPLANES_EXCEPTION("Cannot destroy room. Player is out of hangar.");
-	}
-	if (rooms_.erase(client.profile_.login) == 0)
+	if (rooms_.erase(client->profile().login) == 0)
 	{
 		throw RPLANES_EXCEPTION("Player has no room to destroy.");
 	}
@@ -400,7 +392,7 @@ void Server::roomLoop()
 
 			for (auto & room : rooms_)
 			{
-				room.second.iterate(frameTime.count(), getTime());
+				room.second->iterate(frameTime.count(), getTime());
 			}
 
 			for (int i = 0; i < roomClients_.clients.size(); i++)
@@ -436,7 +428,7 @@ void Server::roomLoop()
 
 			for (auto & room : rooms_)
 			{
-				room.second.clearTemroraryData();
+				room.second->clearTemroraryData();
 			}
 
 
@@ -454,10 +446,10 @@ void Server::roomLoop()
 	}
 }
 
-void Server::administerRoom(size_t clientID, rplanes::network::MAdministerRoom::Operation operation, std::vector<std::string> options)
-{
 
-	auto & client = getClient(clientID);
+
+void Server::administerRoom(const MAdministerRoom & message, Client & client )
+{
 	if (client.getStatus() != ROOM)
 	{
 		throw RPLANES_EXCEPTION("Join room first.");
@@ -469,40 +461,41 @@ void Server::administerRoom(size_t clientID, rplanes::network::MAdministerRoom::
 	}
 	auto & room = rooms_[client.profile_.login];
 
-	switch (operation)
+	switch (message.operation)
 	{
 	case rplanes::network::MAdministerRoom::KICK_PLAYERS:
-		room.kickPlayers(options);
+		room->kickPlayers(message.options);
 		break;
 	case rplanes::network::MAdministerRoom::BAN_PLAYERS:
-		if ( client.profile_.banlist.size() > rplanes::configuration().profile.maxBanlistSize )
+		if (client.profile_.banlist.size() > rplanes::configuration().profile.maxBanlistSize)
 		{
 			throw RPLANES_EXCEPTION("Banlist overflowed.");
 		}
-		client.profile_.banlist.insert(options.begin(), options.end());
-		room.banlist.insert(options.begin(), options.end());
-		room.kickPlayers(options);
+		client.profile_.banlist.insert(message.options.begin(), message.options.end());
+		room->banlist.insert(message.options.begin(), message.options.end());
+		room->kickPlayers(message.options);
 		break;
 	case rplanes::network::MAdministerRoom::UNBAN_PLAYERS:
-		for (auto & name : options)
+		for (auto & name : message.options)
 		{
-			room.banlist.erase(name);
+			room->banlist.erase(name);
+			client.profile_.banlist.erase(name);
 		}
 		break;
 	case rplanes::network::MAdministerRoom::CHANGE_MAP:
-		if (options.size() != 1)
+		if (message.options.size() != 1)
 		{
 			throw RPLANES_EXCEPTION("Cannot change map. Wrong argument.");
 		}
-		room.changeMap(options[0]);
+		room->changeMap(message.options[0]);
 		break;
 	case rplanes::network::MAdministerRoom::RESTART:
-		room.restart();
+		room->restart();
 		break;
 	case rplanes::network::MAdministerRoom::KILL_PLAYERS:
-		for (auto & name : options)
+		for (auto & name : message.options)
 		{
-			room.setPlayerDestroyed(name);
+			room->setPlayerDestroyed(name);
 		}
 		break;
 	default:

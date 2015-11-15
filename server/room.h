@@ -39,7 +39,7 @@ public:
 
 	void executeScript(const std::vector<ScriptLine> & script, std::shared_ptr<Player> thisPlayer);
 
-	void kickPlayers(std::vector< std::string > & names);
+	void kickPlayers(const std::vector< std::string > & names);
 
 	void changeMap( std::string mapName );
 

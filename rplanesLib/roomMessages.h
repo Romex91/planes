@@ -61,20 +61,19 @@ namespace rplanes {
 		};
 		RPLANES_REGISTER_MESSAGE(MServerTimeRequest);
 
-		class MSendControllable : public MessageBase
+		class MSendControllable : public MessageBase, public serverdata::Plane::ControllableParameters
 		{
 		public:
 			template <typename Archive>
 			void serialize(Archive& ar, const unsigned int version)
 			{
-				ar & params.isShooting;
-				ar & params.launchMissile;
-				ar & params.power;
-				ar & params.shootingDistanceOffset;
-				ar & params.turningVal;
-				ar & params.missileAim;
+				ar & isShooting;
+				ar & launchMissile;
+				ar & power;
+				ar & shootingDistanceOffset;
+				ar & turningVal;
+				ar & missileAim;
 			}
-			serverdata::Plane::ControllableParameters params;
 			RPLANES_MESSAGE_ID(15);
 		};
 		RPLANES_REGISTER_MESSAGE(MSendControllable);

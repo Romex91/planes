@@ -1,4 +1,3 @@
-#define PLANES_CLIENT //должно стоять до messages.h
 #include "stdafx.h"
 using boost::asio::ip::tcp;
 using namespace rplanes::network;
@@ -497,7 +496,7 @@ void loginAndJoinRoom(std::string profileName, size_t planeNo, bool bot = false)
 
 		//считываем управление
 		sf::Event event;
-		client.controllable.params.shootingDistanceOffset = 0;
+		client.controllable.shootingDistanceOffset = 0;
 		while (window.pollEvent(event))
 		{
 			if (event.type == sf::Event::Closed)
@@ -515,11 +514,11 @@ void loginAndJoinRoom(std::string profileName, size_t planeNo, bool bot = false)
 			{
 				if (event.type == sf::Event::MouseButtonPressed)
 				{
-					client.controllable.params.isShooting = true;
+					client.controllable.isShooting = true;
 				}
 				if (event.type == sf::Event::MouseButtonReleased)
 				{
-					client.controllable.params.isShooting = false;
+					client.controllable.isShooting = false;
 				}
 				if (event.type == sf::Event::GainedFocus)
 				{
@@ -553,30 +552,30 @@ void loginAndJoinRoom(std::string profileName, size_t planeNo, bool bot = false)
 		}
 		if (!bot && focusPocus)
 		{
-			client.controllable.params.turningVal += (sf::Mouse::getPosition(window).x - mouseCenter.x) / 5.f;
-			if (client.controllable.params.turningVal > 100)
+			client.controllable.turningVal += (sf::Mouse::getPosition(window).x - mouseCenter.x) / 5.f;
+			if (client.controllable.turningVal > 100)
 			{
-				client.controllable.params.turningVal = 100;
+				client.controllable.turningVal = 100;
 			}
-			if (client.controllable.params.turningVal < -100)
+			if (client.controllable.turningVal < -100)
 			{
-				client.controllable.params.turningVal = -100;
+				client.controllable.turningVal = -100;
 			}
-			client.controllable.params.shootingDistanceOffset = -(sf::Mouse::getPosition(window).y - mouseCenter.y) / 2.5f;
+			client.controllable.shootingDistanceOffset = -(sf::Mouse::getPosition(window).y - mouseCenter.y) / 2.5f;
 
 			sf::Mouse::setPosition(mouseCenter, window);
 		}
 		if (bot)
 		{
-			client.controllable.params.turningVal = 40;
-			client.controllable.params.isShooting = true;
-			client.controllable.params.shootingDistanceOffset = (0.5f - static_cast<float>(rand()) / RAND_MAX) * 10.f;
+			client.controllable.turningVal = 40;
+			client.controllable.isShooting = true;
+			client.controllable.shootingDistanceOffset = (0.5f - static_cast<float>(rand()) / RAND_MAX) * 10.f;
 		}
 
 		//управление мощностью двигателя
 		{
 
-			auto & controllable = client.controllable.params;
+			auto & controllable = client.controllable;
 			auto & interfaceData = client.interfaceData;
 			bool isAbleToIncreasePower = true;
 			for (auto & thermometer : interfaceData.thermometers)
@@ -644,9 +643,9 @@ void loginAndJoinRoom(std::string profileName, size_t planeNo, bool bot = false)
 				//слайдер поворота
 				sf::Vector2f sliderPos;
 				sliderPos.x = plane.second.pos.x
-					+ std::cos((plane.second.pos.angle + client.controllable.params.turningVal * 0.3f) / 180.f * M_PI) * client.interfaceData.shootingDistance;
+					+ std::cos((plane.second.pos.angle + client.controllable.turningVal * 0.3f) / 180.f * M_PI) * client.interfaceData.shootingDistance;
 				sliderPos.y = plane.second.pos.y
-					+ std::sin((plane.second.pos.angle + client.controllable.params.turningVal * 0.3f) / 180.f * M_PI) * client.interfaceData.shootingDistance;
+					+ std::sin((plane.second.pos.angle + client.controllable.turningVal * 0.3f) / 180.f * M_PI) * client.interfaceData.shootingDistance;
 
 				turningSlider.setPosition(sliderPos.x * scale - 5,
 					sliderPos.y * scale - 5);

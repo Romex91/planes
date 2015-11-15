@@ -11,10 +11,8 @@
 #include <ratio>
 #include <chrono>
 #include <set>
+#include <functional>
 
-
-
-#define PLANES_SERVER
 #include <messages.h>
 #include <roomMessages.h>
 #include <parallel.h>
@@ -23,6 +21,7 @@
 #include <planesException.h>
 #include <database.h>
 #include <plane.h>
+#include <network.h>
 
 #include <odb/model-odb.hxx>
 #include <odb/profile-odb.hxx>

@@ -350,6 +350,8 @@ namespace rplanes
 				ar & profile;
 			}
 			rplanes::playerdata::Profile profile;
+			MProfile(const rplanes::playerdata::Profile & p) : profile(p) {};
+			MProfile() = default;
 			RPLANES_MESSAGE_ID(32);
 		};
 		RPLANES_REGISTER_MESSAGE(MProfile);
@@ -363,6 +365,8 @@ namespace rplanes
 				ar & conf;
 			}
 			Configuration conf;
+			MServerConfiguration(const Configuration & configuration) : conf(configuration) {};
+			MServerConfiguration() = default;
 			RPLANES_MESSAGE_ID(33);
 		};
 		RPLANES_REGISTER_MESSAGE(MServerConfiguration);
@@ -405,7 +409,8 @@ namespace rplanes
 			{
 				ar & string;
 			}
-
+			MResourceString(const rstring::_rstrw_t &str) : string(str) {};
+			MResourceString() = default;
 			rstring::_rstrw_t string;
 			RPLANES_MESSAGE_ID(36);
 		};

@@ -1,6 +1,4 @@
 #pragma once
-#include "network.h"
-
 //max count of registered messages
 #define RPLANES_MAX_MESSAGE_ID 100
 
@@ -45,6 +43,17 @@ namespace rplanes
 		//compile-time message registering magic
 		namespace details {
 
+			//moving resource strings to this function template to get rid of tones of strings in the compiler log
+			template<class _Archive>
+			void throwNotSuitableArchiveException()
+			{
+				if (!_Archive::is_saving::value) {
+					throw RPLANES_EXCEPTION("{0} is not saving archive", typeid(_Archive).name());
+				} else {
+					throw RPLANES_EXCEPTION("{0} is not loading archive.", typeid(_Archive).name());
+				}
+			}
+
 			template<class _Message, class _Archive>
 			typename std::enable_if<_Archive::is_saving::value>::type writeImpl(const _Message & message, _Archive & ar)
 			{
@@ -54,7 +63,7 @@ namespace rplanes
 			template<class _Message, class _Archive>
 			typename std::enable_if<!_Archive::is_saving::value>::type writeImpl(const _Message & message, _Archive & ar)
 			{
-				throw RPLANES_EXCEPTION("{0} is not saving archive", typeid(_Archive).name());
+				throwNotSuitableArchiveException<_Archive>();
 			}
 
 			//message serializer base
@@ -66,6 +75,7 @@ namespace rplanes
 				virtual ~MSerializerBase() {};
 			};
 
+
 			//archive-specific message serializer
 			template<class _Message, class _Archive >
 			class MSerializer : public MSerializerBase
@@ -76,7 +86,7 @@ namespace rplanes
 				virtual std::shared_ptr<MessageBase> read() override
 				{
 					if (!_Archive::is_loading::value)
-						throw RPLANES_EXCEPTION("{0} is not loading archive.", typeid(_Archive).name());
+						throwNotSuitableArchiveException<_Archive>();
 					_Message mess;
 					ar & mess;
 					return std::shared_ptr<MessageBase>(new _Message(mess));

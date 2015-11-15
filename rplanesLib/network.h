@@ -8,8 +8,6 @@ namespace rplanes
 {
 	namespace network
 	{
-
-
 		//contains a bit of compile-time magic and asynch insanity
 		class Connection
 		{
@@ -50,6 +48,11 @@ namespace rplanes
 
 			static NoHandlerBehavior noHandlerBehavior;
 
+			MessageId getLastMessageId() 
+			{
+				return _lastMessageId;
+			}
+
 		protected:
 			std::string _ip;
 			boost::asio::ip::tcp::socket _socket;
@@ -58,6 +61,8 @@ namespace rplanes
 
 			//shared resource is _pendingMessages
 			Mutex _mutex;
+
+			MessageId _lastMessageId = 0;
 
 			//read header containing message data length
 			void readHeaderAsync();

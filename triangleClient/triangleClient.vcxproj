@@ -55,7 +55,7 @@
       <ForcedIncludeFiles>"stdafx.h"</ForcedIncludeFiles>
       <PreprocessorDefinitions>$(commonDefenitions);_MBCS;%(PreprocessorDefinitions)</PreprocessorDefinitions>
       <AdditionalIncludeDirectories>$(rplanesLibInclude);$(vendersInclude);%(AdditionalIncludeDirectories)</AdditionalIncludeDirectories>
-      <AdditionalOptions>/Zm220 %(AdditionalOptions)</AdditionalOptions>
+      <AdditionalOptions>/Zm220 /bigobj %(AdditionalOptions)</AdditionalOptions>
     </ClCompile>
     <Link>
       <GenerateDebugInformation>true</GenerateDebugInformation>
@@ -78,7 +78,7 @@
       <ForcedIncludeFiles>"stdafx.h"</ForcedIncludeFiles>
       <PreprocessorDefinitions>$(commonDefenitions);_MBCS;%(PreprocessorDefinitions)</PreprocessorDefinitions>
       <AdditionalIncludeDirectories>$(rplanesLibInclude);$(vendersInclude);%(AdditionalIncludeDirectories)</AdditionalIncludeDirectories>
-      <AdditionalOptions>/Zm220 %(AdditionalOptions)</AdditionalOptions>
+      <AdditionalOptions>/Zm220 /bigobj %(AdditionalOptions)</AdditionalOptions>
     </ClCompile>
     <Link>
       <GenerateDebugInformation>true</GenerateDebugInformation>

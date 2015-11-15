@@ -1,8 +1,10 @@
 #pragma once
 #include "stdafx.h"
+
+#define RPLANES_EXCEPTION(stringConstant,...) rplanes::PlanesException(_rstrw(stringConstant, ##__VA_ARGS__))
+
 namespace rplanes
 {
-#define RPLANES_EXCEPTION(stringConstant,...) PlanesException(_rstrw(stringConstant, ##__VA_ARGS__))
 
 	class PlanesException : public std::exception
 	{

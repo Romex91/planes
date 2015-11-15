@@ -57,6 +57,7 @@ namespace rplanes {
 			IArchive archive(messageStream, boost::archive::no_header);
 			auto message = readRegisteredMessage(archive);
 			auto id = message->getId();
+			_lastMessageId = id;
 			if (_handlers.count(id) == 0) {
 				if (noHandlerBehavior == NoHandlerBehavior::DO_NOTHING)
 					return message;

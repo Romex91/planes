@@ -1,4 +1,3 @@
-#define PLANES_SERVER
 
 #include "stdafx.h"
 using namespace odb::core;

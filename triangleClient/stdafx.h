@@ -4,6 +4,7 @@
 #define PLANES_CLIENT
 #include <messages.h>
 #include <roomMessages.h>
+#include <network.h>
 #include <database.h>
 #include <omp.h>
 #include <thread>
