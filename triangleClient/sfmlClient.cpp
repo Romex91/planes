@@ -1,7 +1,7 @@
 #include "stdafx.h"
 using boost::asio::ip::tcp;
 using namespace rplanes::network;
-std::string server_ip = "127.0.0.1";
+std::string server_ip = "bulldozer";
 
 float scale = 2.f; //увеличивает серверные данные при отрисовке
 
@@ -24,44 +24,45 @@ public:
 	//сообщение, передаваемое серверу каждый серверный кадр
 	rplanes::network::MSendControllable controllable;
 
-	rplanes::network::Connection connection;
-	Client() : connection(io_service)
+	std::shared_ptr<rplanes::network::Connection> connection = std::make_shared<rplanes::network::Connection>
+		(io_service, tcp::resolver(io_service).resolve(tcp::resolver::query(server_ip, "40000")));
+	Client()
 	{
 		//////////////////////////////////////////////////////////////////////////
 		//setting message handlers
 		//////////////////////////////////////////////////////////////////////////
 
 		//приходит после отправки запроса статуса
-		connection.setHandler<MStatus>([this](const MStatus & m) {
+		connection->setHandler<MStatus>([this](const MStatus & m) {
 			status = m.status;
 		});
 		//после успешной авторизации сервер отсылает конфигурацию, необходимую для корректной работы interpolate и т.п.
-		connection.setHandler<MServerConfiguration>([this](const MServerConfiguration & m){
-			std::wcout << _rstrw("reading server configuration...").str() << std::endl;
+		connection->setHandler<MServerConfiguration>([this](const MServerConfiguration & m) {
+			BOOST_LOG_TRIVIAL(info) << _rstrw("reading server configuration...").str();
 			rplanes::configuration() = m.conf;
 		});
-		connection.setHandler<MProfile>([this](const MProfile & m){
+		connection->setHandler<MProfile>([this](const MProfile & m) {
 			profile = m.profile;
 		});
-		connection.setHandler<MRoomList>([this](const MRoomList & m){
+		connection->setHandler<MRoomList>([this](const MRoomList & m) {
 			rooms = m.rooms;
 		});
-		connection.setHandler<MChangeMap>([this](const MChangeMap & m){
-			std::wcout << _rstrw("changing map to {0}...", m.mapName).str() << std::endl;
+		connection->setHandler<MChangeMap>([this](const MChangeMap & m) {
+			BOOST_LOG_TRIVIAL(info) << _rstrw("changing map to {0}...", m.mapName).str();
 		});
 		//сообщение приходит после запроса серверного времени
-		connection.setHandler<MServerTime>([this](const MServerTime & m){
+		connection->setHandler<MServerTime>([this](const MServerTime & m) {
 			client.serverTime = m.time;
 
 			//запрашиваем серверное время
-			client.connection.sendMessage(MServerTimeRequest());
+			client.connection->sendMessage(MServerTimeRequest());
 
 			//клиент должен отсылать управление как можно чаще, но при этом не привышать квоту
 			//поэтому отправляем данные управления вместе с запросом времени
-			client.connection.sendMessage(client.controllable);
+			client.connection->sendMessage(client.controllable);
 		});
 
-		connection.setHandler<MCreateBullets>([this](const MCreateBullets & m){
+		connection->setHandler<MCreateBullets>([this](const MCreateBullets & m) {
 			for (auto & bullet : m.bullets)
 			{
 				client.bullets[bullet.ID] = bullet;
@@ -70,22 +71,22 @@ public:
 					client.bullets[bullet.ID].move(client.clientTime - m.time);
 			}
 		});
-		connection.setHandler<MCreatePlanes>([this](const MCreatePlanes & m){
+		connection->setHandler<MCreatePlanes>([this](const MCreatePlanes & m) {
 			for (auto & plane : m.planes)
 			{
 
 				if (client.planes.count(plane.id) != 0)
 				{
-					std::wcout << _rstrw("duplicate plane creation").str() << std::endl;
+					BOOST_LOG_TRIVIAL(info) << _rstrw("duplicate plane creation").str();
 				}
-				std::wcout << _rstrw("creating new plane '{0}' player '{1}' id '{2}'",
-					plane.planeName, plane.playerName, plane.id).str() << std::endl;
+				BOOST_LOG_TRIVIAL(info) << _rstrw("creating new plane '{0}' player '{1}' id '{2}'",
+					plane.planeName, plane.playerName, plane.id).str();
 				client.planes[plane.id] = plane;
 			}
 		});
 		//логически идентична createBullets
 		//можно использовать другие графические эффекты, и т.п.
-		connection.setHandler<MCreateRicochetes>([this](const MCreateRicochetes & m){
+		connection->setHandler<MCreateRicochetes>([this](const MCreateRicochetes & m) {
 			for (auto & bullet : m.bullets)
 			{
 				client.bullets[bullet.ID] = bullet;
@@ -95,7 +96,7 @@ public:
 			}
 		});
 		//приходит только при попаданиях. Остальные пули удаляются в главной петле
-		connection.setHandler<MDestroyBullets>([this](const MDestroyBullets & m){
+		connection->setHandler<MDestroyBullets>([this](const MDestroyBullets & m) {
 			//пуля уничтожена во время коллизий
 			for (auto & bullet : m.bullets)
 			{
@@ -103,27 +104,27 @@ public:
 			}
 		});
 		//может означать не только уничтожение, но и вылет за границы видимости
-		connection.setHandler<MDestroyPlanes>([this](const MDestroyPlanes & m){
+		connection->setHandler<MDestroyPlanes>([this](const MDestroyPlanes & m) {
 			for (auto & destroyedPlane : m.planes)
 			{
 				switch (destroyedPlane.reason)
 				{
 				case rplanes::network::MDestroyPlanes::MODULE_DESTROYED:
-					std::wcout << _rstrw("plane {0} is downing because of {2} {1} destruction",
+					BOOST_LOG_TRIVIAL(info) << _rstrw("plane {0} is downing because of {2} {1} destruction",
 						destroyedPlane.planeID, destroyedPlane.moduleNo,
-						rplanes::moduleTypesNames[client.planes[destroyedPlane.planeID].modules[destroyedPlane.moduleNo].type]).str() << std::endl;
+						rplanes::moduleTypesNames[client.planes[destroyedPlane.planeID].modules[destroyedPlane.moduleNo].type]).str();
 					break;
 				case rplanes::network::MDestroyPlanes::FUEL:
-					std::wcout << _rstrw("plane {0} is out of fuel", destroyedPlane.planeID).str() << std::endl;
+					BOOST_LOG_TRIVIAL(info) << _rstrw("plane {0} is out of fuel", destroyedPlane.planeID).str();
 					break;
 				case rplanes::network::MDestroyPlanes::VANISH:
-					std::wcout << _rstrw("plane {0} vanished", destroyedPlane.planeID).str() << std::endl;
+					BOOST_LOG_TRIVIAL(info) << _rstrw("plane {0} vanished", destroyedPlane.planeID).str();
 					break;
 				case  rplanes::network::MDestroyPlanes::RAMMED:
-					std::wcout << _rstrw("plane {0} rammed with another plane", destroyedPlane.planeID).str() << std::endl;
+					BOOST_LOG_TRIVIAL(info) << _rstrw("plane {0} rammed with another plane", destroyedPlane.planeID).str();
 					break;
 				case rplanes::network::MDestroyPlanes::FIRE:
-					std::wcout << _rstrw("plane {0} is burning down", destroyedPlane.planeID).str() << std::endl;
+					BOOST_LOG_TRIVIAL(info) << _rstrw("plane {0} is burning down", destroyedPlane.planeID).str();
 					break;
 				}
 				client.planes.erase(destroyedPlane.planeID);
@@ -131,10 +132,10 @@ public:
 		});
 
 		//приходит каждый серверный кадр
-		connection.setHandler<MInterfaceData>([this](const MInterfaceData & m){
+		connection->setHandler<MInterfaceData>([this](const MInterfaceData & m) {
 			client.interfaceData = m;
 		});
-		connection.setHandler<MPlanesPositions>([this](const MPlanesPositions & m){
+		connection->setHandler<MPlanesPositions>([this](const MPlanesPositions & m) {
 			for (auto & position : m.positions)
 			{
 				auto & plane = client.planes[position.planeID];
@@ -144,16 +145,16 @@ public:
 				plane.extrapolate(client.clientTime - m.time);
 			}
 		});
-		connection.setHandler<MRoomInfo>([this](const MRoomInfo & m){
+		connection->setHandler<MRoomInfo>([this](const MRoomInfo & m) {
 			/*for (auto & player : newPlayers)
 			{
-			std::cout << player.name + " присоединился на самолете " + player.planeName + "." << std::endl;
+			std::cout << player.name + " присоединился на самолете " + player.planeName + "." ;
 			}
 			for (auto & player : disconnectedPlayers)
 			{
-			std::cout << player + " покинул комнату." << std::endl;
+			std::cout << player + " покинул комнату." ;
 			}
-			std::cout << "Ваша текущая цель - " + goal.description + "." << std::endl;
+			std::cout << "Ваша текущая цель - " + goal.description + "." ;
 			for (auto & stat : updatedStatistics)
 			{
 			std::cout
@@ -165,11 +166,11 @@ public:
 			<< stat.second.crashes
 			<< " союзников уничтожено : "
 			<< stat.second.friendsDestroyed
-			<< std::endl;
+			;
 			}*/
 		});
 		//приходит только при изменении параметров модулей
-		connection.setHandler<MUpdateModules>([this](const MUpdateModules & m){
+		connection->setHandler<MUpdateModules>([this](const MUpdateModules & m) {
 			for (auto & module : m.modules)
 			{
 				if (client.planes.count(module.planeID) == 0)
@@ -194,27 +195,21 @@ public:
 
 				//std::cout << "Номер модуля " << module.moduleNo << ". ";
 				//auto moduleType = plane.modules[module.moduleNo].type;
-				//std::cout << "Тип модуля " << moduleTypesNames[moduleType] << "." << std::endl;
+				//std::cout << "Тип модуля " << moduleTypesNames[moduleType] << "." ;
 			}
 		});
 
-		connection.setHandler<MText>([this](const MText & m){
-			std::wcout << _rstrw("server message : {0}", m.text).str();
+		connection->setHandler<MText>([this](const MText & m) {
+			BOOST_LOG_TRIVIAL(info) << _rstrw("server message : {0}", m.text).str();
 		});
-		connection.setHandler<MExitRoom>([this](const MExitRoom & m){
-			std::wcout << _rstrw("exited from room").str();
+		connection->setHandler<MExitRoom>([this](const MExitRoom & m) {
+			BOOST_LOG_TRIVIAL(info) << _rstrw("exited from room").str();
 		});
-		connection.setHandler<MResourceString>([this](const MResourceString & m){
-			std::wcout << _rstrw("server message : {0}", m.string).str();
+		connection->setHandler<MResourceString>([this](const MResourceString & m) {
+			BOOST_LOG_TRIVIAL(info) << _rstrw("server message : {0}", m.string).str();
 		});
-	}
 
-	void connect()
-	{
-		tcp::resolver resolver(io_service);
-		tcp::resolver::query query(server_ip, "40000");
-		tcp::resolver::iterator endpoint_iterator = resolver.resolve(query);
-		connection.connect(endpoint_iterator);
+		connection->start();
 	}
 
 	//все следующие штуки мы получаем от сервера
@@ -230,6 +225,21 @@ public:
 		{}
 		void draw(sf::RenderTarget & target, sf::RenderStates states) const
 		{
+			sf::RectangleShape rectangle(sf::Vector2f(3.f, 3.f));
+			switch (rplanes::network::MCreatePlanes::Plane::nation)
+			{
+			case rplanes::ALLIES:
+				rectangle.setFillColor(sf::Color::Green);
+				break;
+			case rplanes::AXIS:
+				rectangle.setFillColor(sf::Color::Red);
+				break;
+			default:
+				break;
+			}
+			rectangle.setPosition(pos.x * scale + 10.f * scale, pos.y * scale);
+			target.draw(rectangle);
+
 			sf::ConvexShape shape;
 			for (auto & module : modules)
 			{
@@ -241,26 +251,15 @@ public:
 					i++;
 				}
 				shape.setOutlineThickness(1);
-				//if (module.defected)
-				//{
-				//	shape.setOutlineColor(sf::Color::Red);
-				//}
-				//else
-				//{
-				//	shape.setOutlineColor(sf::Color::Green);
-				//}
-				
-				switch ( rplanes::network::MCreatePlanes::Plane::nation)
+				if (module.defected)
 				{
-				case rplanes::ALLIES:
-					shape.setOutlineColor(sf::Color::Green);
-					break;
-				case rplanes::AXIS:
 					shape.setOutlineColor(sf::Color::Red);
-					break;
-				default:
-					break;
 				}
+				else
+				{
+					shape.setOutlineColor(sf::Color::Green);
+				}
+
 				shape.setFillColor(sf::Color(255 * (1 - module.hp / module.hpMax), 255 * module.hp / module.hpMax, 0, 50));
 				shape.setPosition(pos.x * scale, pos.y * scale);
 				target.draw(shape);
@@ -274,7 +273,7 @@ public:
 			rplanes::serverdata::Bullet()
 		{
 
-			}
+		}
 		Bullet(const rplanes::serverdata::Bullet & bullet) :
 			rplanes::serverdata::Bullet(bullet)
 		{}
@@ -339,7 +338,7 @@ public:
 std::string password = "qwerty";
 
 
-void loginAndJoinRoom(std::string profileName, size_t planeNo, bool bot = false)
+void loginAndJoinRoom(std::string profileName, size_t planeNo)
 {
 	std::chrono::milliseconds hangarFrameTime(static_cast<long long> (rplanes::configuration().server.hangarFrameTime * 1000));
 
@@ -348,12 +347,9 @@ void loginAndJoinRoom(std::string profileName, size_t planeNo, bool bot = false)
 	loginMessage.name = profileName;
 	loginMessage.encryptedPassword = password;
 
-	//подключаемся к серверу
-	client.connect();
-
 	//отправляем сообщение авторизации
-	std::wcout << _rstrw("sending auhtentication request...").str() << std::endl;
-	client.connection.sendMessage(loginMessage);
+	BOOST_LOG_TRIVIAL(info) << _rstrw("sending auhtentication request...").str();
+	client.connection->sendMessage(loginMessage);
 
 
 	//ждем, чтобы не привысить квоту
@@ -362,13 +358,13 @@ void loginAndJoinRoom(std::string profileName, size_t planeNo, bool bot = false)
 	//если все прошло успешно, мы находимся в ангаре. Для проверки на acmd клиенте можно запросить у сервера статус.
 
 	//запрашиваем список комнат
-	client.connection.sendMessage(rplanes::network::MRoomListRequest());
+	client.connection->sendMessage(rplanes::network::MRoomListRequest());
 
 	//ждем ответа
 	size_t tries = 0;
 	for (; tries < 10; tries++)
 	{
-		auto handledMessage = client.connection.handleMessage();
+		auto handledMessage = client.connection->handleMessage();
 		if (handledMessage)
 		{
 			if (rplanes::network::MRoomList::id == handledMessage->getId())
@@ -380,7 +376,7 @@ void loginAndJoinRoom(std::string profileName, size_t planeNo, bool bot = false)
 	}
 	if (tries == 10)
 	{
-		std::wcout << _rstrw("something went wrong").str() << std::endl;
+		BOOST_LOG_TRIVIAL(info) << _rstrw("something went wrong").str();
 		return;
 	}
 
@@ -395,7 +391,7 @@ void loginAndJoinRoom(std::string profileName, size_t planeNo, bool bot = false)
 		rplanes::network::MCreateRoomRequest crr;
 		crr.description = "the best map on the server";
 		crr.mapName = "bot.map";
-		client.connection.sendMessage(crr);
+		client.connection->sendMessage(crr);
 		std::this_thread::sleep_for(hangarFrameTime);
 	}
 	//иначе запоминаем имя владельца первой комнаты
@@ -436,7 +432,7 @@ void loginAndJoinRoom(std::string profileName, size_t planeNo, bool bot = false)
 	turningSlider.setOutlineColor(sf::Color::Black);
 	turningSlider.setOutlineThickness(1);
 
-	sf::Vector2i mouseCenter(1366/2, 768/2);
+	sf::Vector2i mouseCenter(1366 / 2, 768 / 2);
 
 	sf::RectangleShape  faintRECTALgle(sf::Vector2f(5000, 5000));
 	sf::CircleShape aimCircle;
@@ -450,10 +446,10 @@ void loginAndJoinRoom(std::string profileName, size_t planeNo, bool bot = false)
 	jrr.planeNo = planeNo;
 	jrr.playerName = roomCreatorName;
 
-	client.connection.sendMessage(jrr);
+	client.connection->sendMessage(jrr);
 
 	//запрашиваем серверное время. Последующие запросы будут отправлены из обработчика ServerTime
-	client.connection.sendMessage(rplanes::network::MServerTimeRequest());
+	client.connection->sendMessage(rplanes::network::MServerTimeRequest());
 
 	//есть ли фокус на окне
 	bool focusPocus = true;
@@ -507,50 +503,47 @@ void loginAndJoinRoom(std::string profileName, size_t planeNo, bool bot = false)
 			{
 				rplanes::network::MAdministerRoom ar;
 				ar.operation = rplanes::network::MAdministerRoom::RESTART;
-				client.connection.sendMessage(ar);
-				std::wcout << _rstrw("sending restart command to the server").str() << std::endl;
+				client.connection->sendMessage(ar);
+				BOOST_LOG_TRIVIAL(info) << _rstrw("sending restart command to the server").str();
 			}
-			if (!bot)
+			if (event.type == sf::Event::MouseButtonPressed)
 			{
-				if (event.type == sf::Event::MouseButtonPressed)
-				{
-					client.controllable.isShooting = true;
-				}
-				if (event.type == sf::Event::MouseButtonReleased)
-				{
-					client.controllable.isShooting = false;
-				}
-				if (event.type == sf::Event::GainedFocus)
-				{
-					focusPocus = true;
-				}
-				if (event.type == sf::Event::LostFocus)
-				{
-					focusPocus = false;
-				}
+				client.controllable.isShooting = true;
+			}
+			if (event.type == sf::Event::MouseButtonReleased)
+			{
+				client.controllable.isShooting = false;
+			}
+			if (event.type == sf::Event::GainedFocus)
+			{
+				focusPocus = true;
+			}
+			if (event.type == sf::Event::LostFocus)
+			{
+				focusPocus = false;
+			}
 
 
-				if (event.type == sf::Event::MouseWheelMoved)
+			if (event.type == sf::Event::MouseWheelMoved)
+			{
+				auto factor = std::pow(1.2, event.mouseWheel.delta);
+				scale *= factor;
+				if (scale < 0.2f)
 				{
-					auto factor = std::pow(1.2, event.mouseWheel.delta);
-					scale *= factor;
-					if (scale < 0.2f)
-					{
-						scale = 0.2f;
-					}
-					grid = gridBase;
-					for (auto & cell : grid)
-					{
-						cell.setScale(scale, scale);
-						auto position = cell.getPosition();
-						position *= scale;
-						cell.setPosition(position);
-					}
-
+					scale = 0.2f;
 				}
+				grid = gridBase;
+				for (auto & cell : grid)
+				{
+					cell.setScale(scale, scale);
+					auto position = cell.getPosition();
+					position *= scale;
+					cell.setPosition(position);
+				}
+
 			}
 		}
-		if (!bot && focusPocus)
+		if (focusPocus)
 		{
 			client.controllable.turningVal += (sf::Mouse::getPosition(window).x - mouseCenter.x) / 5.f;
 			if (client.controllable.turningVal > 100)
@@ -564,12 +557,6 @@ void loginAndJoinRoom(std::string profileName, size_t planeNo, bool bot = false)
 			client.controllable.shootingDistanceOffset = -(sf::Mouse::getPosition(window).y - mouseCenter.y) / 2.5f;
 
 			sf::Mouse::setPosition(mouseCenter, window);
-		}
-		if (bot)
-		{
-			client.controllable.turningVal = 40;
-			client.controllable.isShooting = true;
-			client.controllable.shootingDistanceOffset = (0.5f - static_cast<float>(rand()) / RAND_MAX) * 10.f;
 		}
 
 		//управление мощностью двигателя
@@ -589,10 +576,10 @@ void loginAndJoinRoom(std::string profileName, size_t planeNo, bool bot = false)
 				//	<< thermometer.criticalTemperature << " "
 				//	<< thermometer.dT << " "
 				//	<< thermometer.dTmax << " "
-				//	<< controllable.power << std::endl;
+				//	<< controllable.power ;
 			}
 
-			if ( !isAbleToIncreasePower || sf::Keyboard::isKeyPressed(sf::Keyboard::S) )
+			if (!isAbleToIncreasePower || sf::Keyboard::isKeyPressed(sf::Keyboard::S))
 			{
 				if (controllable.power != 0)
 				{
@@ -613,7 +600,7 @@ void loginAndJoinRoom(std::string profileName, size_t planeNo, bool bot = false)
 
 
 		//принимаем серверные сообщения. Будут созданы новые пули, самолеты, и обновлено состояние самолетов
-		while (client.connection.handleMessage())
+		while (client.connection->handleMessage())
 		{
 		};
 
@@ -698,12 +685,10 @@ void registry(std::string profileName)
 	registryMessage.name = profileName;
 	registryMessage.password = password;
 
-	//подключаемся к серверу
-	client.connect();
 	//отправляем сообщение
-	client.connection.sendMessage(registryMessage);
+	client.connection->sendMessage(registryMessage);
 	//обрабатываем вывод сервера
-	while (client.connection.handleMessage())
+	while (client.connection->handleMessage())
 	{
 	}
 }
@@ -715,12 +700,9 @@ void loginAndBuyPlane(std::string profileName, std::string planeName)
 	loginMessage.name = profileName;
 	loginMessage.encryptedPassword = password;
 
-	//подключаемся к серверу
-	client.connect();
-
 	//отправляем сообщение авторизации
-	std::wcout << _rstrw("sending authentication request..").str() << std::endl;
-	client.connection.sendMessage(loginMessage);
+	BOOST_LOG_TRIVIAL(info) << _rstrw("sending authentication request..").str();
+	client.connection->sendMessage(loginMessage);
 	//ждем секунду, чтобы не привысить квоту
 	std::this_thread::sleep_for(std::chrono::seconds(1));
 
@@ -728,19 +710,19 @@ void loginAndBuyPlane(std::string profileName, std::string planeName)
 
 	//теперь мы в ангаре, купим самолет
 
-	client.connection.sendMessage(rplanes::network::MProfileRequest());
+	client.connection->sendMessage(rplanes::network::MProfileRequest());
 	//если авторизация не прошла успешно, сервер оборвет подклбчение.
 
 	//ждем ответа сервера
 	size_t tries = 0;
 	for (; tries < 3; tries++)
 	{
-		auto handledMessage = client.connection.handleMessage();
+		auto handledMessage = client.connection->handleMessage();
 		if (handledMessage)
 		{
 			if (rplanes::network::MProfile::id == handledMessage->getId())
 			{
-				std::wcout << _rstrw("authentication succeeded").str() << std::endl;
+				BOOST_LOG_TRIVIAL(info) << _rstrw("authentication succeeded").str();
 				break;
 			}
 		}
@@ -748,70 +730,41 @@ void loginAndBuyPlane(std::string profileName, std::string planeName)
 	}
 	if (tries == 3)
 	{
-		std::wcout << _rstrw("authentication failed").str() << std::endl;
+		BOOST_LOG_TRIVIAL(info) << _rstrw("authentication failed").str();
 		return;
 	}
 
 	std::this_thread::sleep_for(std::chrono::seconds(1));
 	rplanes::network::MBuyPlaneRequest bpr;
 	bpr.planeName = planeName;
-	std::wcout << _rstrw("sending buying request").str() << std::endl;
-	client.connection.sendMessage(bpr);
+	BOOST_LOG_TRIVIAL(info) << _rstrw("sending buying request").str();
+	client.connection->sendMessage(bpr);
 	//обрабатываем вывод сервера
 	while (true)
 	{
-		while(client.connection.handleMessage());
+		while (client.connection->handleMessage());
 		std::this_thread::sleep_for(std::chrono::milliseconds(100));
 	}
 }
 
-
-int main(int argc, char* argv[])
+void failedToMakeUpGoodName(int argc, char* argv[])
 {
-#ifdef _MSC_VER
-	system("chcp 65001");
-#endif
-	boost::locale::generator gen;
-	std::locale::global(gen.generate(std::locale(), ""));
-	std::wcout.imbue(std::locale());
-
-	std::wifstream xmlFs(rplanes::configuration().server.languageXml);
-	boost::archive::xml_wiarchive archive(xmlFs, boost::archive::no_header);
-	archive >> boost::serialization::make_nvp("strings", rstring::_rstrw_t::resource());
-
 	if (argc < 2)
 	{
-		std::wcout << _rstrw("wrong input data").str() << std::endl;
-		return 0;
+		BOOST_LOG_TRIVIAL(info) << _rstrw("wrong input data").str();
+		return;
 	}
 
 	std::string command(argv[1]);
 
 	try
 	{
-		if (command == "bot")
+		if (command == "join")
 		{
 			if (argc != 4 && argc != 5)
 			{
-				std::wcout << _rstrw("wrong input data").str() << std::endl;
-				return 0;
-			}
-			if (argc == 5)
-			{
-				server_ip = argv[4];
-			}
-			std::stringstream ss;
-			ss << argv[3];
-			size_t planeNum;
-			ss >> planeNum;
-			loginAndJoinRoom(argv[2], planeNum, true);
-		}
-		else if (command == "join")
-		{
-			if (argc != 4 && argc != 5)
-			{
-				std::wcout << _rstrw("wrong input data").str() << std::endl;
-				return 0;
+				BOOST_LOG_TRIVIAL(info) << _rstrw("wrong input data").str();
+				return;
 			}
 			if (argc == 5)
 			{
@@ -827,8 +780,8 @@ int main(int argc, char* argv[])
 		{
 			if (argc != 3 && argc != 4)
 			{
-				std::wcout << _rstrw("wrong input data").str() << std::endl;
-				return 0;
+				BOOST_LOG_TRIVIAL(info) << _rstrw("wrong input data").str();
+				return;
 			}
 			if (argc == 4)
 			{
@@ -840,8 +793,8 @@ int main(int argc, char* argv[])
 		{
 			if (argc != 4 && argc != 5)
 			{
-				std::wcout << _rstrw("wrong input data").str() << std::endl;
-				return 0;
+				BOOST_LOG_TRIVIAL(info) << _rstrw("wrong input data").str();
+				return;
 			}
 			if (argc == 5)
 			{
@@ -851,12 +804,47 @@ int main(int argc, char* argv[])
 		}
 		else
 		{
-			std::wcout << _rstrw("wrong input data").str() << std::endl;
+			BOOST_LOG_TRIVIAL(info) << _rstrw("wrong input data").str();
 		}
+	}
+	catch (rplanes::PlanesException & e)
+	{
+		BOOST_LOG_TRIVIAL(error) << e.getString().str();
 	}
 	catch (std::exception & e)
 	{
-		std::cout << e.what() << std::endl;
+		BOOST_LOG_TRIVIAL(error) << e.what();
 	}
+}
+
+int main(int argc, char* argv[])
+{
+#ifdef _MSC_VER
+	system("chcp 65001");
+#endif
+	boost::locale::generator gen;
+	std::locale::global(gen.generate(std::locale(), ""));
+	BOOST_LOG_TRIVIAL(info).imbue(std::locale());
+
+	std::wifstream xmlFs(rplanes::configuration().server.languageXml);
+	boost::archive::xml_wiarchive archive(xmlFs, boost::archive::no_header);
+	archive >> boost::serialization::make_nvp("strings", rstring::_rstrw_t::resource());
+
+	omp_set_num_threads(2);
+	omp_set_nested(true);
+
+#pragma omp parallel sections
+	{
+#pragma omp section
+		{
+			io_service.run();
+		}
+#pragma omp section
+		{
+			failedToMakeUpGoodName(argc, argv);
+			io_service.stop();
+		}
+	}
+
 	return 0;
 }

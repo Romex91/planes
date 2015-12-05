@@ -52,16 +52,16 @@ namespace rplanes {
 		//messages sending by clients
 		//////////////////////////////////////////////////////////////////////////
 
-		class MServerTimeRequest : public MessageBase
+		class MServerTimeRequest : public Message
 		{
 		public:
 			template <typename Archive>
 			void serialize(Archive& ar, const unsigned int version){}
-			RPLANES_MESSAGE_ID(14);
+			RPLANES_MESSAGE_ID(50);
 		};
 		RPLANES_REGISTER_MESSAGE(MServerTimeRequest);
 
-		class MSendControllable : public MessageBase, public serverdata::Plane::ControllableParameters
+		class MSendControllable : public Message, public serverdata::Plane::ControllableParameters
 		{
 		public:
 			template <typename Archive>
@@ -74,12 +74,12 @@ namespace rplanes {
 				ar & turningVal;
 				ar & missileAim;
 			}
-			RPLANES_MESSAGE_ID(15);
+			RPLANES_MESSAGE_ID(51);
 		};
 		RPLANES_REGISTER_MESSAGE(MSendControllable);
 
 		//available only for the room master
-		class MAdministerRoom : public MessageBase
+		class MAdministerRoom : public Message
 		{
 		public:
 			template <typename Archive>
@@ -104,14 +104,14 @@ namespace rplanes {
 			};
 			Operation operation;
 			std::vector<std::string> options;
-			RPLANES_MESSAGE_ID(16);
+			RPLANES_MESSAGE_ID(52);
 		};
 		RPLANES_REGISTER_MESSAGE(MAdministerRoom);
 
 		//////////////////////////////////////////////////////////////////////////
 		//messages sending by the server
 		//////////////////////////////////////////////////////////////////////////
-		class MCreateBullets : public MessageBase
+		class MCreateBullets : public Message
 		{
 		public:
 			template <typename Archive>
@@ -123,11 +123,11 @@ namespace rplanes {
 
 			std::vector <serverdata::Bullet> bullets;
 			float time;
-			RPLANES_MESSAGE_ID(18);
+			RPLANES_MESSAGE_ID(53);
 		};
 		RPLANES_REGISTER_MESSAGE(MCreateBullets);
 
-		class MInterfaceData : public MessageBase
+		class MInterfaceData : public Message
 		{
 		public:
 			template <typename Archive>
@@ -212,13 +212,13 @@ namespace rplanes {
 
 			void update(const serverdata::Plane & Plane);
 
-			RPLANES_MESSAGE_ID(19);
+			RPLANES_MESSAGE_ID(54);
 		};
 		RPLANES_REGISTER_MESSAGE(MInterfaceData);
 
 
 		//logicaly identical to CreateBullets 
-		class MCreateRicochetes : public MessageBase
+		class MCreateRicochetes : public Message
 		{
 		public:
 			template <typename Archive>
@@ -230,11 +230,11 @@ namespace rplanes {
 
 			std::vector <serverdata::Bullet> bullets;
 			float time;
-			RPLANES_MESSAGE_ID(20);
+			RPLANES_MESSAGE_ID(55);
 		};
 		RPLANES_REGISTER_MESSAGE(MCreateRicochetes);
 
-		class MCreateMissiles : public MessageBase
+		class MCreateMissiles : public Message
 		{
 		public:
 			template <typename Archive>
@@ -246,12 +246,12 @@ namespace rplanes {
 
 			std::vector<serverdata::LaunchedMissile> missiles;
 			float time;
-			RPLANES_MESSAGE_ID(21);
+			RPLANES_MESSAGE_ID(56);
 		};
 		RPLANES_REGISTER_MESSAGE(MCreateMissiles);
 
 		//client also should check isSpent method and delete the bullet if it returns true
-		class MDestroyBullets : public MessageBase
+		class MDestroyBullets : public Message
 		{
 		public:
 			template <typename Archive>
@@ -279,12 +279,12 @@ namespace rplanes {
 				} reason;
 			};
 			std::vector<BulletInfo> bullets;
-			RPLANES_MESSAGE_ID(22)
+			RPLANES_MESSAGE_ID(57)
 		};
 		RPLANES_REGISTER_MESSAGE(MDestroyBullets);
 
 		//client also should check isSpent method and delete the bullet if it returns true
-		class MDestroyMissiles : public MessageBase
+		class MDestroyMissiles : public Message
 		{
 		public:
 			template <typename Archive>
@@ -293,11 +293,11 @@ namespace rplanes {
 				ar & ids;
 			}
 			std::vector<size_t> ids;
-			RPLANES_MESSAGE_ID(23)
+			RPLANES_MESSAGE_ID(58)
 		};
 		RPLANES_REGISTER_MESSAGE(MDestroyMissiles);
 
-		class MChangeMap : public MessageBase
+		class MChangeMap : public Message
 		{
 		public:
 			template <typename Archive>
@@ -306,14 +306,14 @@ namespace rplanes {
 				ar & mapName;
 			}
 			std::string mapName;
-			RPLANES_MESSAGE_ID(24);
+			RPLANES_MESSAGE_ID(59);
 		};
 		RPLANES_REGISTER_MESSAGE(MChangeMap);
 
 
 
 		//new plane in the vision zone
-		class MCreatePlanes : public MessageBase
+		class MCreatePlanes : public Message
 		{
 		public:
 			template <typename Archive>
@@ -402,12 +402,12 @@ namespace rplanes {
 				void extrapolate(float frameTime);
 			};
 			std::vector< Plane > planes;
-			RPLANES_MESSAGE_ID(25);
+			RPLANES_MESSAGE_ID(60);
 		};
 		RPLANES_REGISTER_MESSAGE(MCreatePlanes);
 
 		//specific plane is downing or vanished
-		class MDestroyPlanes : public MessageBase
+		class MDestroyPlanes : public Message
 		{
 		public:
 			template <typename Archive>
@@ -444,12 +444,12 @@ namespace rplanes {
 				rplanes::Nation nation;
 			};
 			std::vector<DestroyedPlane> planes;
-			RPLANES_MESSAGE_ID(26);
+			RPLANES_MESSAGE_ID(61);
 		};
 		RPLANES_REGISTER_MESSAGE(MDestroyPlanes);
 
 		//positions off all the planes in the vision zone
-		class MPlanesPositions : public MessageBase
+		class MPlanesPositions : public Message
 		{
 		public:
 			template <typename Archive>
@@ -475,11 +475,11 @@ namespace rplanes {
 			};
 			std::vector< PlanePos> positions;
 			float time;
-			RPLANES_MESSAGE_ID(27);
+			RPLANES_MESSAGE_ID(62);
 		};
 		RPLANES_REGISTER_MESSAGE(MPlanesPositions);
 
-		class MUpdateModules : public MessageBase
+		class MUpdateModules : public Message
 		{
 		public:
 			template <typename Archive>
@@ -506,12 +506,12 @@ namespace rplanes {
 				planedata::ModuleHP::ChangeReason reason;
 			};
 			std::vector< Module > modules;
-			RPLANES_MESSAGE_ID(28);
+			RPLANES_MESSAGE_ID(63);
 		};
 		RPLANES_REGISTER_MESSAGE(MUpdateModules);
 
 		//servers sends its time when sending each frame
-		class MServerTime : public MessageBase
+		class MServerTime : public Message
 		{
 		public:
 			template <typename Archive>
@@ -520,11 +520,11 @@ namespace rplanes {
 				ar & time;
 			}
 			float time;
-			RPLANES_MESSAGE_ID(29);
+			RPLANES_MESSAGE_ID(64);
 		};
 		RPLANES_REGISTER_MESSAGE(MServerTime);
 
-		class MRoomInfo : public MessageBase
+		class MRoomInfo : public Message
 		{
 		public:
 			template <typename Archive>
@@ -589,7 +589,7 @@ namespace rplanes {
 
 			Goal goal;
 
-			RPLANES_MESSAGE_ID(30);
+			RPLANES_MESSAGE_ID(65);
 		};
 		RPLANES_REGISTER_MESSAGE(MRoomInfo);
 	}

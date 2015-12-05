@@ -13,12 +13,12 @@ size_t convertPosToID( size_t posInVector, bool inRoom  );
 //limitations:
 //clients cannot access other clients. Client condition cannot affect other clients
 //this class is singlethreaded
-class Client
+class Client : private boost::noncopyable
 {
 public:
 	friend class Server;
 
-	Client( boost::asio::io_service& io_service , size_t clientID = 0 );
+	Client(std::shared_ptr<Connection> connection, size_t clientID = 0 );
 	~Client();
 	void setID( size_t id );
 	size_t getId() 
@@ -26,9 +26,9 @@ public:
 		return id_;
 	}
 
-	void sendMessage(const MessageBase & mess)
+	void sendMessage(const Message & mess)
 	{
-		connection_.sendMessage(mess);
+		connection_->sendMessage(mess);
 	}
 
 	void setControllable( rplanes::serverdata::Plane::ControllableParameters controllable );
@@ -67,7 +67,7 @@ private:
 	size_t id_; 
 	float disconnectTimer_;
 	ClientStatus status_;
-	Connection connection_;
+	std::shared_ptr<Connection> connection_;
 
 	rplanes::playerdata::Profile profile_;
 	std::shared_ptr< Player > player_;

@@ -18,10 +18,8 @@ enum { id = messageId };
 }\
 
 #define RPLANES_REGISTER_MESSAGE(classname) \
-	RPLANES_REGISTER_MESSAGE_FOR_ARCHIVE(classname, boost::archive::binary_iarchive)\
-	RPLANES_REGISTER_MESSAGE_FOR_ARCHIVE(classname, boost::archive::text_iarchive)\
-	RPLANES_REGISTER_MESSAGE_FOR_ARCHIVE(classname, boost::archive::binary_oarchive)\
-	RPLANES_REGISTER_MESSAGE_FOR_ARCHIVE(classname, boost::archive::text_oarchive)
+	RPLANES_REGISTER_MESSAGE_FOR_ARCHIVE(classname, NetworkIArchive)\
+	RPLANES_REGISTER_MESSAGE_FOR_ARCHIVE(classname, NetworkOArchive)
 
 
 namespace rplanes
@@ -30,14 +28,18 @@ namespace rplanes
 	{
 		typedef unsigned short MessageId;
 
+		typedef boost::archive::binary_oarchive NetworkOArchive;
+		typedef boost::archive::binary_iarchive NetworkIArchive;
 
-		class MessageBase
+
+
+		class Message
 		{
 		public:
 			//type-specific id
 			//used when deserializing
 			virtual MessageId getId() const = 0;
-			virtual ~MessageBase() {};
+			virtual ~Message() {};
 		};
 
 		//compile-time message registering magic
@@ -70,8 +72,8 @@ namespace rplanes
 			class MSerializerBase
 			{
 			public:
-				virtual std::shared_ptr<MessageBase> read() = 0;
-				virtual void write(const MessageBase & message) = 0;
+				virtual std::shared_ptr<Message> read() = 0;
+				virtual void write(const Message & message) = 0;
 				virtual ~MSerializerBase() {};
 			};
 
@@ -83,16 +85,16 @@ namespace rplanes
 			public:
 				MSerializer(_Archive & archive) : ar(archive) {}
 
-				virtual std::shared_ptr<MessageBase> read() override
+				virtual std::shared_ptr<Message> read() override
 				{
 					if (!_Archive::is_loading::value)
 						throwNotSuitableArchiveException<_Archive>();
 					_Message mess;
 					ar & mess;
-					return std::shared_ptr<MessageBase>(new _Message(mess));
+					return std::shared_ptr<Message>(new _Message(mess));
 				}
 
-				virtual void write(const MessageBase & message) override
+				virtual void write(const Message & message) override
 				{
 					writeImpl(dynamic_cast<const _Message &>(message), ar);
 				}
@@ -134,7 +136,7 @@ namespace rplanes
 
 
 		template<class _Archive>
-		std::shared_ptr<MessageBase> readRegisteredMessage(_Archive & ar)
+		std::shared_ptr<Message> readRegisteredMessage(_Archive & ar)
 		{
 			MessageId id;
 			ar >> id;
@@ -144,7 +146,7 @@ namespace rplanes
 
 
 		template<class _Archive>
-		void writeRegisteredMessage(const MessageBase & mess, _Archive & ar)
+		void writeRegisteredMessage(const Message & mess, _Archive & ar)
 		{
 			ar << mess.getId();
 			auto serializer = details::getMessageSerializer(mess.getId(), ar);

@@ -96,46 +96,10 @@ void Server::deleteClient(std::shared_ptr<Client> & client)
 	{
 		std::wcout << _rstrw("Unexpected error deleting client. {0}", e.what()).str() << std::endl;
 	}
-	std::wcout << _rstrw("Lost connection. {0}", client->connection_.getIP()).str() << std::endl;
+	std::wcout << _rstrw("Lost connection. {0}", client->connection_->getIP()).str() << std::endl;
 	client.reset();
 }
 
-void Server::listen()
-{
-	while (true)
-	{
-		//trying to connect
-		static std::shared_ptr<Client> newClient;
-		{
-			try
-			{
-				if (!newClient)
-				{
-					newClient = std::shared_ptr<Client>(new Client(io_service_));
-				}
-
-				boost::system::error_code err = newClient->connection_.accept(acceptor_);
-				if (err)
-				{
-					//no new connections found
-					return;
-				}
-				newClient->connection_;
-			} catch (std::exception & e) {
-				std::cout << e.what() << std::endl;
-				return;
-			}
-		}
-		//adding new client to the hangar vector
-		size_t id;
-		emptyClient(hangarClients_, id) = newClient;
-		newClient->setID(id);
-		std::wcout << _rstrw("new connection accepted. ip : {0}", 
-			newClient->connection_.getIP()).str() << std::endl;
-		setMessageHandlers(newClient);
-		newClient.reset();
-	}
-}
 
 void Server::handleHangarInput()
 {
@@ -147,7 +111,7 @@ void Server::handleHangarInput()
 			//trying to accept a message
 			try
 			{
-				if (!hangarClients_.clients[i]->connection_.handleMessage())
+				if (!hangarClients_.clients[i]->connection_->handleMessage())
 				{
 					break;
 				}
@@ -162,7 +126,7 @@ void Server::handleHangarInput()
 			catch (std::exception & e)
 			{
 				std::wcout << _rstrw("Failed handling message {0}. {1}", 
-					hangarClients_.clients[i]->connection_.getLastMessageId(), e.what()).str() << std::endl;
+					hangarClients_.clients[i]->connection_->getLastMessageId(), e.what()).str() << std::endl;
 				deleteClient(hangarClients_.clients[i]);
 			}
 		}
@@ -197,7 +161,7 @@ void Server::handleRoomInput()
 		{
 			try
 			{
-				if (!roomClients_.clients[i]->connection_.handleMessage())
+				if (!roomClients_.clients[i]->connection_->handleMessage())
 				{
 					break;
 				}
@@ -212,8 +176,8 @@ void Server::handleRoomInput()
 			catch (std::exception & e)
 			{
 				std::wcout << _rstrw("Failed handling message {0}. {1}", 
-					roomClients_.clients[i]->connection_.getLastMessageId(), e.what()).str() << std::endl;
-				roomClients_.clients[i]->connection_.close();
+					roomClients_.clients[i]->connection_->getLastMessageId(), e.what()).str() << std::endl;
+				roomClients_.clients[i]->connection_->close();
 				deleteQueue_.join(roomClients_.clients[i]);
 			}
 		}
@@ -239,11 +203,8 @@ float Server::getTime() const
 	return time_;
 }
 
-Server::Server() :acceptor_(io_service_, tcp::endpoint(tcp::v4(), configuration().server.port))
+Server::Server() : time_(0.f)
 {
-	std::cout << "Server listens port " << configuration().server.port << std::endl;
-	acceptor_.non_blocking(true);
-	time_ = 0.0;
 }
 
 Client & Server::getClient(size_t clientID)
@@ -335,12 +296,20 @@ void Server::hangarLoop()
 		iterationBegin = std::chrono::steady_clock::now();
 		{
 			MutexLocker ml(hangarClients_.mutex);
-			//add new players
-			listen();
 			//выполняем команды клиентов
 			handleHangarInput();
 			//deleting players which are delaying authorization
 			deleteUnlogined(frameTime.count());
+
+			//handle incoming connections
+			while (auto client = _newClientsQueue.pop())
+			{
+				size_t pos;
+				emptyClient(hangarClients_, pos) = client;
+				client->setID(convertPosToID(pos, false));
+				std::wcout << _rstrw("new client got id {0}", client->getId()).str() << std::endl;
+				setMessageHandlers(client);
+			}
 
 			//handle clients which are exiting rooms
 			while (auto client = hangarQueue_.pop())
@@ -406,7 +375,7 @@ void Server::roomLoop()
 				catch (std::exception & e)
 				{
 					std::wcout << _rstrw("Failed sending message: {0} ", e.what()).str() << std::endl;
-					client.connection_.close();
+					client.connection_->close();
 					deleteQueue_.join(roomClients_.clients[i]);
 				}
 			}
@@ -501,4 +470,88 @@ void Server::administerRoom(const MAdministerRoom & message, Client & client )
 	default:
 		break;
 	}
+}
+
+void Server::networkLoop()
+{
+	boost::asio::io_service io_service;
+	Listener listener(io_service, tcp::endpoint(tcp::v4(), configuration().server.port),
+		[this](std::shared_ptr<Connection> newConnection) {
+		std::wcout << _rstrw("new connection accepted. ip : {0}",
+			newConnection->getIP()).str() << std::endl;
+		_newClientsQueue.join(std::make_shared<Client>(newConnection));
+	});
+	
+	std::wcout << _rstrw("Server listens port {0} ", configuration().server.port).str()  << std::endl;
+
+	io_service.run();	
+}
+
+
+void  Server::setMessageHandlers(std::weak_ptr<Client> clientPtr)
+{
+	auto client = clientPtr.lock();
+	client->connection_->setHandler<MServerTimeRequest>([this, clientPtr](const MServerTimeRequest &)
+	{
+		MServerTime mess;
+		mess.time = getTime();
+		clientPtr.lock()->sendMessage(mess);
+	});
+
+	client->connection_->setHandler<MAdministerRoom>([this, clientPtr](const MAdministerRoom & message)
+	{
+		auto client = clientPtr.lock();
+		administerRoom(message, *client);
+	});
+
+	client->connection_->setHandler<MPlayerProfileRequest>([this, clientPtr](const MPlayerProfileRequest & message)
+	{
+		auto client = clientPtr.lock();
+		if (client->getStatus() != ClientStatus::HANGAR)
+			throw RPLANES_EXCEPTION("you can't observe other players statistics from a place other than the hangar");
+		try
+		{
+			odb::transaction t(profilesDB->begin());
+			client->sendMessage(MProfile(*profilesDB->load<rplanes::playerdata::Profile>(message.playerName)));
+			t.commit();
+		}
+		catch (PlanesException & e) {
+			throw e;
+		}
+		catch (...) {
+			throw RPLANES_EXCEPTION("Profile {0} is not found in database.", message.playerName);
+		}
+	});
+
+	client->connection_->setHandler<MJoinRoomRequest>([this, clientPtr](const MJoinRoomRequest & message)
+	{
+		joinRoom(clientPtr.lock()->getId(), message.playerName, message.planeNo);
+	});
+
+	client->connection_->setHandler<MCreateRoomRequest>([this, clientPtr](const MCreateRoomRequest & message)
+	{
+		createRoom(clientPtr.lock(), message);
+	});
+
+	client->connection_->setHandler<MDestroyRoomRequest>([this, clientPtr](const MDestroyRoomRequest & message)
+	{
+		destroyRoom(clientPtr.lock());
+	});
+
+	client->connection_->setHandler<MRoomListRequest>([this, clientPtr](const MRoomListRequest & message)
+	{
+		clientPtr.lock()->profile();//just to check the client is in hangar
+		MutexLocker ml(roomListMessage.mutex);
+		clientPtr.lock()->sendMessage(roomListMessage.message);
+	});
+
+	client->connection_->setHandler<MRegistry>([](const MRegistry & message)
+	{
+		playerdata::Profile profile;
+		profile.login = message.name;
+		profile.password = message.password;
+		odb::transaction t(profilesDB->begin());
+		profilesDB->persist(profile);
+		t.commit();
+	});
 }

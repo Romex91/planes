@@ -131,7 +131,7 @@ void Client::login( std::string name, std::string password )
 	MutexLocker locker( profilesInfo_.Mutex );
 	if ( profilesInfo_.loggedInProfiles.count(name) > 0 )
 	{
-		throw RPLANES_EXCEPTION("{0} is locked by other player.");
+		throw RPLANES_EXCEPTION("{0} is locked by other player.", name);
 	}
 	//trying to load the profile from database
 	try
@@ -156,7 +156,7 @@ void Client::login( std::string name, std::string password )
 	profilesInfo_.loggedInProfiles.insert(name);
 	status_ = HANGAR;
 
-	std::wcout << _rstrw("{0} logged in from ip {1}", profile_.login, connection_.getIP()).str() << std::endl;
+	std::wcout << _rstrw("{0} logged in from ip {1}", profile_.login, connection_->getIP()).str() << std::endl;
 }
 
 void Client::setControllable( serverdata::Plane::ControllableParameters controllable )
@@ -179,8 +179,8 @@ Client::~Client()
 	profilesInfo_.clientsCount--;
 }
 
-Client::Client( boost::asio::io_service& io_service , size_t clientID /*= 0 */ ) :
-	connection_(io_service),
+Client::Client( std::shared_ptr<Connection> connection , size_t clientID /*= 0 */ ) :
+	connection_(connection),
 	disconnectTimer_( configuration().server.unloginedDisconnectTime ),
 	status_(UNLOGGED)
 {
@@ -190,6 +190,7 @@ Client::Client( boost::asio::io_service& io_service , size_t clientID /*= 0 */ )
 	{
 		throw RPLANES_EXCEPTION("Server is overloaded.");
 	}
+	setMessageHandlers();
 	profilesInfo_.clientsCount++;
 }
 
@@ -247,29 +248,29 @@ void Client::prepareRoomExit()
 
 void Client::setMessageHandlers()
 {
-	connection_.setHandler<MStatusRequest>([this](const MStatusRequest &) {
+	connection_->setHandler<MStatusRequest>([this](const MStatusRequest &) {
 		MStatus mess;
 		mess.status = status_;
 		sendMessage(mess);
 	});
 
-	connection_.setHandler<MSendControllable>(std::bind(&Client::setControllable, this, std::placeholders::_1));
+	connection_->setHandler<MSendControllable>(std::bind(&Client::setControllable, this, std::placeholders::_1));
 
 
-	connection_.setHandler<MProfileRequest>([this](const MProfileRequest &) {
+	connection_->setHandler<MProfileRequest>([this](const MProfileRequest &) {
 		network::MProfile mess;
 		mess.profile = profile();
 		sendMessage(mess);
 	});
 
-	connection_.setHandler<MSellModuleRequest>([this](const MSellModuleRequest & message) {
+	connection_->setHandler<MSellModuleRequest>([this](const MSellModuleRequest & message) {
 		sendMessage(MResourceString(profile().sellModule(message.moduleName, message.nModulesToSell, planesDB)));
 	});
 
-	connection_.setHandler<MSellPlaneRequest>([this](const MSellPlaneRequest & message) {
+	connection_->setHandler<MSellPlaneRequest>([this](const MSellPlaneRequest & message) {
 		sendMessage(MResourceString(profile().sellPlane(message.planeName, planesDB)));
 	});
-	connection_.setHandler<MBuyModuleRequest>([this](const MBuyModuleRequest & message) {
+	connection_->setHandler<MBuyModuleRequest>([this](const MBuyModuleRequest & message) {
 		if (message.setToAllSlots) {
 			network::MResourceString mess;
 			sendMessage(MResourceString(profile().buyModules(message.planeName, message.moduleName, planesDB)));
@@ -278,10 +279,10 @@ void Client::setMessageHandlers()
 		}
 	});
 
-	connection_.setHandler<MBuyPlaneRequest>([this](const MBuyPlaneRequest & message) {
+	connection_->setHandler<MBuyPlaneRequest>([this](const MBuyPlaneRequest & message) {
 		sendMessage(MResourceString(profile().buyPlane(message.planeName, planesDB)));
 	});
-	connection_.setHandler<MUpSkillRequest>([this](const MUpSkillRequest & message) {
+	connection_->setHandler<MUpSkillRequest>([this](const MUpSkillRequest & message) {
 		auto & pilot = profile().pilot;
 		switch (message.skill)
 		{
@@ -299,12 +300,12 @@ void Client::setMessageHandlers()
 			break;
 		}
 	});
-	connection_.setHandler<MLogin>([this](const MLogin & message) {
+	connection_->setHandler<MLogin>([this](const MLogin & message) {
 		login(message.name, message.encryptedPassword);
 		sendMessage(MServerConfiguration(configuration()));
 	});
 
-	connection_.setHandler<MExitRoom>([this](const MExitRoom & message) {
+	connection_->setHandler<MExitRoom>([this](const MExitRoom & message) {
 		prepareRoomExit();
 	});
 

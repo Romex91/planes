@@ -1,35 +1,15 @@
 #include "network.h"
-
+#include "messages.h"
+#include "roomMessages.h"
 namespace rplanes {
 	namespace network {
 
 		Connection::NoHandlerBehavior Connection::noHandlerBehavior =
 			Connection::NoHandlerBehavior::THROW_EXCEPTION;
 
-		boost::system::error_code Connection::accept(boost::asio::ip::tcp::acceptor & acceptor)
+		void Connection::close()
 		{
-			boost::system::error_code err;
-			acceptor.accept(_socket, err);
-			if (!err)
-				_ip = _socket.remote_endpoint().address().to_string();
-			readHeaderAsync();
-			return err;
-		}
-
-		boost::system::error_code Connection::connect(boost::asio::ip::tcp::resolver::iterator & endpoint_iterator)
-		{
-			boost::system::error_code err;
-			boost::asio::connect(_socket, endpoint_iterator, err);
-			_ip = _socket.remote_endpoint().address().to_string();
-			readHeaderAsync();
-			return err;
-		}
-
-		boost::system::error_code Connection::close()
-		{
-			boost::system::error_code err;
-			_socket.close(err);
-			return err;
+			_socket.close();
 		}
 
 		std::string Connection::getIP()
@@ -37,24 +17,36 @@ namespace rplanes {
 			return _ip;
 		}
 
-		Connection::Connection(boost::asio::io_service& io_service) :_socket(io_service)
+		Connection::Connection(boost::asio::io_service& io_service, boost::asio::ip::tcp::resolver::iterator & endpoint_iterator) :_socket(io_service)
 		{
-
+			boost::asio::connect(_socket, endpoint_iterator);
+			_ip = _socket.remote_endpoint().address().to_string();
+			_socket.non_blocking(false);
 		}
 
-		std::shared_ptr<MessageBase> Connection::handleMessage()
+		Connection::Connection(boost::asio::ip::tcp::socket && socket) : _socket(std::move(socket))
 		{
-			std::istringstream messageStream;
+			_ip = _socket.remote_endpoint().address().to_string();
+			_socket.non_blocking(false);
+		}
+
+
+		std::shared_ptr<Message> Connection::handleMessage()
+		{
+			std::vector<char> frontValue;
 			{
 				MutexLocker l(_mutex);
-				if (_pendingMessages.size() == 0)
+				if (_inputMessages.size() == 0) {
+					if (!_socket.is_open())
+						throw RPLANES_EXCEPTION("Connection lost {0}.", _ip);
 					return nullptr;
-				auto frontValue = _pendingMessages.front();
-				messageStream = std::istringstream(std::string(&frontValue[0], frontValue.size()));
-				_pendingMessages.pop();
+				}
+				frontValue = _inputMessages.front();
+				_inputMessages.pop();
 			}
+			std::istringstream messageStream(std::string(&frontValue[0], frontValue.size()));
 
-			IArchive archive(messageStream, boost::archive::no_header);
+			NetworkIArchive archive(messageStream, boost::archive::no_header);
 			auto message = readRegisteredMessage(archive);
 			auto id = message->getId();
 			_lastMessageId = id;
@@ -68,43 +60,52 @@ namespace rplanes {
 		}
 
 
-		void Connection::sendMessage(const MessageBase & message)
+		void Connection::sendMessage(const Message & message)
 		{
-			std::vector<boost::asio::const_buffer> buffers;
+			if (!_socket.is_open())
+				throw RPLANES_EXCEPTION("Connection lost {0}.", _ip);
 
-			//serializing data
-			std::ostringstream archive_stream;
-			OArchive archive(archive_stream, boost::archive::no_header);
-			writeRegisteredMessage(message, archive);
-
-			//first send the serialized data size
-			std::ostringstream data_header_stream;
-			data_header_stream << std::setw(headerLength) << std::hex << archive_stream.str().size();
-			buffers.push_back(boost::asio::buffer(data_header_stream.str()));
-			//sending message
-			buffers.push_back(boost::asio::buffer(archive_stream.str()));
-
-			_socket.non_blocking(false);
-			boost::system::error_code error;
-			boost::asio::write(_socket, buffers, error);
-			if (error)
+			std::string data;
 			{
-				throw RPLANES_EXCEPTION("Failed sending message. {0}", error.message());
+				std::ostringstream data_header_stream;
+				std::ostringstream archive_stream;
+
+				//serializing data
+				NetworkOArchive archive(archive_stream, boost::archive::no_header);
+				writeRegisteredMessage(message, archive);
+
+				//writing serailized data size to the header
+				data_header_stream << std::setw(headerLength) << std::hex << archive_stream.str().size();
+				data = data_header_stream.str() + archive_stream.str();
+			}
+
+			bool writeIsInProgress = false;
+			{
+				MutexLocker ml(_mutex);
+				writeIsInProgress = _outputMessages.size() != 0;
+				_outputMessages.emplace(std::move(data));
+			}
+			if (!writeIsInProgress)
+			{
+				writeMessageAsync();
 			}
 		}
 
 
 		void Connection::readHeaderAsync()
 		{
+			auto self = shared_from_this();
 			boost::asio::async_read(_socket,
 				boost::asio::buffer(_headerBuffer, headerLength),
-				[this](boost::system::error_code ec, std::size_t /*length*/)
+				[this, self](boost::system::error_code ec, std::size_t /*length*/)
 			{
 				size_t messageLength = 0;
 				std::istringstream is(std::string(_headerBuffer, headerLength));
-				if (!ec && (is >> std::hex >> messageLength))
+				if (!ec && (is >> std::setw(headerLength) >> std::hex >> messageLength))
 				{
-					readMessageAsync(messageLength);
+					_messageBuffer.resize(messageLength);
+					if (_socket.is_open() && self.use_count() > 1)
+						readMessageAsync();
 				}
 				else
 				{
@@ -113,24 +114,54 @@ namespace rplanes {
 			});
 		}
 
-		void Connection::readMessageAsync(size_t messageLength)
+		void Connection::readMessageAsync()
 		{
-			_messageBuffer.resize(messageLength);
+			auto self = shared_from_this();
+
 			boost::asio::async_read(_socket, boost::asio::buffer(_messageBuffer),
-				[this, messageLength](boost::system::error_code ec, std::size_t uploadedLength)
+				[this, self](boost::system::error_code ec, std::size_t uploadedLength)
 			{
-				if (!ec && uploadedLength == messageLength) {
+				if (!ec && uploadedLength == _messageBuffer.size()) {
 					{
 						MutexLocker l(_mutex);
-						_pendingMessages.push(_messageBuffer);
+						_inputMessages.push(_messageBuffer);
 					}
-					readHeaderAsync();
+					if (_socket.is_open() && self.use_count() > 1)
+						readHeaderAsync();
 				}
 				else
 				{
 					_socket.close();
 				}
 			});
+		}
+
+		void Connection::writeMessageAsync()
+		{
+	
+			std::shared_ptr<std::string> str;
+			{
+				MutexLocker ml(_mutex);
+				if (_outputMessages.size() == 0)
+					return;
+				str = std::make_shared<std::string>(std::move(_outputMessages.front()));
+				_outputMessages.pop();
+			}
+			auto self = shared_from_this();
+			
+			boost::asio::async_write(_socket, boost::asio::buffer(*str),
+				[this, self, str](boost::system::error_code ec, std::size_t /*length*/)
+			{
+				if (!ec)
+				{
+					writeMessageAsync();
+				}
+				else
+				{
+					_socket.close();
+				}
+			});
+
 		}
 	}
 }

@@ -6,19 +6,6 @@ Server server;
 
 extern std::shared_ptr<odb::database> profilesDB;
 
-//message handlers
-namespace rplanes
-{
-	namespace network
-	{
-		namespace bidirectionalmessages
-		{
-
-		}
-	}
-}
-
-
 class consoleHandler
 {
 	std::string line;
@@ -127,7 +114,7 @@ int main()
 
 	planesDB = rplanes::loadDatabase("../Resources/planes.db");
 	profilesDB = rplanes::loadDatabase("../Resources/profiles.db");
-	omp_set_num_threads(3);
+	omp_set_num_threads(4);
 	omp_set_nested(true);
 
 #pragma omp parallel sections
@@ -139,6 +126,10 @@ int main()
 #pragma omp section
 		{
 			server.roomLoop();
+		}
+#pragma omp section
+		{
+			server.networkLoop();
 		}
 #pragma omp section
 		{

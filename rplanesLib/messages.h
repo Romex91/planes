@@ -67,7 +67,7 @@ namespace rplanes
 
 		//messages coming from the client side
 		//client status request
-		class MStatusRequest : public MessageBase
+		class MStatusRequest : public Message
 		{
 		public:
 			template <typename Archive>
@@ -78,7 +78,7 @@ namespace rplanes
 		};
 		RPLANES_REGISTER_MESSAGE(MStatusRequest);
 
-		class MLogin : public MessageBase
+		class MLogin : public Message
 		{
 		public:
 			template <typename Archive>
@@ -93,7 +93,7 @@ namespace rplanes
 		};
 		RPLANES_REGISTER_MESSAGE(MLogin);
 
-		class MRegistry : public MessageBase
+		class MRegistry : public Message
 		{
 		public:
 			template <typename Archive>
@@ -109,7 +109,7 @@ namespace rplanes
 		RPLANES_REGISTER_MESSAGE(MRegistry);
 
 
-		class MRoomListRequest : public MessageBase
+		class MRoomListRequest : public Message
 		{
 		public:
 			template <typename Archive>
@@ -118,7 +118,7 @@ namespace rplanes
 		};
 		RPLANES_REGISTER_MESSAGE(MRoomListRequest);
 
-		class MCreateRoomRequest : public MessageBase
+		class MCreateRoomRequest : public Message
 		{
 		public:
 			template <typename Archive>
@@ -133,7 +133,7 @@ namespace rplanes
 		};
 		RPLANES_REGISTER_MESSAGE(MCreateRoomRequest);
 
-		class MDestroyRoomRequest : public MessageBase
+		class MDestroyRoomRequest : public Message
 		{
 		public:
 			template <typename Archive>
@@ -144,7 +144,7 @@ namespace rplanes
 		RPLANES_REGISTER_MESSAGE(MDestroyRoomRequest);
 
 
-		class MJoinRoomRequest : public MessageBase
+		class MJoinRoomRequest : public Message
 		{
 		public:
 			template <typename Archive>
@@ -160,7 +160,7 @@ namespace rplanes
 		};
 		RPLANES_REGISTER_MESSAGE(MJoinRoomRequest);
 
-		class MProfileRequest : public MessageBase
+		class MProfileRequest : public Message
 		{
 		public:
 			template <typename Archive>
@@ -172,7 +172,7 @@ namespace rplanes
 		RPLANES_REGISTER_MESSAGE(MProfileRequest);
 
 		//get random player profile data
-		class MPlayerProfileRequest : public MessageBase
+		class MPlayerProfileRequest : public Message
 		{
 		public:
 			template <typename Archive>
@@ -186,7 +186,7 @@ namespace rplanes
 		};
 		RPLANES_REGISTER_MESSAGE(MPlayerProfileRequest);
 
-		class MBuyPlaneRequest : public MessageBase
+		class MBuyPlaneRequest : public Message
 		{
 		public:
 			template <typename Archive>
@@ -201,7 +201,7 @@ namespace rplanes
 		RPLANES_REGISTER_MESSAGE(MBuyPlaneRequest);
 
 		//If such a module isn't persisting in the store this action will buy the module
-		class MBuyModuleRequest : public MessageBase
+		class MBuyModuleRequest : public Message
 		{
 		public:
 			template <typename Archive>
@@ -226,7 +226,7 @@ namespace rplanes
 		RPLANES_REGISTER_MESSAGE(MBuyModuleRequest);
 
 		//sell a plane with all mounted modules
-		class MSellPlaneRequest : public MessageBase
+		class MSellPlaneRequest : public Message
 		{
 		public:
 			template <typename Archive>
@@ -241,7 +241,7 @@ namespace rplanes
 		RPLANES_REGISTER_MESSAGE(MSellPlaneRequest);
 
 		//sell a module from the store
-		class MSellModuleRequest : public MessageBase
+		class MSellModuleRequest : public Message
 		{
 		public:
 			template <typename Archive>
@@ -257,7 +257,7 @@ namespace rplanes
 		};
 		RPLANES_REGISTER_MESSAGE(MSellModuleRequest);
 
-		class MUpSkillRequest : public MessageBase
+		class MUpSkillRequest : public Message
 		{
 		public:
 			template <typename Archive>
@@ -282,7 +282,7 @@ namespace rplanes
 		//////////////////////////////////////////////////////////////////////////
 		//messages sending by the server only
 		//////////////////////////////////////////////////////////////////////////
-		class MStatus : public MessageBase
+		class MStatus : public Message
 		{
 		public:
 			template <typename Archive>
@@ -291,13 +291,13 @@ namespace rplanes
 				ar & status;
 			}
 			ClientStatus status;
-			RPLANES_MESSAGE_ID(17);
+			RPLANES_MESSAGE_ID(14);
 		};
 		RPLANES_REGISTER_MESSAGE(MStatus);
 
 
 
-		class MRoomList : public MessageBase
+		class MRoomList : public Message
 		{
 		public:
 			template <typename Archive>
@@ -337,11 +337,11 @@ namespace rplanes
 
 			};
 			std::vector<RoomInfo> rooms;
-			RPLANES_MESSAGE_ID(31);
+			RPLANES_MESSAGE_ID(15);
 		};
 		RPLANES_REGISTER_MESSAGE(MRoomList);
 
-		class MProfile : public MessageBase
+		class MProfile : public Message
 		{
 		public:
 			template <typename Archive>
@@ -352,11 +352,11 @@ namespace rplanes
 			rplanes::playerdata::Profile profile;
 			MProfile(const rplanes::playerdata::Profile & p) : profile(p) {};
 			MProfile() = default;
-			RPLANES_MESSAGE_ID(32);
+			RPLANES_MESSAGE_ID(16);
 		};
 		RPLANES_REGISTER_MESSAGE(MProfile);
 
-		class MServerConfiguration : public MessageBase
+		class MServerConfiguration : public Message
 		{
 		public:
 			template <typename Archive>
@@ -367,14 +367,14 @@ namespace rplanes
 			Configuration conf;
 			MServerConfiguration(const Configuration & configuration) : conf(configuration) {};
 			MServerConfiguration() = default;
-			RPLANES_MESSAGE_ID(33);
+			RPLANES_MESSAGE_ID(17);
 		};
 		RPLANES_REGISTER_MESSAGE(MServerConfiguration);
 
 		//////////////////////////////////////////////////////////////////////////
 		//messages sending to both directions
 		//////////////////////////////////////////////////////////////////////////
-		class MText : public MessageBase
+		class MText : public Message
 		{
 		public:
 			template <typename Archive>
@@ -384,11 +384,11 @@ namespace rplanes
 			}
 
 			std::string text;
-			RPLANES_MESSAGE_ID(34);
+			RPLANES_MESSAGE_ID(18);
 		};
 		RPLANES_REGISTER_MESSAGE(MText);
 
-		class MExitRoom : public MessageBase
+		class MExitRoom : public Message
 		{
 		public:
 			template <typename Archive>
@@ -397,11 +397,11 @@ namespace rplanes
 
 			}
 
-			RPLANES_MESSAGE_ID(35);
+			RPLANES_MESSAGE_ID(19);
 		};
 		RPLANES_REGISTER_MESSAGE(MExitRoom);
 
-		class MResourceString : public MessageBase
+		class MResourceString : public Message
 		{
 		public:
 			template <typename Archive>
@@ -412,7 +412,7 @@ namespace rplanes
 			MResourceString(const rstring::_rstrw_t &str) : string(str) {};
 			MResourceString() = default;
 			rstring::_rstrw_t string;
-			RPLANES_MESSAGE_ID(36);
+			RPLANES_MESSAGE_ID(20);
 		};
 		RPLANES_REGISTER_MESSAGE(MResourceString);
 	}

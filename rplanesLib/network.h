@@ -8,12 +8,12 @@ namespace rplanes
 {
 	namespace network
 	{
+
 		//contains a bit of compile-time magic and asynch insanity
-		class Connection
+		//io_service::run should work in some other thread
+		class Connection : private boost::noncopyable, public std::enable_shared_from_this<Connection>
 		{
 		public:
-			typedef boost::archive::binary_oarchive OArchive;
-			typedef boost::archive::binary_iarchive IArchive;
 
 			enum { headerLength = sizeof(size_t) * 2};
 
@@ -22,28 +22,41 @@ namespace rplanes
 				DO_NOTHING
 			};
 
-			Connection(boost::asio::io_service& io_service);
+			Connection(boost::asio::io_service& io_service, boost::asio::ip::tcp::resolver::iterator & endpoint_iterator);
+
+			Connection(boost::asio::ip::tcp::socket && socket);
 
 			//specify message handler.
 			//the message handler would be called only when executing handleMessage()
 			template<class _Message>
 			void setHandler(std::function<void(const _Message &)> handler)
 			{
-				_handlers[_Message::id] = [handler](const MessageBase & message) {
+				_handlers[_Message::id] = [handler](const Message & message) {
 					handler(dynamic_cast<const _Message &>(message));
 				};
 			}
 
 			//send message
-			void sendMessage(const MessageBase & message);
+			void sendMessage(const Message & message);
 
 			//handle a pending message. calls earlier specified handler and returns the message
 			//if no messages pending returns nullptr 
-			std::shared_ptr<MessageBase> handleMessage();
+			std::shared_ptr<Message> handleMessage();
 
-			boost::system::error_code accept(boost::asio::ip::tcp::acceptor & acceptor);
-			boost::system::error_code connect(boost::asio::ip::tcp::resolver::iterator & endpoint_iterator);
-			boost::system::error_code close();
+			bool isOpen();
+
+			std::shared_ptr<Connection> start()
+			{
+				if (!_started)
+				{
+					_started = true;
+					readHeaderAsync();
+				}
+				return shared_from_this();
+			}
+
+			void close();
+
 			std::string getIP();
 
 			static NoHandlerBehavior noHandlerBehavior;
@@ -53,13 +66,15 @@ namespace rplanes
 				return _lastMessageId;
 			}
 
+
 		protected:
+			bool _started = false;
 			std::string _ip;
 			boost::asio::ip::tcp::socket _socket;
-			std::map<MessageId, std::function<void(const MessageBase &)>> _handlers;
-			std::queue<std::vector<char>> _pendingMessages;
-
-			//shared resource is _pendingMessages
+			std::map<MessageId, std::function<void(const Message &)>> _handlers;
+			std::queue<std::vector<char>> _inputMessages;
+			std::queue<std::string> _outputMessages;
+			//shared resources are _inputMessages and _outputMessages
 			Mutex _mutex;
 
 			MessageId _lastMessageId = 0;
@@ -68,12 +83,45 @@ namespace rplanes
 			void readHeaderAsync();
 			char _headerBuffer[headerLength];
 
-			//read message data and push it to _pendingMessages
-			void readMessageAsync(size_t messageLength);
+			//read message data and push it to _inputMessages
+			void readMessageAsync();
 			std::vector<char> _messageBuffer;
 
+			//write a message from _outputMessages queue
+			void writeMessageAsync();
 		};
 
+
+		//asynchronious listener
+		class Listener : private boost::noncopyable
+		{
+		public:
+			Listener(boost::asio::io_service& io_service, boost::asio::ip::tcp::endpoint & endpoint,
+				std::function<void(std::shared_ptr<Connection>)> connectionHandler) :
+				_acceptor(io_service, endpoint),
+				_socket(io_service),
+				_connectionHandler(connectionHandler)
+			{
+				do_accept();
+			}
+
+		private:
+
+			void do_accept()
+			{
+				_acceptor.async_accept(_socket,
+					[this](boost::system::error_code err)
+				{
+					if (!err) {
+						_connectionHandler(std::make_shared<Connection>(std::move(_socket))->start());
+					}
+					do_accept();
+				});
+			}
+			std::function<void(std::shared_ptr<Connection>)> _connectionHandler;
+			boost::asio::ip::tcp::acceptor _acceptor;
+			boost::asio::ip::tcp::socket _socket;
+		};
 	}
 }
 

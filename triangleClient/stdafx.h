@@ -16,3 +16,4 @@
 #include <SFML/Graphics.hpp>	
 #include <rstring.h>
 #include <boost/archive/xml_wiarchive.hpp>
+#include <boost/log/trivial.hpp>
