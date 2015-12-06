@@ -11,10 +11,24 @@ using namespace rplanes::network;
 class Server
 {
 public:
-	struct RoomListMessage
+	class RoomListMessage
 	{
-		Mutex mutex;
-		MRoomList message;
+	public:
+		MRoomList get()
+		{
+			MutexLocker l(_mutex);
+			return _message;
+		}
+
+		void set(const MRoomList & message)
+		{
+			MutexLocker l(_mutex);
+			_message = message;
+		}
+
+	private:
+		Mutex _mutex;
+		MRoomList _message;
 	}roomListMessage;
 
 	void updateRoomMessage();
@@ -25,7 +39,8 @@ public:
 
 	Client & getClient(size_t clientID);
 
-	void joinRoom(size_t clientID, std::string creatorName, size_t planeNumber);
+
+	void joinRoom(std::shared_ptr<Client> client);
 
 	void createRoom(std::shared_ptr<Client> client, const MCreateRoomRequest & message);
 
@@ -55,10 +70,10 @@ private:
 
 	class ClientsQueue
 	{
-		std::vector<std::shared_ptr<Client>> clients;
+		std::queue<std::shared_ptr<Client>> clients;
 		Mutex mutex;
 	public:
-		void join( std::shared_ptr<Client> & client );
+		void join( const std::shared_ptr<Client> & client );
 		
 		//returns null if the queue is empty
 		std::shared_ptr<Client> pop();
@@ -71,7 +86,7 @@ private:
 	ClientsList hangarClients_;
 	
 	//queues for clients to move from the hangar to rooms and back
-	ClientsQueue hangarQueue_, deleteQueue_, _newClientsQueue;
+	 ClientsQueue hangarQueue_, deleteQueue_, _newClientsQueue, _roomQueue;
 
 
 	std::map< std::string, std::shared_ptr<Room> > rooms_;
@@ -83,10 +98,6 @@ private:
 	std::shared_ptr<Client> & getClientPtr( size_t clientID );
 
 	//hangarLoopMethods
-
-	void deleteClient( std::shared_ptr<Client> & client );
-
-//	void listen();
 
 	void handleHangarInput();
 

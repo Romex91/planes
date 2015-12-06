@@ -444,7 +444,7 @@ void loginAndJoinRoom(std::string profileName, size_t planeNo)
 	//подключаемся к первой комнате
 	rplanes::network::MJoinRoomRequest jrr;
 	jrr.planeNo = planeNo;
-	jrr.playerName = roomCreatorName;
+	jrr.ownerName = roomCreatorName;
 
 	client.connection->sendMessage(jrr);
 

@@ -1,7 +1,7 @@
 
 #include "player.h"
 
-Player::Player(rplanes::serverdata::Plane & plane, std::string Name) : plane_(plane), name(Name)
+Player::Player(const rplanes::serverdata::Plane & plane, std::string Name) : plane_(plane), name(Name)
 {
 	isJoined = true;
 	name = Name;
@@ -1026,7 +1026,7 @@ MDestroyPlanes::DestroyedPlane DestroyablePlane::getDestructionInfo()
 	return destructionInfo_;
 }
 
-DestroyablePlane::DestroyablePlane(Plane & playerPlane) : rplanes::serverdata::Plane(playerPlane)
+DestroyablePlane::DestroyablePlane(const Plane & playerPlane) : rplanes::serverdata::Plane(playerPlane)
 {
 	initModules();
 	destroyed_ = true;

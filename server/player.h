@@ -93,7 +93,7 @@ class Player;
 class DestroyablePlane : public rplanes::serverdata::Plane
 {
 public:
-	DestroyablePlane(rplanes::serverdata::Plane & playerPlane);
+	DestroyablePlane(const rplanes::serverdata::Plane & playerPlane);
 	MDestroyPlanes::DestroyedPlane getDestructionInfo();
 	bool isDestroyed()const;
 	void respawn(float x, float y, float angle);
@@ -186,7 +186,7 @@ public:
 
 	bool isZombie();
 
-	Player(rplanes::serverdata::Plane & Plane, std::string Name);
+	Player(const rplanes::serverdata::Plane & Plane, std::string Name);
 
 	std::string getGroupName();
 

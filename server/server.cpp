@@ -9,13 +9,12 @@ std::shared_ptr<odb::database> profilesDB;
 
 
 
-void Server::ClientsQueue::join(std::shared_ptr<Client> & client)
+void Server::ClientsQueue::join(const std::shared_ptr<Client> & client)
 {
 	MutexLocker ml(mutex);
 	if (client)
 	{
-		clients.push_back(client);
-		client.reset();
+		clients.push(client);
 	}
 	else
 	{
@@ -30,8 +29,8 @@ std::shared_ptr<Client> Server::ClientsQueue::pop()
 	{
 		return std::shared_ptr<Client>();
 	}
-	auto retval = clients.back();
-	clients.pop_back();
+	auto retval = clients.front();
+	clients.pop();
 	return retval;
 }
 
@@ -75,67 +74,29 @@ std::shared_ptr<Client> & Server::getClientPtr(size_t clientID)
 	throw RPLANES_EXCEPTION("client is not connected");
 }
 
-void Server::deleteClient(std::shared_ptr<Client> & client)
-{
-	try
-	{
-		switch (client->getStatus())
-		{
-		case rplanes::network::UNLOGGED:
-			break;
-		case rplanes::network::HANGAR:
-			client->logout();
-			break;
-		case rplanes::network::ROOM:
-			client->exitRoom();
-			client->logout();
-			break;
-		}
-	}
-	catch (std::exception & e)
-	{
-		std::wcout << _rstrw("Unexpected error deleting client. {0}", e.what()).str() << std::endl;
-	}
-	std::wcout << _rstrw("Lost connection. {0}", client->connection_->getIP()).str() << std::endl;
-	client.reset();
-}
-
-
 void Server::handleHangarInput()
 {
-	for (size_t i = 0; i < hangarClients_.clients.size(); i++)
+	for (auto & client : hangarClients_.clients)
 	{
-		size_t handledMessages = 0;
-		while (hangarClients_.clients[i])
+		if (!client) continue;
+		try
 		{
-			//trying to accept a message
-			try
-			{
-				if (!hangarClients_.clients[i]->connection_->handleMessage())
-				{
-					break;
-				}
-				handledMessages++;
-				if (handledMessages > configuration().server.hangarMessagesPerFrame)
-				{
-					std::cout << handledMessages << std::endl;
-					throw RPLANES_EXCEPTION("Client has sent {0} messages per one frame. {1} messages per frame permitted.", 
-						handledMessages, configuration().server.hangarMessagesPerFrame);
-				}
-			}
-			catch (std::exception & e)
-			{
-				std::wcout << _rstrw("Failed handling message {0}. {1}", 
-					hangarClients_.clients[i]->connection_->getLastMessageId(), e.what()).str() << std::endl;
-				deleteClient(hangarClients_.clients[i]);
-			}
+			size_t handledMessages = 0;
+			while (client->connection_->handleMessage() && handledMessages++ < configuration().server.hangarMessagesPerFrame) {}
+		}
+		catch (std::exception & e)
+		{
+			std::wcout << _rstrw("Failed handling message {0}. {1}",
+				client->connection_->getLastMessageId(), e.what()).str() << std::endl;
+			client->endSession();
+			client.reset();
 		}
 	}
 }
 
 void Server::deleteUnlogined(float frameTime)
 {
-	for (std::shared_ptr<Client> & client : hangarClients_.clients)
+	for (auto & client : hangarClients_.clients)
 	{
 		if (client)
 		{
@@ -144,7 +105,8 @@ void Server::deleteUnlogined(float frameTime)
 				client->disconnectTimer_ -= frameTime;
 				if (client->disconnectTimer_ < 0)
 				{
-					deleteClient(client);
+					client->endSession();
+					client.reset();
 				}
 			}
 		}
@@ -153,49 +115,37 @@ void Server::deleteUnlogined(float frameTime)
 
 void Server::handleRoomInput()
 {
-	for (int i = 0; i < roomClients_.clients.size(); i++)
+	for (auto & client : roomClients_.clients)
 	{
-		size_t handledMessages = 0;
-
-		while (roomClients_.clients[i])
+		if (!client) continue;
+		try
 		{
-			try
-			{
-				if (!roomClients_.clients[i]->connection_->handleMessage())
-				{
-					break;
-				}
-				handledMessages++;
-				if (handledMessages > configuration().server.roomMessagesPerFrame)
-				{
-					std::cout << handledMessages << std::endl;
-					throw RPLANES_EXCEPTION("Client has sent {0} messages per one frame. {1} messages per frame permitted.", 
-						handledMessages, configuration().server.roomMessagesPerFrame);
-				}
-			}
-			catch (std::exception & e)
-			{
-				std::wcout << _rstrw("Failed handling message {0}. {1}", 
-					roomClients_.clients[i]->connection_->getLastMessageId(), e.what()).str() << std::endl;
-				roomClients_.clients[i]->connection_->close();
-				deleteQueue_.join(roomClients_.clients[i]);
-			}
+			size_t handledMessages = 0;
+			while (client->connection_->handleMessage() && handledMessages++ < configuration().server.roomMessagesPerFrame) {}
+		}
+		catch (std::exception & e)
+		{
+			std::wcout << _rstrw("Failed handling message {0}. {1}",
+				client->connection_->getLastMessageId(), e.what()).str() << std::endl;
+			deleteQueue_.join(client);
+			client.reset();
 		}
 	}
 }
 
 void Server::updateRoomMessage()
 {
-	MutexLocker ml(roomListMessage.mutex);
-	roomListMessage.message.rooms.clear();
+	MRoomList roomList;
 	for (auto & room : rooms_)
 	{
-		roomListMessage.message.rooms.push_back(MRoomList::RoomInfo());
-		roomListMessage.message.rooms.back().description = room.second->description;
-		roomListMessage.message.rooms.back().mapName = "not specified";
-		roomListMessage.message.rooms.back().creatorName = room.first;
-		roomListMessage.message.rooms.back().slots = room.second->getPlayerNumber();
+		MRoomList::RoomInfo roomInfo;
+		roomInfo.description = room.second->description;
+		roomInfo.mapName = "not specified";
+		roomInfo.creatorName = room.first;
+		roomInfo.slots = room.second->getPlayerNumber();
+		roomList.rooms.emplace_back(std::move(roomInfo));
 	}
+	roomListMessage.set(roomList);
 }
 
 float Server::getTime() const
@@ -213,44 +163,6 @@ Client & Server::getClient(size_t clientID)
 	return *client;
 }
 
-void Server::joinRoom(size_t clientID, std::string creatorName, size_t planeNumber)
-{
-	auto & client = getClientPtr(clientID);
-	if (client->getStatus() != HANGAR)
-	{
-		throw RPLANES_EXCEPTION("Cannot join room. Player is out of hangar.");
-	}
-
-	//if the client has undeleted room he cannot join to another one
-	auto room = rooms_.find(client->profile_.login);
-	if (room == rooms_.end())
-	{
-		room = rooms_.find(creatorName);
-	}
-
-	if (room == rooms_.end())
-	{
-		throw RPLANES_EXCEPTION("Room is not found.");
-	}
-
-	if (std::find(room->second->banlist.begin(), room->second->banlist.end(), client->profile_.login)
-		!= room->second->banlist.end())
-	{
-		throw RPLANES_EXCEPTION("Player is in the banlist.");
-	}
-
-
-	MutexLocker ml(roomClients_.mutex);
-	{
-		client->joinRoom(*room->second, planeNumber);
-		size_t pos;
-		emptyClient(roomClients_, pos) = client;
-		client->setID(convertPosToID(pos, true));
-	}
-
-	std::wcout << _rstrw("{0} connected to room {1}", client->profile_.login, room->first).str() << std::endl;
-	client.reset();
-}
 
 void Server::createRoom(std::shared_ptr<Client> client, const MCreateRoomRequest & message)
 {
@@ -289,7 +201,7 @@ void Server::hangarLoop()
 	std::chrono::microseconds iterationTime;
 	std::chrono::microseconds configFrameTime(
 		static_cast<long long>(
-		configuration().server.hangarFrameTime * 1000000));
+			configuration().server.hangarFrameTime * 1000000));
 	std::chrono::duration<float> frameTime;
 	while (true)
 	{
@@ -311,10 +223,23 @@ void Server::hangarLoop()
 				setMessageHandlers(client);
 			}
 
-			//handle clients which are exiting rooms
+			//handle clients joining rooms
+			for (auto & client : hangarClients_.clients)
+			{
+				if (client)
+				{
+					if (client->getStatus() == ROOM)
+					{
+						_roomQueue.join(client);
+						client.reset();
+					}
+				}
+			}
+
+			//handle clients exiting rooms
 			while (auto client = hangarQueue_.pop())
 			{
-				client->exitRoom();
+				client->onExitRoom();
 				size_t pos;
 				emptyClient(hangarClients_, pos) = client;
 				client->setID(convertPosToID(pos, false));
@@ -323,7 +248,7 @@ void Server::hangarLoop()
 			//handle deleting clients queue
 			while (auto client = deleteQueue_.pop())
 			{
-				deleteClient(client);
+				client->endSession();
 			}
 
 		}
@@ -343,7 +268,7 @@ void Server::roomLoop()
 
 	std::chrono::microseconds configFrameTime(
 		static_cast<long long>(
-		configuration().server.roomFrameTime * 1000000));
+			configuration().server.roomFrameTime * 1000000));
 
 	//the full frame time combined of the iteration time and the sleep time
 	std::chrono::duration<float> frameTime;
@@ -354,54 +279,66 @@ void Server::roomLoop()
 		iterationBegin = std::chrono::steady_clock::now();
 		while (true)
 		{
-
-			locker = std::shared_ptr<MutexLocker>(new MutexLocker(roomClients_.mutex));
-
-			handleRoomInput();
-
-			for (auto & room : rooms_)
+			//locked block
 			{
-				room.second->iterate(frameTime.count(), getTime());
-			}
+				MutexLocker ml(roomClients_.mutex);
+				handleRoomInput();
 
-			for (int i = 0; i < roomClients_.clients.size(); i++)
-			{
-				if (!roomClients_.clients[i])continue;
-				auto & client = *roomClients_.clients[i];
-				try
+				for (auto & room : rooms_)
 				{
-					client.sendRoomMessages();
+					room.second->iterate(frameTime.count(), getTime());
 				}
-				catch (std::exception & e)
+
+				for (auto & client : roomClients_.clients)
 				{
-					std::wcout << _rstrw("Failed sending message: {0} ", e.what()).str() << std::endl;
-					client.connection_->close();
-					deleteQueue_.join(roomClients_.clients[i]);
+					if (!client)continue;
+					try
+					{
+						client->sendRoomMessages();
+					}
+					catch (std::exception & e)
+					{
+						std::wcout << _rstrw("Failed sending message: {0} ", e.what()).str() << std::endl;
+						deleteQueue_.join(client);
+						client.reset();
+					}
+				}
+
+				//throwing exited clients to the hangar
+				for (auto & client : roomClients_.clients)
+				{
+					if (!client)
+					{
+						continue;
+					}
+					if (!client->player_->isJoined || client->getStatus() != ROOM)
+					{
+						hangarQueue_.join(client);
+						client.reset();
+					}
+				}
+
+				updateRoomMessage();
+
+				for (auto & room : rooms_)
+				{
+					room.second->clearTemroraryData();
+				}
+
+				while (auto client = _roomQueue.pop())
+				{
+					try {
+						joinRoom(client);
+						roomClients_.clients.push_back(client);
+					} catch (PlanesException e) {
+						auto text = _rstrw("Failed joining room. {0}", e.getString());
+						std::wcout << text.str() << std::endl;
+						try { client->sendMessage(MResourceString(text)); }
+						catch (...) {}
+						deleteQueue_.join(client);
+					}
 				}
 			}
-
-			//throwing exited clients to the hangar
-			for (auto & client : roomClients_.clients)
-			{
-				if (!client)
-				{
-					continue;
-				}
-				if (!client->player_->isJoined)
-				{
-					hangarQueue_.join(client);
-				}
-			}
-
-			updateRoomMessage();
-
-			for (auto & room : rooms_)
-			{
-				room.second->clearTemroraryData();
-			}
-
-
-			locker.reset();
 
 			iterationTime = std::chrono::duration_cast<std::chrono::microseconds>(std::chrono::steady_clock::now() - iterationBegin);
 			if (iterationTime < configFrameTime)
@@ -416,8 +353,33 @@ void Server::roomLoop()
 }
 
 
+void Server::joinRoom(std::shared_ptr<Client> client)
+{
+	auto player = client->sharePlayer();
+	//if the client has undeleted room he cannot join to another one
+	auto room = rooms_.find(player->name);
+	if (room == rooms_.end())
+	{
+		room = rooms_.find(client->getRoomName());
+	}
 
-void Server::administerRoom(const MAdministerRoom & message, Client & client )
+	if (room == rooms_.end())
+	{
+		throw RPLANES_EXCEPTION("Room is not found.");
+	}
+
+	if (std::find(room->second->banlist.begin(), room->second->banlist.end(), client->profile_.login)
+		!= room->second->banlist.end())
+	{
+		throw RPLANES_EXCEPTION("Player is in the banlist.");
+	}
+	room->second->addPlayer(player);
+	std::wcout << _rstrw("{0} connected to room {1}", player->name, room->first).str() << std::endl;
+}
+
+
+
+void Server::administerRoom(const MAdministerRoom & message, Client & client)
 {
 	if (client.getStatus() != ROOM)
 	{
@@ -481,10 +443,10 @@ void Server::networkLoop()
 			newConnection->getIP()).str() << std::endl;
 		_newClientsQueue.join(std::make_shared<Client>(newConnection));
 	});
-	
-	std::wcout << _rstrw("Server listens port {0} ", configuration().server.port).str()  << std::endl;
 
-	io_service.run();	
+	std::wcout << _rstrw("Server listens port {0} ", configuration().server.port).str() << std::endl;
+
+	io_service.run();
 }
 
 
@@ -523,11 +485,6 @@ void  Server::setMessageHandlers(std::weak_ptr<Client> clientPtr)
 		}
 	});
 
-	client->connection_->setHandler<MJoinRoomRequest>([this, clientPtr](const MJoinRoomRequest & message)
-	{
-		joinRoom(clientPtr.lock()->getId(), message.playerName, message.planeNo);
-	});
-
 	client->connection_->setHandler<MCreateRoomRequest>([this, clientPtr](const MCreateRoomRequest & message)
 	{
 		createRoom(clientPtr.lock(), message);
@@ -541,8 +498,7 @@ void  Server::setMessageHandlers(std::weak_ptr<Client> clientPtr)
 	client->connection_->setHandler<MRoomListRequest>([this, clientPtr](const MRoomListRequest & message)
 	{
 		clientPtr.lock()->profile();//just to check the client is in hangar
-		MutexLocker ml(roomListMessage.mutex);
-		clientPtr.lock()->sendMessage(roomListMessage.message);
+		clientPtr.lock()->sendMessage(roomListMessage.get());
 	});
 
 	client->connection_->setHandler<MRegistry>([](const MRegistry & message)

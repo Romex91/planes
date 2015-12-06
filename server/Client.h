@@ -37,12 +37,48 @@ public:
 
 	void logout();
 
+	void prepareRoomJoin(const MJoinRoomRequest & message);
+
 	void prepareRoomExit();
 
 	ClientStatus getStatus();
 
 	rplanes::playerdata::Profile & profile();
 
+	void endSession()
+	{
+		try
+		{
+			switch (getStatus())
+			{
+			case rplanes::network::UNLOGGED:
+				break;
+			case rplanes::network::HANGAR:
+				logout();
+				break;
+			case rplanes::network::ROOM:
+				onExitRoom();
+				logout();
+				break;
+			}
+			connection_->close();
+		}
+		catch (std::exception & e)
+		{
+			std::wcout << _rstrw("Unexpected error deleting client. {0}", e.what()).str() << std::endl;
+		}
+		std::wcout << _rstrw("Lost connection. {0}", connection_->getIP()).str() << std::endl;
+	}
+
+	std::string getRoomName()
+	{
+		return _roomToJoin;
+	}
+
+	std::shared_ptr<Player> sharePlayer()
+	{
+		return player_;
+	}
 private:
 
 
@@ -50,11 +86,9 @@ private:
 
 	void sendRoomMessages();
 
-	//call this method from the hungar loop before moving the client to the room queue
-	void joinRoom( Room& room, size_t planeNo );
-
 	//call this method when leaving the room
-	void exitRoom();
+	//saves statistics resets player and sending a message to the client side
+	void onExitRoom();
 
 	struct ProfilesInfo
 	{
@@ -68,6 +102,7 @@ private:
 	float disconnectTimer_;
 	ClientStatus status_;
 	std::shared_ptr<Connection> connection_;
+	std::string _roomToJoin;
 
 	rplanes::playerdata::Profile profile_;
 	std::shared_ptr< Player > player_;

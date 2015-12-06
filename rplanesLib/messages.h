@@ -151,11 +151,11 @@ namespace rplanes
 			void serialize(Archive& ar, const unsigned int version)
 			{
 				ar & planeNo;
-				ar & playerName;
+				ar & ownerName;
 			}
 
 			size_t planeNo;
-			std::string playerName;
+			std::string ownerName;
 			RPLANES_MESSAGE_ID(6)
 		};
 		RPLANES_REGISTER_MESSAGE(MJoinRoomRequest);

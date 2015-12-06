@@ -28,7 +28,7 @@ size_t convertPosToID( size_t posInVector, bool inRoom )
 	return posInVector;
 }
 
-void Client::exitRoom()
+void Client::onExitRoom()
 {
 	if ( status_ != ROOM )
 	{
@@ -58,34 +58,6 @@ void Client::exitRoom()
 	}
 	catch (...)
 	{}
-}
-
-void Client::joinRoom( Room & room, size_t planeNo)
-{
-	if ( status_ != HANGAR )
-	{
-		throw RPLANES_EXCEPTION("Cannot join room. Client is out of hangar.");
-	}
-	if ( planeNo >= profile_.planes.size()  )
-	{
-		throw RPLANES_EXCEPTION("Cannot join room. Wrong parameters.");
-	}
-
-	if (!profile_.planes[planeNo].isReadyForJoinRoom())
-	{
-		throw RPLANES_EXCEPTION("Cannot join room. Ensure that wings engines missiles and guns are mounted symmetrically");
-	}
-
-	serverdata::Plane plane;
-	plane = profile_.planes[planeNo].buildPlane(profile_.pilot, planesDB);
-
-	player_ = std::shared_ptr<Player>( new Player( plane, profile_.login ) );
-	player_->openedMaps = profile_.openedMaps;
-	player_->openedPlanes = profile_.openedPlanes;
-
-	room.addPlayer(player_);
-
-	status_ = ROOM;
 }
 
 playerdata::Profile & Client::profile()
@@ -118,6 +90,28 @@ void Client::logout()
 	}
 	profile_.save(profilesDB);
 	std::wcout << _rstrw("{0} logged out.", profile_.login).str() << std::endl;
+}
+
+void Client::prepareRoomJoin(const MJoinRoomRequest & message)
+{
+	if (message.planeNo >= profile().planes.size())
+	{
+		throw RPLANES_EXCEPTION("Cannot join room. Wrong parameters.");
+	}
+
+	if (!profile().planes[message.planeNo].isReadyForJoinRoom())
+	{
+		throw RPLANES_EXCEPTION("Cannot join room. Ensure that wings engines missiles and guns are mounted symmetrically");
+	}
+
+	serverdata::Plane plane = profile().planes[message.planeNo].buildPlane(profile().pilot, planesDB);
+
+	player_ = std::make_shared<Player>(plane, profile_.login);
+	player_->openedMaps = profile().openedMaps;
+	player_->openedPlanes = profile().openedPlanes;
+
+	_roomToJoin = message.ownerName;
+	status_ = ROOM;
 }
 
 void Client::login( std::string name, std::string password )
@@ -243,6 +237,7 @@ void Client::prepareRoomExit()
 	{
 		throw RPLANES_EXCEPTION("Cannot exit room. Client is out of room.");
 	}
+	status_ = HANGAR;
 	player_->isJoined = false;
 }
 
@@ -256,6 +251,7 @@ void Client::setMessageHandlers()
 
 	connection_->setHandler<MSendControllable>(std::bind(&Client::setControllable, this, std::placeholders::_1));
 
+	connection_->setHandler<MJoinRoomRequest>(std::bind(&Client::prepareRoomJoin, this, std::placeholders::_1));
 
 	connection_->setHandler<MProfileRequest>([this](const MProfileRequest &) {
 		network::MProfile mess;
