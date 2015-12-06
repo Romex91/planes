@@ -37,8 +37,6 @@ public:
 
 	Server();
 
-	Client & getClient(size_t clientID);
-
 
 	void joinRoom(std::shared_ptr<Client> client);
 
@@ -93,10 +91,6 @@ private:
 
 	float time_;
 
-	std::shared_ptr<Client> & emptyClient( ClientsList & cl, size_t & pos );
-
-	std::shared_ptr<Client> & getClientPtr( size_t clientID );
-
 	//hangarLoopMethods
 
 	void handleHangarInput();
@@ -105,7 +99,6 @@ private:
 
 	//roomLoopMethods
 	void handleRoomInput();
-
 
 	void administerRoom(const MAdministerRoom & message, Client & client);
 

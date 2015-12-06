@@ -5,11 +5,6 @@
 using namespace rplanes::network;
 
 
-//TODO: remove this insanity
-bool clientIsInRoom(size_t clientID );
-size_t convertIDToPos( size_t clienID );
-size_t convertPosToID( size_t posInVector, bool inRoom  );
-
 //limitations:
 //clients cannot access other clients. Client condition cannot affect other clients
 //this class is singlethreaded
@@ -18,9 +13,8 @@ class Client : private boost::noncopyable
 public:
 	friend class Server;
 
-	Client(std::shared_ptr<Connection> connection, size_t clientID = 0 );
+	Client(std::shared_ptr<Connection> connection);
 	~Client();
-	void setID( size_t id );
 	size_t getId() 
 	{
 		return id_;
@@ -98,7 +92,8 @@ private:
 	};
 
 	static ProfilesInfo profilesInfo_;
-	size_t id_; 
+	static IdGetter _idGetter;
+	const size_t id_ = _idGetter.getID(); 
 	float disconnectTimer_;
 	ClientStatus status_;
 	std::shared_ptr<Connection> connection_;

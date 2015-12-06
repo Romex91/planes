@@ -4,29 +4,7 @@ extern std::shared_ptr<odb::database> planesDB;
 extern std::shared_ptr<odb::database> profilesDB;
 
 Client::ProfilesInfo Client::profilesInfo_;
-
-bool clientIsInRoom( size_t clientID )
-{
-	return clientID >= configuration().server.maxClientsNumber;
-}
-
-size_t convertIDToPos( size_t clienID )
-{
-	if ( clientIsInRoom(clienID) )
-	{
-		return clienID - configuration().server.maxClientsNumber;
-	}
-	return clienID;
-}
-
-size_t convertPosToID( size_t posInVector, bool inRoom )
-{
-	if ( inRoom )
-	{
-		return posInVector + configuration().server.maxClientsNumber;
-	}
-	return posInVector;
-}
+IdGetter Client::_idGetter;
 
 void Client::onExitRoom()
 {
@@ -162,23 +140,17 @@ void Client::setControllable( serverdata::Plane::ControllableParameters controll
 	player_->setControllable(controllable);
 }
 
-void Client::setID( size_t id )
-{
-	id_ = id;
-}
-
 Client::~Client()
 {
 	MutexLocker ml( profilesInfo_.Mutex );
 	profilesInfo_.clientsCount--;
 }
 
-Client::Client( std::shared_ptr<Connection> connection , size_t clientID /*= 0 */ ) :
+Client::Client( std::shared_ptr<Connection> connection) :
 	connection_(connection),
 	disconnectTimer_( configuration().server.unloginedDisconnectTime ),
 	status_(UNLOGGED)
 {
-	setID(clientID);
 	MutexLocker ml( profilesInfo_.Mutex );
 	if ( profilesInfo_.clientsCount >= configuration().server.maxClientsNumber )
 	{

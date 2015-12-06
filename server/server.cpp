@@ -34,45 +34,6 @@ std::shared_ptr<Client> Server::ClientsQueue::pop()
 	return retval;
 }
 
-std::shared_ptr<Client> & Server::emptyClient(ClientsList & cl, size_t & pos)
-{
-	//searching for free position in the hangar client vector
-	size_t newClientPos = 0;
-	for (; newClientPos != cl.clients.size(); newClientPos++)
-	{
-		if (!cl.clients[newClientPos])
-		{
-			break;
-		}
-	}
-	//add new if not found
-	if (newClientPos == cl.clients.size())
-	{
-		cl.clients.push_back(std::shared_ptr<Client>());
-	}
-	pos = newClientPos;
-	return cl.clients[newClientPos];
-}
-
-std::shared_ptr<Client> & Server::getClientPtr(size_t clientID)
-{
-	size_t pos = convertIDToPos(clientID);
-	if (clientIsInRoom(clientID))
-	{
-		if (pos < roomClients_.clients.size())
-		{
-			return roomClients_.clients[pos];
-		}
-	}
-	else
-	{
-		if (pos < hangarClients_.clients.size())
-		{
-			return hangarClients_.clients[pos];
-		}
-	}
-	throw RPLANES_EXCEPTION("client is not connected");
-}
 
 void Server::handleHangarInput()
 {
@@ -157,13 +118,6 @@ Server::Server() : time_(0.f)
 {
 }
 
-Client & Server::getClient(size_t clientID)
-{
-	auto client = getClientPtr(clientID);
-	return *client;
-}
-
-
 void Server::createRoom(std::shared_ptr<Client> client, const MCreateRoomRequest & message)
 {
 	auto & profile = client->profile();
@@ -216,11 +170,9 @@ void Server::hangarLoop()
 			//handle incoming connections
 			while (auto client = _newClientsQueue.pop())
 			{
-				size_t pos;
-				emptyClient(hangarClients_, pos) = client;
-				client->setID(convertPosToID(pos, false));
 				std::wcout << _rstrw("new client got id {0}", client->getId()).str() << std::endl;
 				setMessageHandlers(client);
+				hangarClients_.clients.push_back(client);
 			}
 
 			//handle clients joining rooms
@@ -240,9 +192,7 @@ void Server::hangarLoop()
 			while (auto client = hangarQueue_.pop())
 			{
 				client->onExitRoom();
-				size_t pos;
-				emptyClient(hangarClients_, pos) = client;
-				client->setID(convertPosToID(pos, false));
+				hangarClients_.clients.push_back(client);
 				std::wcout << _rstrw("client {0} returned to the hangar", client->profile().login).str() << std::endl;
 			}
 			//handle deleting clients queue
@@ -250,6 +200,11 @@ void Server::hangarLoop()
 			{
 				client->endSession();
 			}
+
+			//removing nullptr clients
+			hangarClients_.clients.erase(
+				std::remove(hangarClients_.clients.begin(), hangarClients_.clients.end(), nullptr),
+				hangarClients_.clients.end());
 
 		}
 		iterationTime = std::chrono::duration_cast<std::chrono::microseconds>(std::chrono::steady_clock::now() - iterationBegin);
@@ -338,6 +293,11 @@ void Server::roomLoop()
 						deleteQueue_.join(client);
 					}
 				}
+
+				//removing nullptr clients
+				roomClients_.clients.erase(
+					std::remove(roomClients_.clients.begin(), roomClients_.clients.end(), nullptr),
+					roomClients_.clients.end());
 			}
 
 			iterationTime = std::chrono::duration_cast<std::chrono::microseconds>(std::chrono::steady_clock::now() - iterationBegin);
